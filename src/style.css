@@ -1,0 +1,399 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.vanilla:hover {
+  filter: drop-shadow(0 0 2em #3178c6aa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Panel Styles */
+.panel {
+  text-align: left;
+  max-width: 700px;
+  margin: 16px auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.panel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.2em;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.panel h4 {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  font-size: 1em;
+  color: #555;
+}
+
+/* List Styles */
+.list-reset {
+  padding-left: 16px;
+  list-style: none;
+  margin: 0;
+}
+
+.scrollable-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.small-scrollable-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Email Result Item */
+.email-result-item {
+  margin-bottom: 8px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #e5e5e5;
+  transition: background 0.2s;
+}
+
+.email-result-item:hover {
+  background: #f0f0f0;
+}
+
+.email-result-item strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #333;
+  font-size: 0.95em;
+}
+
+.email-meta {
+  color: #666;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.email-preview {
+  color: #888;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+/* Stat Display */
+.stat-display {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  border-left: 3px solid #646cff;
+}
+
+.stat-display strong {
+  color: #333;
+  margin-right: 8px;
+}
+
+/* Control Group */
+.control-group {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.control-group input {
+  min-width: 240px;
+  padding: 0.6em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+/* Grid Layout */
+.grid-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.grid-column {
+  min-width: 0;
+}
+
+/* Status Text */
+.status-text {
+  margin-top: 12px;
+  padding: 8px;
+  color: #555;
+  font-size: 0.9em;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+/* Tool Call Item */
+.tool-call-item {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 3px solid #646cff;
+  transition: background 0.2s;
+}
+
+.tool-call-item:hover {
+  background: #f0f0f0;
+}
+
+.tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.tool-call-header strong {
+  color: #333;
+  font-size: 0.95em;
+  flex: 1;
+  min-width: 140px;
+}
+
+.tool-status {
+  font-size: 0.9em;
+}
+
+.tool-status.success {
+  color: #22c55e;
+}
+
+.tool-status.error {
+  color: #ef4444;
+}
+
+.tool-time {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.tool-duration {
+  color: #888;
+  font-size: 0.8em;
+  background: #e5e5e5;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.tool-params {
+  color: #666;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.tool-result {
+  color: #555;
+  font-size: 0.85em;
+  padding: 4px 8px;
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #e5e5e5;
+}
+
+.error-text {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.tool-info {
+  color: #888;
+  font-size: 0.85em;
+  text-align: center;
+  padding: 8px;
+  font-style: italic;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .panel {
+    border-color: #444;
+  }
+  
+  .panel h3 {
+    border-bottom-color: #444;
+  }
+  
+  .panel h4 {
+    color: #aaa;
+  }
+  
+  .email-result-item {
+    background: #2a2a2a;
+    border-color: #444;
+  }
+  
+  .email-result-item:hover {
+    background: #333;
+  }
+  
+  .email-result-item strong {
+    color: #eee;
+  }
+  
+  .email-meta {
+    color: #999;
+  }
+  
+  .email-preview {
+    color: #777;
+  }
+  
+  .stat-display {
+    background: #2a2a2a;
+    border-left-color: #646cff;
+  }
+  
+  .stat-display strong {
+    color: #eee;
+  }
+  
+  .control-group input {
+    background-color: #2a2a2a;
+    color: #eee;
+    border-color: #444;
+  }
+  
+  .status-text {
+    background: #2a2a2a;
+    color: #aaa;
+  }
+  
+  .tool-call-item {
+    background: #2a2a2a;
+    border-left-color: #646cff;
+  }
+  
+  .tool-call-item:hover {
+    background: #333;
+  }
+  
+  .tool-call-header strong {
+    color: #eee;
+  }
+  
+  .tool-time {
+    color: #999;
+  }
+  
+  .tool-duration {
+    background: #444;
+    color: #aaa;
+  }
+  
+  .tool-params {
+    color: #999;
+  }
+  
+  .tool-result {
+    background: #1a1a1a;
+    border-color: #444;
+    color: #aaa;
+  }
+  
+  .tool-info {
+    color: #777;
+  }
+}

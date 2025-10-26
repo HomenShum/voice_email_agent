@@ -1,0 +1,24 @@
+{
+  "case": {
+    "id": "bandsintown",
+    "scenario": "User asks band notification summary",
+    "user_query": "Summarize the Bandsintown update",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Bandsintown LANY",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A match referencing LANY or Bandsintown"
+  },
+  "search_matches": [],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

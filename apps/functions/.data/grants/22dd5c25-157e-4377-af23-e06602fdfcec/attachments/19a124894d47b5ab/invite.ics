@@ -1,0 +1,52 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:America/Los_Angeles
+X-LIC-LOCATION:America/Los_Angeles
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
+TZNAME:PDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
+TZNAME:PST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Los_Angeles:20251023T170000
+DTEND;TZID=America/Los_Angeles:20251023T180000
+DTSTAMP:20251023T181537Z
+ORGANIZER;CN=Chandru Shanmugasundaram:mailto:chan@theburntapp.com
+UID:7vh3ijl9922dondmrfhv67c3g0@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=hshum2018@gmail.com;X-NUM-GUESTS=0:mailto:hshum2018@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Chandru Shanmugasundaram;X-NUM-GUESTS=0:mailto:chan@theburntapp.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/jdk-makw-miv
+X-MICROSOFT-CDO-OWNERAPPTID:1600499200
+CREATED:20251022T222543Z
+DESCRIPTION:-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/jd
+ k-makw-miv\nOr dial: (US) +1 385-988-0466 PIN: 572547608#\nMore phone numbe
+ rs: https://tel.meet/jdk-makw-miv?pin=4355076098927&hs=7\n\nLearn more abou
+ t Meet at: https://support.google.com/a/users/answer/9282720\n\nPlease do n
+ ot edit this section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20251023T181535Z
+LOCATION:555 Bryant St apt 901\, San Francisco\, CA 94107\, USA\; https://m
+ eet.google.com/jdk-makw-miv
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Homen <> Burnt
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

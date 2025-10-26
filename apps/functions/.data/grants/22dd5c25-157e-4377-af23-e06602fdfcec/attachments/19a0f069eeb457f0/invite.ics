@@ -1,0 +1,53 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:America/Los_Angeles
+X-LIC-LOCATION:America/Los_Angeles
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
+TZNAME:PDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
+TZNAME:PST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Los_Angeles:20251023T140000
+DTEND;TZID=America/Los_Angeles:20251023T150000
+DTSTAMP:20251023T030442Z
+ORGANIZER;CN=Brook Riggio:mailto:brook@thrv.com
+UID:u2r6fu92fi0n030fjst61berds@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=hshum2018@gmail.com;X-NUM-GUESTS=0:mailto:hshum2018@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Brook Riggio;X-NUM-GUESTS=0:mailto:brook@thrv.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/sbt-hety-qor
+X-MICROSOFT-CDO-OWNERAPPTID:1118851152
+CREATED:20251023T030440Z
+DESCRIPTION:<b>Booked by</b>\nHomen Shum\nhshum2018@gmail.com\n4083335386\n
+ <br><b>LinkedIn</b>\nhttps://www.linkedin.com/in/homen-shum\n\n-::~:~::~:~:
+ ~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+ \nJoin with Google Meet: https://meet.google.com/sbt-hety-qor\nOr dial: (US
+ ) +1 478-308-5685 PIN: 323014828#\nMore phone numbers: https://tel.meet/sbt
+ -hety-qor?pin=9777912589951&hs=7\n\nLearn more about Meet at: https://suppo
+ rt.google.com/a/users/answer/9282720\n\nPlease do not edit this section.\n-
+ ::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~::~:~::-
+LAST-MODIFIED:20251023T030442Z
+LOCATION:https://meet.google.com/sbt-hety-qor
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Interviews (Homen Shum)
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

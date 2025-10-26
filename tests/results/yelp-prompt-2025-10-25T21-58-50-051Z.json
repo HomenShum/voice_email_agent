@@ -1,0 +1,21 @@
+{
+  "case": {
+    "id": "yelp-prompt",
+    "scenario": "User asks what Yelp wanted",
+    "user_query": "What did Yelp ask me to do recently?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Yelp review",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "It should mention Yelp asking for a review"
+  },
+  "search_matches": [],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

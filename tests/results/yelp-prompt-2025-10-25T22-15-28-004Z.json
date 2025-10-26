@@ -1,0 +1,133 @@
+{
+  "case": {
+    "id": "yelp-prompt",
+    "scenario": "User asks what Yelp wanted",
+    "user_query": "What did Yelp ask me to do recently?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Yelp review",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "It should mention Yelp asking for a review"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17dd7d886104a",
+      "score": 0.577832162,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:16:22.000Z",
+        "from": "no-reply@mail.yelp.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Wait, how was Beastea? 💭",
+        "thread_id": "19a17dd7d886104a",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a12191138a0c13",
+      "score": 0.394735277,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T17:23:44.000Z",
+        "from": "noreply@hirefrederick.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "It's time for your next visit",
+        "thread_id": "19a12191138a0c13",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a17b35b844013c",
+      "score": 0.346870393,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T19:30:21.000Z",
+        "from": "xt-noreply@xtime.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Your CX-5 may still need service!",
+        "thread_id": "19a17b35b844013c",
+        "to": [
+          "HSHUM2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a199cc40ae0bab",
+      "score": 0.343799561,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T04:24:55.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: My AutoBooker",
+        "thread_id": "19a199cc40ae0bab",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a0f069eeb457f0",
+      "score": 0.340833664,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T03:04:43.000Z",
+        "from": "brook@thrv.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": true,
+        "subject": "Appointment booked: Interviews (Homen Shum) @ Thu Oct 23, 2025 2pm - 3pm (PDT) (hshum2018@gmail.com)",
+        "thread_id": "19a0f069eeb457f0",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "mail.yelp.com",
+        "count": 1
+      },
+      {
+        "key": "hirefrederick.com",
+        "count": 1
+      },
+      {
+        "key": "xtime.com",
+        "count": 1
+      },
+      {
+        "key": "upwork.com",
+        "count": 1
+      },
+      {
+        "key": "thrv.com",
+        "count": 1
+      }
+    ]
+  }
+}

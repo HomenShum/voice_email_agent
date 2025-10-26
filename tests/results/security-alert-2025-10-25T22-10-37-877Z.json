@@ -1,0 +1,121 @@
+{
+  "case": {
+    "id": "security-alert",
+    "scenario": "User asks to find a Google security alert email",
+    "user_query": "Find the security alert from Google",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Security alert",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "At least one result has subject containing 'Security alert' and from like accounts.google.com"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a19884f1c169ad",
+      "score": 0.413013458,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T04:02:35.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI / Automation Product Builder (Commission-Based | Remote)",
+        "thread_id": "19a19884f1c169ad",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1b75ce82e50c1",
+      "score": 0.404979706,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T13:01:36.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI Agents for Analysis and Recommendations",
+        "thread_id": "19a1b75ce82e50c1",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1718046c70251",
+      "score": 0.396560669,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T16:40:41.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI Automation & Integration Specialist for Shopify Store",
+        "thread_id": "19a1718046c70251",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a17f6ecb5c7fa4",
+      "score": 0.395774841,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:44:09.000Z",
+        "from": "no-reply@accounts.google.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Security alert",
+        "thread_id": "19a17f6ecb5c7fa4",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a18573d73554cf",
+      "score": 0.395570755,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T22:29:22.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AWS Engineer for Autonomous AI Trading System",
+        "thread_id": "19a18573d73554cf",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "upwork.com",
+        "count": 4
+      },
+      {
+        "key": "accounts.google.com",
+        "count": 1
+      }
+    ]
+  }
+}

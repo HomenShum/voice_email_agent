@@ -1,0 +1,98 @@
+{
+  "at": "2025-10-25T22-15-28-004Z",
+  "totals": {
+    "cases": 8,
+    "pass": 8,
+    "fail": 0
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=1, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=1, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Heuristic-only: matches=5, correct=true"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-25T22-15-28-004Z.json",
+      "regression_changed": true
+    }
+  ]
+}

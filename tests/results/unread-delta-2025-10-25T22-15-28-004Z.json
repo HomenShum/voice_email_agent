@@ -1,0 +1,133 @@
+{
+  "case": {
+    "id": "unread-delta",
+    "scenario": "Pull latest unread since the last pull; ensure we do not re-scan all",
+    "user_query": "Fetch unread since last run",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "recent unread",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "Results include only items after the last received_after checkpoint; minimal overlap with already processed items"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17dce18deb934",
+      "score": 0.359780312,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:15:42.000Z",
+        "from": "notifications@ppt.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Soft World Tour Part 1 - tickets available ...",
+        "thread_id": "19a17dce18deb934",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a13022024f2787",
+      "score": 0.344818115,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T21:38:18.000Z",
+        "from": "notifications@streamlit.discoursemail.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "[Streamlit] Summary",
+        "thread_id": "19a13022024f2787",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      }
+    },
+    {
+      "id": "msg:19a0fe2fe03afdfe",
+      "score": 0.339895248,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T07:05:26.000Z",
+        "from": "messaging-digest-noreply@linkedin.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Nikhil just messaged you",
+        "thread_id": "19a0fe2fe03afdfe",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1831e2dcea7dc",
+      "score": 0.334838897,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T21:48:34.000Z",
+        "from": "hello@news.railway.app",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Magic Config, HTTP Metrics, Secure DB queries",
+        "thread_id": "19a1831e2dcea7dc",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1a78595d30bd7",
+      "score": 0.308454543,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T08:24:45.000Z",
+        "from": "no.reply.alerts@chase.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Here's your latest Credit Summary",
+        "thread_id": "19a1a78595d30bd7",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "ppt.bandsintown.com",
+        "count": 1
+      },
+      {
+        "key": "streamlit.discoursemail.com",
+        "count": 1
+      },
+      {
+        "key": "linkedin.com",
+        "count": 1
+      },
+      {
+        "key": "news.railway.app",
+        "count": 1
+      },
+      {
+        "key": "chase.com",
+        "count": 1
+      }
+    ]
+  }
+}

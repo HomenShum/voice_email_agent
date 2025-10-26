@@ -1,0 +1,13 @@
+Actionable bullets (3–7)
+- Claim the exclusive CoffeeSpace 25% TechCrunch Disrupt discount (Oct 27–29) and RSVP for nearby events: Vibe AI Workflows Hackathon (Oct 29), Founder Real Talk, TechCrunch Unofficial Founders & Funders Mixer, and Bay Area generative‑AI meetups you plan to attend.  
+- Register for/attend key webinars and conferences: Unstructured + IBM watsonx RAG pipeline webinar, SignNow live webinar, Pulumi “Guardrails for Agent‑driven Operations” workshop, and BUILD 2025 (virtual, Nov 4–6) — BUILD registration closes in ~2 weeks.  
+- Confirm and prepare for scheduled meetings/interviews: Thrv interview (Thu Oct 23, 2–3pm PDT) — gather notes, talking points, portfolio/code links — and the Burnt meeting (~Oct 23 ~5pm); follow up with Chandra/Joseph (Burnt) and Brook/Thrv as needed.  
+- Review and prioritize active job leads (Upwork/LinkedIn/Indeed). Block time to apply to the top 3 matches this week: RAG/Generative AI & vector retrieval, FastAPI/Azure/HIPAA AI‑first Python roles, AI automation/ChatGPT agent and full‑stack Python (AWS+React) positions. Tailor proposals with scope, timeline, and samples.  
+- Respond to LinkedIn connection requests and unread messages (e.g., Nikhil, SF Bay opportunities) to keep pipelines warm. Prepare reusable proposal snippets and portfolio examples showcasing RAG, vector search, FastAPI, ChatGPT agents, Make.com/N8N integrations, Supabase, and HIPAA‑aware deployments.  
+- Triage product/admin items: check Claude memory rollout, review MGX v1.2.5 release notes (Video Center, App Showcase), review Streamlit summary and Logfire invite, consider finishing the Mercury business‑credit application, and batch low‑priority promos to avoid distraction.
+
+Executive paragraph (short)
+You’ve got a mix of time‑sensitive event registrations/discounts, webinars, interviews, and concentrated job leads. Immediate priorities: redeem the CoffeeSpace TechCrunch discount and RSVP for the Oct hackathon and nearby AI events, register for the RAG/webinar lineup and BUILD before the deadline, confirm and prep for Thrv and Burnt meetings, and block time to apply to the top 3 matching job leads with tailored proposals. Simultaneously triage product updates (Claude, MGX) and admin items (Mercury) and keep LinkedIn/networking threads active.
+
+Searchable tags (up to 8)
+TechCrunch-Disrupt, Events-Hackathons, Webinars-RAG, Job-Alerts, Interviews-Meetings, Generative-AI/RAG, Product-Updates, Admin-Finance

@@ -1,0 +1,132 @@
+{
+  "case": {
+    "id": "uc-berkeley-event",
+    "scenario": "User asks about UC Berkeley related announcement",
+    "user_query": "Show me the UC Berkeley event email",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "UC Berkeley OpenAI",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A result referencing OpenAI @ UC Berkeley or GPTDAO announcement"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17f6c6714d2be",
+      "score": 0.583026946,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:44:00.000Z",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "OpenAI @ UC Berkeley",
+        "thread_id": "19a17f6c6714d2be",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      }
+    },
+    {
+      "id": "msg:19a1c6e8bc98f713",
+      "score": 0.583026946,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T17:33:18.000Z",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "OpenAI @ UC Berkeley",
+        "thread_id": "19a1c6e8bc98f713",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1188565b4bd7c",
+      "score": 0.508710921,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T14:45:39.000Z",
+        "from": "genai-sf@calendar.luma-mail.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "⭐️ [Oct 23rd] Upcoming Bay Area Generative AI events",
+        "thread_id": "19a1188565b4bd7c",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a11cde544935ee",
+      "score": 0.463960677,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T16:01:37.000Z",
+        "from": "newsletters@hi.wellfound.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Study: AI boosts creativity",
+        "thread_id": "19a11cde544935ee",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1362541c5c357",
+      "score": 0.459802628,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-23T23:23:22.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI Consultant / Programmer & Integration Exper",
+        "thread_id": "19a1362541c5c357",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "shared1.ccsend.com",
+        "count": 2
+      },
+      {
+        "key": "calendar.luma-mail.com",
+        "count": 1
+      },
+      {
+        "key": "hi.wellfound.com",
+        "count": 1
+      },
+      {
+        "key": "upwork.com",
+        "count": 1
+      }
+    ]
+  }
+}

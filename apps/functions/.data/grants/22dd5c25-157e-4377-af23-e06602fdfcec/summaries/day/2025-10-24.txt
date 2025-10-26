@@ -1,0 +1,15 @@
+Actionable bullets
+- Immediate security: check the Google security alert now — review account activity and secure the account (rotate password, enable/verify 2FA) if anything looks off.
+- Jobs (high priority): triage Upwork/LinkedIn job alerts — shortlist 3–5 best fits (examples: Agentic workflows/automation, n8n/Make.com developer, Vertex AI/Gemini + AWS Lambda, Full‑Stack Python/React with API integrations, AI Voice/Prompt Engineer). Block 1–2 sessions in the next 48 hrs to prepare and submit tailored proposals with portfolio/demo links and rates.
+- Events & calendar: confirm RSVPs/registrations and add to calendar for Self‑Evolving Agents Hack (you’re registered) plus Founder & Investor Happy Hour, Musa Labs VC Master Class, Wellfound webinar, Pydantic SF meetup, Temporal/other meetups — review any pre‑reads and add prep items or travel/ticket tasks.
+- Payments & finance: confirm Gusto payroll from IdeaFlow Inc; reconcile with bank records; verify Venmo $35 to Andrea; complete any other subscription confirmations (ventureminer) or pending payments.
+- Time‑sensitive personal items: renew CoveredCA to keep the $0 Silver plan; schedule the CX‑5 car service/ClassPass booking and confirm Bandsintown/event tickets as needed.
+- Platform messages & follow‑ups: open/respond to Laylo/CRANKDAT and any urgent platform messages; follow up with thrv rejection (brief thank‑you + feedback request) and reply to recruiter/LinkedIn messages (e.g., maxeleven Sr. Data Scientist).
+- Inbox hygiene: unsubscribe or filter promotional mail (Godiva, Starbucks, Lucky, Riot, etc.), add an email filter for job alerts to reduce noise, and tidy recurring digests you want to keep (LeetCode, tech/job alerts).
+- Miscellaneous admin: complete the Alameda County survey if relevant; confirm/complete any pending calendar invites or subscriptions; scan meetup/conference notices for tickets/RSVP deadlines.
+
+Executive paragraph
+Your inbox is a mix of urgent account-security alerts, a heavy stream of AI/automation job leads (mostly Upwork + LinkedIn) requiring n8n/agent/GPT/Vertex AI and full‑stack skills, multiple event invites and registrations (hackathon, happy hour, VC master class, meetups), payroll/payment confirmations, and a few time‑sensitive personal/administrative items (CoveredCA renewal, car/ClassPass bookings). Priority actions: secure your Google account immediately, reconcile payroll/Venmo, renew CoveredCA, then triage and apply to the top Upwork/LinkedIn roles with tailored proposals while adding and preparing for the events you’ll attend; finish quick follow‑ups (Laylo, thrv feedback) and clean up promotional noise with filters/unsubscribes.
+
+Searchable tags (up to 8)
+security-alert, upwork-jobs, AI-automation, n8n/Make.com, events/hackathons, payments, coveredca-renewal, inbox-cleanup

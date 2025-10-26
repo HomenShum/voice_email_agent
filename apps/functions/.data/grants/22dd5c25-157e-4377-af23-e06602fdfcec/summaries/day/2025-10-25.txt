@@ -1,0 +1,17 @@
+Actionable bullet points
+- Follow up on the JJA.CO application view: check the job portal/LinkedIn and send a brief follow-up message to the recruiter within 48 hours.
+- Open the Sage Care update email now; if rejected, request feedback; if moved forward, schedule interviews or technical next steps.
+- Triage LinkedIn/Indeed job alerts (Databricks, Palo Alto Networks, Big Cloud, CNO, etc.): pick 2–3 high‑priority roles, tailor your resume/cover letter, and apply this week. Set follow-up reminders.
+- Review Upwork gig notifications (LLM/AI, n8n/Make automation, full‑stack AI): shortlist 2–3 best-fit projects and submit targeted proposals with relevant portfolio/examples.
+- Respond to LinkedIn connection requests and recruiter messages; register/save events or reading items (OpenAI @ UC Berkeley, Neo4j) you want to attend.
+- Finish Azure free account setup: confirm subscription limits, billing alerts, and required verification; activate any needed services.
+- Review the Chase credit/transaction summary for recent activity, upcoming payments, or discrepancies — pay, dispute, or note alerts as needed.
+- Clean up inbox noise: unsubscribe or filter promotional/event emails (Godiva, Amazon, Bandsintown, event promos); create folders/rules for job alerts, freelance leads, and admin/account emails.
+- Check concert/ticket plans (Getter, Tee Grizzley, Subtronics, Feed Me / K‑Pop Nights): verify tickets and add events to your calendar.
+- Remove or update calendar entries for canceled items (e.g., “Quality at Scale” roundtable) and note any limited‑time promos you want to act on (Amazon FoodMaxx, promo codes).
+
+Executive paragraph
+You received a dense set of career- and admin-related messages: multiple LinkedIn/Indeed job alerts and an application view (JJA.CO), a Sage Care status update, numerous Upwork LLM/AI and automation gigs, plus networking/event emails (connection requests, OpenAI@UC Berkeley, Neo4j) and a few promos and concert reminders. Prioritize immediate follow-ups on the JJA.CO view and the Sage Care update, shortlist and apply to 2–3 top LinkedIn roles, and submit 2–3 targeted Upwork proposals. Also finish Azure account setup, review your Chase summary for any action, verify tickets/calendar items, and reduce inbox noise by creating filters and unsubscribing from low-value promos.
+
+Searchable tags
+job-alerts, linkedin, upwork, application-status, ai-automation, inbox-management, azure, credit-summary

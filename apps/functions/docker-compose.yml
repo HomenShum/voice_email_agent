@@ -1,0 +1,64 @@
+
+
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite -l /data -s --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+
+  functions:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ../../.env
+    environment:
+      # Core Azure Functions env
+      FUNCTIONS_WORKER_RUNTIME: "node"
+      # Azurite connection string with explicit endpoints so it works across containers
+      AzureWebJobsStorage: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+
+      # Use real services (disable mocks)
+      NYLAS_MOCK: "0"
+      SMOKE_TEST: "0"
+      PINECONE_DISABLE: "0"
+
+      # Model + API base
+      OPENAI_EMBED_MODEL: "text-embedding-3-small"
+      NYLAS_BASE: "https://api.us.nylas.com/v3"
+
+
+
+      # The following are provided via env_file (.env):
+      # NYLAS_API_KEY, OPENAI_API_KEY, PINECONE_API_KEY, PINECONE_INDEX_NAME,
+      # GRANT_ID, MONTHS, MAX
+
+    depends_on:
+      - azurite
+    ports:
+      - "7071:80"
+
+  smoke:
+    # Reuse the same image so the compiled dist/ and deps are available
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ../../.env
+    entrypoint: ["sh", "-lc", "GRANT_ID=${GRANT_ID:-$NYLAS_GRANT_ID} node dist/smoke/smokeBackfill.js"]
+    environment:
+      # Use real services (disable mocks)
+      NYLAS_MOCK: "0"
+      SMOKE_TEST: "0"
+      PINECONE_DISABLE: "0"
+    depends_on:
+      - functions
+
+volumes:
+  azurite-data:
+

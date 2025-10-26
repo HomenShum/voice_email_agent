@@ -1,0 +1,120 @@
+{
+  "case": {
+    "id": "upwork-job",
+    "scenario": "User asks for the Upwork job alert summary",
+    "user_query": "Summarize the Upwork job alert",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Upwork New job alert",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A result describing an Upwork job alert with brief job info"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17d6401156255",
+      "score": 0.668611526,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:08:28.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: Build n8n Workflows (AI & E-commerce Integrations)",
+        "thread_id": "19a17d6401156255",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1ae83b8aedc53",
+      "score": 0.635414124,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T10:26:58.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: N8N AI Automation Workflow Development",
+        "thread_id": "19a1ae83b8aedc53",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a19884f1c169ad",
+      "score": 0.627210617,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T04:02:35.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI / Automation Product Builder (Commission-Based | Remote)",
+        "thread_id": "19a19884f1c169ad",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a14f43733105d6",
+      "score": 0.622156143,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T06:42:20.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: Build a chat automation",
+        "thread_id": "19a14f43733105d6",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1b75ce82e50c1",
+      "score": 0.608531952,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T13:01:36.000Z",
+        "from": "donotreply@upwork.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "New job: AI Agents for Analysis and Recommendations",
+        "thread_id": "19a1b75ce82e50c1",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "upwork.com",
+        "count": 5
+      }
+    ]
+  }
+}

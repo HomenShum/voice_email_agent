@@ -1,0 +1,23 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:CANCEL
+BEGIN:VEVENT
+DTSTART:20251004T003000Z
+DTEND:20251004T033000Z
+DTSTAMP:20251025T004536Z
+ORGANIZER;CN="Zof AI":MAILTO:calendar-invite@lu.ma
+UID:evt-F6LQJPRflMhgL3w@events.lu.ma
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=hshum
+ 2018@gmail.com;X-NUM-GUESTS=0:mailto:hshum2018@gmail.com
+SUMMARY:[CANCELLED] Quality at Scale: Engineering Leaders Roundtable Confe
+ rence
+DESCRIPTION:Get up-to-date information at: https://luma.com/event/evt-F6LQ
+ JPRflMhgL3w\n\nAddress:\nAWS Builder Loft\nSan Francisco, California\nUnit
+ ed States\n\nHosted by Joseph & 7 others
+LOCATION:AWS Builder Loft, 525 Market St, San Francisco, CA 94105, USA
+GEO:37.790321299999995;-122.399369
+SEQUENCE:183516336
+STATUS:CANCELLED
+END:VEVENT
+END:VCALENDAR

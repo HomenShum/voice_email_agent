@@ -1,0 +1,128 @@
+{
+  "case": {
+    "id": "bandsintown",
+    "scenario": "User asks band notification summary",
+    "user_query": "Summarize the Bandsintown update",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Bandsintown LANY",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A match referencing LANY or Bandsintown"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17dce18deb934",
+      "score": 0.666847229,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T20:15:42.000Z",
+        "from": "notifications@ppt.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Soft World Tour Part 1 - tickets available ...",
+        "thread_id": "19a17dce18deb934",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a173684ab4a5fa",
+      "score": 0.597086906,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-24T17:14:00.000Z",
+        "from": "notifications@updates.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "On Sale Now: LANY at Bill Graham Civic Auditorium.",
+        "thread_id": "19a173684ab4a5fa",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1a2b8c1fe08aa",
+      "score": 0.501022398,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T07:00:53.000Z",
+        "from": "notifications@updates.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Next Week: Getter in San Jose",
+        "thread_id": "19a1a2b8c1fe08aa",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a1a037d2c90e9d",
+      "score": 0.459218025,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T06:17:07.000Z",
+        "from": "notifications@updates.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Next Week: Tee grizzley in Oakland",
+        "thread_id": "19a1a037d2c90e9d",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    },
+    {
+      "id": "msg:19a190d9707bca6a",
+      "score": 0.459062576,
+      "values": [],
+      "metadata": {
+        "date_created": "2025-10-25T01:48:32.000Z",
+        "from": "info@templesf.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Tee Grizzley Takes Over for Day of the Dead 💀 + Feed Me + K‑Pop Nights",
+        "thread_id": "19a190d9707bca6a",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "ppt.bandsintown.com",
+        "count": 1
+      },
+      {
+        "key": "updates.bandsintown.com",
+        "count": 3
+      },
+      {
+        "key": "templesf.com",
+        "count": 1
+      }
+    ]
+  }
+}

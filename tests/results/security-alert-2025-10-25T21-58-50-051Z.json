@@ -1,0 +1,21 @@
+{
+  "case": {
+    "id": "security-alert",
+    "scenario": "User asks to find a Google security alert email",
+    "user_query": "Find the security alert from Google",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Security alert",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "At least one result has subject containing 'Security alert' and from like accounts.google.com"
+  },
+  "search_matches": [],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

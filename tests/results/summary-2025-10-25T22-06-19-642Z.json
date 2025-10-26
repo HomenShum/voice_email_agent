@@ -1,0 +1,98 @@
+{
+  "at": "2025-10-25T22-06-19-642Z",
+  "totals": {
+    "cases": 8,
+    "pass": 0,
+    "fail": 8
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Judge returned non-JSON or unparsable content: "
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-25T22-06-19-642Z.json",
+      "regression_changed": false
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20251115T173000Z
+DTEND:20251116T033000Z
+DTSTAMP:20251024T234843Z
+ORGANIZER;CN="Creators Corner":MAILTO:calendar-invite@lu.ma
+UID:evt-nTZIsruqB1cTzmI@events.lu.ma
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=hshum
+ 2018@gmail.com;X-NUM-GUESTS=0:mailto:hshum2018@gmail.com
+SUMMARY:Self-Evolving Agents Hack
+DESCRIPTION:Get up-to-date information at: https://luma.com/event/evt-nTZI
+ sruqB1cTzmI?pk=g-RUx5Z42nXoY8jB8\n\nAddress:\n300 Montgomery St\nSan Franc
+ isco, California\nUnited States\n\nSelf-Evolving Agents Hackathon\n💥 Bu
+ ild with the future stack of AI.\n🎉 🏆 $50k+ in Prizes!\nHere’s the
+  deal: we’ve lined up powerful integrations so your ideas don’t just s
+ tay ideas — you can bring them all the way to working agents and product
+ s.\n🚀 In just one day, teams will prototype AI copilots, autonomous res
+ earch assistants, real-time data explorers, and creative design agents.\nT
+ he future of intelligent software isn’t coming — you’re building it.
+  ⚡🔥\nJudges\nWe have an incredible list of judges and speakers that w
+ ill be present at the event.\nPaige Bailey - AI Dev Rel Lead @Google…\n
+ \nHosted by CreatorsCorner, Simon Tiu & Saroop Bharwani
+LOCATION:300 Montgomery St, San Francisco, CA 94104, USA
+GEO:37.7922474;-122.4025239
+SEQUENCE:0
+STATUS:CONFIRMED
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

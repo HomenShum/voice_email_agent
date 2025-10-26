@@ -1,0 +1,24 @@
+{
+  "name": "@rtvea/functions",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Azure Functions for Real-time Voice Email Agent backfill",
+  "main": "dist/functions/*.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "smoke:backfill": "node dist/smoke/smokeBackfill.js",
+    "smoke:delta": "node dist/smoke/smokeDelta.js",
+    "smoke:webhook": "node dist/smoke/smokeWebhook.js"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.4.0",
+    "@azure/service-bus": "^7.9.5",
+    "@pinecone-database/pinecone": "^2.2.2",
+    "openai": "^4.57.0"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.3.0",
+    "typescript": "^5.6.2"
+  }
+}
