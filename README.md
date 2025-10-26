@@ -17,11 +17,11 @@ This project implements a production-ready voice agent that allows users to sear
 
 ## 📸 Screenshots
 
-### Voice Agent Interface
-![Voice Agent UI](image/Screenshot%202025-10-25%20175805.png)
-*Real-time voice interaction with email search capabilities*
+### Pinecone Interface
+![Pinecone UI](image/Screenshot%202025-10-25%20175805.png)
+*Email storage and search capabilities*
 
-### Email Search Results
+### Example Search Results
 ![Email Search](image/Screenshot%202025-10-25%20175903.png)
 *Semantic search results with metadata and relevance scoring*
 
