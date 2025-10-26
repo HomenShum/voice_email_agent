@@ -15,6 +15,20 @@ This project implements a production-ready voice agent that allows users to sear
 - **Multi-tenant**: Per-grant session management with Azure Service Bus sessions
 - **Production-Ready**: Application Insights monitoring, webhook verification, exponential backoff
 
+## 📸 Screenshots
+
+### Voice Agent Interface
+![Voice Agent UI](image/Screenshot%202025-10-25%20175805.png)
+*Real-time voice interaction with email search capabilities*
+
+### Email Search Results
+![Email Search](image/Screenshot%202025-10-25%20175903.png)
+*Semantic search results with metadata and relevance scoring*
+
+### System Dashboard
+![Dashboard](image/Screenshot%202025-10-25%20182702.png)
+*Email metrics and system status monitoring*
+
 ## 📊 Current Status
 
 ### ✅ Completed
