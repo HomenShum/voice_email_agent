@@ -11,6 +11,7 @@
     "test:e2e": "node tests/run.mjs"
   },
   "devDependencies": {
+    "azurite": "^3.35.0",
     "typescript": "~5.9.3",
     "vite": "^7.1.7"
   },

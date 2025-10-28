@@ -1,0 +1,21 @@
+{
+  "case": {
+    "id": "attachment-summary",
+    "scenario": "User asks what was in a recent email attachment",
+    "user_query": "What did that recent attachment contain?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "calendar invite attachment summary",
+      "types": [
+        "attachment_file"
+      ],
+      "topK": 5
+    },
+    "expect": "One of the matches should describe an attached file (e.g., calendar invite or image) with key topics or tags."
+  },
+  "search_matches": [],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

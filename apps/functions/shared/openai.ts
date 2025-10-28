@@ -102,6 +102,7 @@ export async function summarizeNotes(notes: NoteForSummary[], hint?: string): Pr
     "1) 3–7 bullet points (actionable).",
     "2) 1 short executive paragraph.",
     "3) Up to 8 searchable tags.",
+    "Preserve proper names and organizations (e.g., OpenAI, Berkeley); include dates and actors when present.",
     hint ? `Hint: ${hint}` : null,
     "",
     ls.join("\n"),
@@ -122,36 +123,76 @@ export async function summarizeNotes(notes: NoteForSummary[], hint?: string): Pr
   return summarizeText(partials.join("\n\n"), finalHint);
 }
 
-// --- Image analysis (use Chat Completions for multimodal until Responses types stabilize) ---
-export async function analyzeImageBuffer(buf: Buffer, mime: string, filename: string): Promise<string> {
+// --- Attachment analysis helpers (Responses API for files & images) ---
+export interface AttachmentAnalysisOptions {
+  filename: string;
+  contentType?: string | null;
+  instructions?: string;
+  forceImageMode?: boolean;
+}
+
+function sanitizeContentType(mime: string | null | undefined, fallback: string) {
+  if (!mime) return fallback;
+  return /^[a-z0-9.+-]+\/[a-z0-9.+-]+$/i.test(mime) ? mime : fallback;
+}
+
+async function analyzeAttachmentWithResponses(buf: Buffer, options: AttachmentAnalysisOptions): Promise<string> {
   if (process.env.SMOKE_TEST === "1") {
-    return `[SMOKE] image analysis for ${filename} (${mime}), ${buf.length} bytes`;
+    const label = options.forceImageMode || options.contentType?.startsWith("image/") ? "image" : "file";
+    return `[SMOKE] ${label} analysis for ${options.filename} (${options.contentType || "unknown"}), ${buf.length} bytes`;
   }
   if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
-  const b64 = buf.toString("base64");
-  const dataUrl = `data:${mime};base64,${b64}`;
-  const chat = await client.chat.completions.create({
+
+  const safeFilename = options.filename || "attachment";
+  const safeMime = sanitizeContentType(
+    options.contentType,
+    options.forceImageMode ? "image/png" : "application/octet-stream"
+  );
+  const dataUrl = `data:${safeMime};base64,${buf.toString("base64")}`;
+  const isImage = options.forceImageMode ?? safeMime.startsWith("image/");
+  const prompt =
+    options.instructions ||
+    (isImage
+      ? `Summarize image "${safeFilename}". Describe the scene briefly, extract key topics, list any action items, and provide up to 8 searchable tags.`
+      : `Summarize file "${safeFilename}". Extract key topics, decision points, action items, and provide up to 8 searchable tags.`);
+
+  const content: any[] = [{ type: "input_text", text: prompt }];
+  if (isImage) {
+    content.push({ type: "input_image", image_url: { url: dataUrl } });
+  } else {
+    content.push({ type: "input_file", filename: safeFilename, file_data: dataUrl });
+  }
+
+  const res = await client.responses.create({
     model: OPENAI_TEXT_MODEL,
-    messages: [
+    input: [
       {
+        type: "message",
         role: "user",
-        content: [
-          { type: "text", text: `Summarize file "${filename}". Extract key topics, action items, and tags.` },
-          { type: "image_url", image_url: { url: dataUrl } },
-        ],
+        content: content as any,
       },
     ],
   });
-  return chat.choices?.[0]?.message?.content ?? "";
+
+  const out = (res.output_text ?? "").trim();
+  return out || JSON.stringify(res, null, 2);
 }
 
-// --- PDF analysis (naive byte-to-ascii extraction + summarization) ---
-export async function analyzePdfBuffer(buf: Buffer, filename: string): Promise<string> {
-  if (process.env.SMOKE_TEST === "1") {
-    return `[SMOKE] pdf analysis for ${filename}, ${buf.length} bytes`;
-  }
-  // Fallback approach without external deps: extract visible ASCII and summarize with chunking to avoid context limits.
+export async function analyzeAttachmentBuffer(buf: Buffer, options: AttachmentAnalysisOptions): Promise<string> {
+  return analyzeAttachmentWithResponses(buf, options);
+}
+
+export async function analyzeImageBuffer(buf: Buffer, mime: string, filename: string): Promise<string> {
+  return analyzeAttachmentWithResponses(buf, {
+    filename,
+    contentType: mime,
+    forceImageMode: true,
+    instructions: `You are helping with email search. Summarize image "${filename}" in 5 concise bullet points, highlight key topics or text, list action items, and finish with up to 8 searchable tags.`,
+  });
+}
+
+async function analyzePdfViaTextExtraction(buf: Buffer, filename: string): Promise<string> {
   const ascii = buf
     .toString("latin1")
     .replace(/[^\x09\x0a\x0d\x20-\x7E]+/g, " ")
@@ -160,18 +201,37 @@ export async function analyzePdfBuffer(buf: Buffer, filename: string): Promise<s
   if (!ascii) return `No extractable text found in ${filename}.`;
 
   const hint = `You are analyzing PDF "${filename}". Provide a concise summary, key topics, action items, and tags. The text was extracted heuristically.`;
-  const maxChunkChars = Number(process.env.PDF_SUMMARY_CHARS || '16000');
+  const maxChunkChars = Number(process.env.PDF_SUMMARY_CHARS || "16000");
 
   if (ascii.length <= maxChunkChars) {
     return summarizeText(ascii, hint);
   }
 
-  // Chunk large PDFs and synthesize a final summary
   const partials: string[] = [];
   for (let i = 0; i < ascii.length; i += maxChunkChars) {
     const chunk = ascii.slice(i, i + maxChunkChars);
     const part = await summarizeText(chunk, `Chunk summary for ${filename}`);
     partials.push(part);
   }
-  return summarizeText(partials.join("\n\n"), `Synthesize final summary for ${filename}. Merge, deduplicate, and format as bullets, paragraph, and tags.`);
+  return summarizeText(
+    partials.join("\n\n"),
+    `Synthesize final summary for ${filename}. Merge, deduplicate, and format as bullets, paragraph, and tags.`
+  );
+}
+
+// --- PDF analysis via Responses API with text-extraction fallback ---
+export async function analyzePdfBuffer(buf: Buffer, filename: string): Promise<string> {
+  if (process.env.SMOKE_TEST === "1") {
+    return `[SMOKE] pdf analysis for ${filename}, ${buf.length} bytes`;
+  }
+  try {
+    return await analyzeAttachmentWithResponses(buf, {
+      filename,
+      contentType: "application/pdf",
+      instructions: `Summarize PDF "${filename}" for email augmentation. Provide concise bullets, decisions, action items, and up to 8 searchable tags.`,
+    });
+  } catch (err) {
+    console.warn?.("[openai] PDF analysis via responses failed, falling back to text extraction", err);
+    return analyzePdfViaTextExtraction(buf, filename);
+  }
 }

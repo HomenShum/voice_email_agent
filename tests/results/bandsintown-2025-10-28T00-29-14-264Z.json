@@ -1,0 +1,113 @@
+{
+  "case": {
+    "id": "bandsintown",
+    "scenario": "User asks band notification summary",
+    "user_query": "Summarize the Bandsintown update",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Bandsintown LANY",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A match referencing LANY or Bandsintown"
+  },
+  "search_matches": [
+    {
+      "id": "199ef12e1b67279f#0",
+      "score": 0.745941222,
+      "metadata": {
+        "date": 1760652616,
+        "email_id": "199ef12e1b67279f",
+        "from": "notifications@ppt.bandsintown.com",
+        "snippet": "Bandsintown - You got a new message from LANY ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "SOFT WORLD TOUR - 2026 - PART 1\n\nREGISTER FOR ...",
+        "thread_id": "199ef12e1b67279f",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.745941222
+    },
+    {
+      "id": "19a03713fa8ea000#0",
+      "score": 0.745349,
+      "metadata": {
+        "date": 1760994344,
+        "email_id": "19a03713fa8ea000",
+        "from": "notifications@ppt.bandsintown.com",
+        "snippet": "Bandsintown - You got a new message from LANY ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "Use code SOFTWORLDTOUR for LANY pre-sale tickets! ...",
+        "thread_id": "19a03713fa8ea000",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.745349
+    },
+    {
+      "id": "19a17dce18deb934#0",
+      "score": 0.745274603,
+      "metadata": {
+        "date": 1761336942,
+        "email_id": "19a17dce18deb934",
+        "from": "notifications@ppt.bandsintown.com",
+        "snippet": "Bandsintown - You got a new message from LANY ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "Soft World Tour Part 1 - tickets available ...",
+        "thread_id": "19a17dce18deb934",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.745274603
+    },
+    {
+      "id": "msg:19a17dce18deb934",
+      "score": 0.666594565,
+      "metadata": {
+        "date_created": "2025-10-24T20:15:42.000Z",
+        "from": "notifications@ppt.bandsintown.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Soft World Tour Part 1 - tickets available ...",
+        "thread_id": "19a17dce18deb934",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.666594565
+    },
+    {
+      "id": "199c28d1145c8d8f#0",
+      "score": 0.64635092,
+      "metadata": {
+        "date": 1759905648,
+        "email_id": "199c28d1145c8d8f",
+        "from": "notifications@welcome.bandsintown.com",
+        "snippet": "Bandsintown - The world's leading concert discovery platform. ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌",
+        "subject": "🤘 Welcome to Bandsintown!",
+        "thread_id": "199c28d1145c8d8f",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.64635092
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "ppt.bandsintown.com",
+        "count": 4
+      },
+      {
+        "key": "welcome.bandsintown.com",
+        "count": 1
+      }
+    ]
+  }
+}

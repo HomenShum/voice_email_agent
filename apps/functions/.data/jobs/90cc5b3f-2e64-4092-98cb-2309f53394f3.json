@@ -1,0 +1,10 @@
+{
+  "jobId": "90cc5b3f-2e64-4092-98cb-2309f53394f3",
+  "grantId": "22dd5c25-157e-4377-af23-e06602fdfcec",
+  "type": "delta",
+  "status": "queued",
+  "processed": 0,
+  "total": 100000,
+  "createdAt": "2025-10-28T01:46:00.025Z",
+  "updatedAt": "2025-10-28T01:46:00.025Z"
+}

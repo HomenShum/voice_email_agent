@@ -83,6 +83,127 @@ Azure Functions
        ├─ Updates Pinecone vectors
        └─ Updates checkpoint per grant
 ```
+## 🧭 Full‑Stack Workflow (ASCII)
+
+This section maps the entire system end‑to‑end across UI, local server, and Azure Functions, including email ingestion, preprocessing (metadata + dense/sparse vectors), retrieval, agent orchestration, and testing.
+
+### High‑Level (Dev + Prod)
+```
+[Browser UI]
+   |\
+   | \--(Dev)--> [Local Server (8787)] -- /nylas/*, /email/search|aggregate|count, /api/realtime/session
+   |            \-> [Pinecone (REST)]
+   |
+   \--(Dev & Prod)--> [Azure Functions (7071/7072 or Cloud)]
+                      - HTTP: /api/user/update-context, /api/sync/delta, /api/search, /api/aggregate,
+                              /api/user/delete, /api/user/sync-progress/:jobId, /api/user/jobs
+                      - Timer: deltaTimer (hourly/minutely dev)
+                      - Queue Worker: backfillWorker (Service Bus sessions)
+                              |
+                              v
+                          [Pinecone SDK]
+```
+
+Notes:
+- UI calls both the Local Server (dev conveniences) and Azure Functions (core pipeline).
+- In production you may disable Local Server and rely solely on Functions.
+
+### Email Pulling → Queue → Worker (Azure Functions)
+```
+(updateContext | deltaStart | deltaTimer)
+        |  (create JobRecord per grant)
+        v
+   [Service Bus Queue]  (sessionId = grantId)
+        |
+        v
+   [backfillWorker]
+      |-- listMessages(grantId, received_after=checkpoint)
+      |-- For each message:
+      |     - Clean/sanitize HTML → text
+      |     - Download + analyze attachments (image/pdf heuristics)
+      |     - Summarize (map-reduce) → message/thread/day/week/month
+      |     - Embed summaries/text (dense)
+      |     - Build metadata (see below)
+      |-- Upsert vectors to Pinecone (message + summaries)
+      |-- setCheckpoint(max(message.date)) per page
+      |-- updateJob(processed, indexedVectors, status)
+```
+
+Key files: functions/updateContext.ts, deltaStart.ts, deltaTimer.ts, backfillWorker.ts, shared/nylas.ts, shared/openai.ts, shared/pinecone.ts, shared/storage.ts
+
+### Metadata Preprocessing (stored in Pinecone metadata)
+- Common:
+  - type: "message" | "thread" | "thread_day" | "thread_week" | "thread_month"
+  - grant_id, email_id, thread_id
+  - subject, from, from_domain, to[]
+  - date (epoch) and date_created (ISO)
+  - labels[], folder
+  - has_attachments, attachment_count, attachment_types[]
+  - snippet (summary excerpt)
+  - day_key | week_key | month_key (for rollups);
+  - summary_scope for rollup vectors
+
+### Dense Vector Pipeline (Implemented)
+```
+[text] -> embedText (OpenAI text-embedding-3-small) -> { id, values: float[], metadata } -> Pinecone upsert
+[query] -> embedText -> Pinecone query(topK, filter) -> matches
+```
+- Functions endpoints: POST /api/search, POST /api/aggregate
+- Local server endpoints: POST /email/search, POST /email/aggregate (REST Pinecone)
+
+### Hybrid Dense + Sparse Pipeline (Implemented)
+```
+[text] -> embedText (OpenAI text-embedding-3-small) + generateSparseEmbedding (pinecone-sparse-english-v0)
+       -> upsertDenseVectors + upsertSparseRecords (separate indexes)
+[query] -> embedText + generateSparseEmbedding -> hybridQuery (dense + sparse)
+       -> RRF/weighted fusion -> matches (score, source, metadata)
+```
+- Functions & local server share helpers in `shared/pinecone.ts`.
+- Requires `PINECONE_DENSE_INDEX_NAME` (or legacy `PINECONE_INDEX_NAME`) and `PINECONE_SPARSE_INDEX_NAME`.
+- Based on Pinecone hybrid search docs (dense + sparse + RRF).
+
+### Retrieval & Search / Aggregation
+```
+POST /api/search (Functions)
+  - embed query
+  - build filter (types, thread_id, bucket, date range)
+  - ns.query({ vector, topK, includeMetadata: true, filter })
+  - return matches (metadata massaged)
+
+POST /api/aggregate (Functions)
+  - embed query
+  - ns.query(sample topK)
+  - group counts by from_domain | thread_id | custom key
+```
+Local server mirrors similar endpoints via Pinecone REST.
+
+### Agent Orchestration (Realtime Voice)
+```
+UI -> POST /api/realtime/session (Local Server)
+      -> obtains ephemeral client_secret for OpenAI Realtime
+UI <-> OpenAI Realtime (gpt-realtime):
+      - Uses tools to call:
+          • /email/search | /email/aggregate | /nylas/* (Local)
+          • /api/search   | /api/aggregate    (Functions)
+      - Streams final response (text/audio)
+```
+
+### E2E Tests + Judge
+```
+/tests/run.mjs
+  - For each case (tests/cases.mjs):
+      • POST /api/search (Functions)
+      • POST /api/aggregate (Functions)
+      • Snapshot results to tests/results/*.json
+      • Judge via tests/judge.mjs (OPENAI_JUDGE_MODEL=gpt-5)
+      • Summary with pass/fail gate
+```
+
+References (validated against official docs):
+- Azure Functions Timer trigger (6-field cron with seconds): https://learn.microsoft.com/azure/azure-functions/functions-bindings-timer
+- Nylas v3 Messages: https://developer.nylas.com/docs/api/v3/ecc/
+- Pinecone Hybrid Search (sparse+dense): https://www.pinecone.io/learn/hybrid-search-intro/
+
 
 ## 🚀 Quick Start
 
@@ -341,6 +462,62 @@ cd apps/functions
 func start
 ```
 
+## ⏱ Local Hourly Verification (dev-mode every minute)
+
+When developing locally, you may want to see a run every minute instead of every hour. Azure Functions timer triggers use a six-field NCRONTAB expression (seconds first). Changing the schedule to "0 * * * * *" triggers once per minute.
+
+### 1) Change the timer schedule (local only)
+Update `apps/functions/functions/deltaTimer.ts` schedule line:
+
+```ts
+schedule: "0 * * * * *", // every minute (local dev)
+```
+
+Revert to hourly when done:
+
+```ts
+schedule: "0 0 * * * *", // top of every hour
+```
+
+### 2) Build and run Functions with timer enabled
+```powershell
+cd apps/functions
+npm run build
+$env:SKIP_TIMER=""; npx func start --port 7072 --verbose
+```
+The Functions host should print the next 5 occurrences of the schedule. (Core Tools handle timer scheduling locally; Azurite is recommended but not strictly required for the timer.)
+
+### 3) Point the frontend to the timer host
+Start (or restart) the frontend with the Functions base set to 7072 so the UI can show the latest hourly/minutely runs:
+```powershell
+$env:VITE_FUNCTIONS_BASE_URL='http://localhost:7072'; npm run dev
+```
+
+### 4) Verify in the UI (Hourly Sync History)
+- Open http://localhost:5175
+- Enter your Nylas API Key + Grant ID, click “Update Voice Agent Context”
+- Watch the “Hourly Sync History” panel update every minute with:
+  - status, processed messages, and vectors indexed
+
+### 5) Verify via REST
+```bash
+curl "http://localhost:7072/api/user/jobs?grantId=<YOUR_GRANT_ID>&limit=10"
+```
+Returns `{ ok: true, jobs: [...] }` sorted newest first.
+
+### 6) Visualization: Hourly/Minutely sync flow
+```mermaid
+flowchart TD
+  T[deltaTimer (schedule)] --> Q[enqueueBackfill → Azure Service Bus]
+  Q --> W[backfillWorker]
+  W --> P[Upsert vectors → Pinecone]
+  W --> J[Update JobRecord → .data/jobs/<jobId>.json]
+  J --> E[GET /api/user/jobs]
+  E --> UI[Frontend “Hourly Sync History”]
+```
+
+References: Azure Functions Timer trigger docs (Node v4 model, six-field schedule): https://learn.microsoft.com/azure/azure-functions/functions-bindings-timer
+
 ## 🚢 Azure Deployment
 
 ### Prerequisites
@@ -570,4 +747,3 @@ MIT
 - Nylas Email API
 - Pinecone Vector Database
 - Azure Functions
-

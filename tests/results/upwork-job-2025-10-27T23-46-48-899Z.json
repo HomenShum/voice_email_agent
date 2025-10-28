@@ -1,0 +1,105 @@
+{
+  "case": {
+    "id": "upwork-job",
+    "scenario": "User asks for the Upwork job alert summary",
+    "user_query": "Summarize the Upwork job alert",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Upwork New job alert",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A result describing an Upwork job alert with brief job info"
+  },
+  "search_matches": [
+    {
+      "id": "19a05e9fd9e33dc4#0",
+      "score": 0.71863842,
+      "metadata": {
+        "date": 1761035811,
+        "email_id": "19a05e9fd9e33dc4",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! N8N Error Resolution Specialist Needed We are seeking a skilled",
+        "subject": "New job: N8N Error Resolution Specialist Needed",
+        "thread_id": "19a05e9fd9e33dc4",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.71863842
+    },
+    {
+      "id": "19a17d6401156255#0",
+      "score": 0.714939117,
+      "metadata": {
+        "date": 1761336508,
+        "email_id": "19a17d6401156255",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Build n8n Workflows (AI & E-commerce Integrations) You'll",
+        "subject": "New job: Build n8n Workflows (AI & E-commerce Integrations)",
+        "thread_id": "19a17d6401156255",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.714939117
+    },
+    {
+      "id": "19a08b94bc153247#0",
+      "score": 0.711633682,
+      "metadata": {
+        "date": 1761082952,
+        "email_id": "19a08b94bc153247",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Build Automations and Agentic Workflows Hi! We are building a",
+        "subject": "New job: Build Automations and Agentic Workflows",
+        "thread_id": "19a08b94bc153247",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.711633682
+    },
+    {
+      "id": "19a05f3ab2f04113#0",
+      "score": 0.710325241,
+      "metadata": {
+        "date": 1761036446,
+        "email_id": "19a05f3ab2f04113",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Claude Code–First Senior Full Stack Developer (Upwork Hourly",
+        "subject": "New job: Claude Code–First Senior Full Stack Developer (Upwork Hourly Tracking Required – No Manual Time)",
+        "thread_id": "19a05f3ab2f04113",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.710325241
+    },
+    {
+      "id": "19a0ed0041cc7439#0",
+      "score": 0.708052695,
+      "metadata": {
+        "date": 1761185105,
+        "email_id": "19a0ed0041cc7439",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! AI Integrator (Automation & Workflow Expert) We are a fast-",
+        "subject": "New job: AI Integrator (Automation & Workflow Expert)",
+        "thread_id": "19a0ed0041cc7439",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.708052695
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "upwork.com",
+        "count": 5
+      }
+    ]
+  }
+}

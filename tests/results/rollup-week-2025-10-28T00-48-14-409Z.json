@@ -1,0 +1,64 @@
+{
+  "case": {
+    "id": "rollup-week",
+    "scenario": "User asks for a weekly rollup for a specific thread",
+    "user_query": "Give me the weekly summary for the OpenAI @ UC Berkeley thread",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "OpenAI UC Berkeley weekly summary",
+      "types": [
+        "thread_week"
+      ],
+      "topK": 5
+    },
+    "expect": "A weekly rollup summary with themes such as 'event', 'OpenAI', 'Berkeley', 'speakers'"
+  },
+  "search_matches": [
+    {
+      "id": "summary:week:2025-W43",
+      "score": 0.512081206,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "type": "summary_week",
+        "week_key": "2025-W43",
+        "summary_text": "- Follow up on active applications and interviews: send brief thank-you/availability notes and request feedback where appropriate (JJA.CO, Sage Care, thrv, Burnt); log outcomes and next steps.\n- Shortlist and apply this week to top job leads: 1–3 tailored LinkedIn/company roles and 2–4 Upwork gigs (focus: AI/GenAI, prompt engineering, agent workflows, n8n/Make automation, RAG/chatbots, full‑stack Python); prepare resume, cover letter, proposals, and portfolio links.\n- Respond to recruiter and networking messages (MaxEleven, Nikhil, LinkedIn connections), confirm calendar slots, and send any requested materials or interview availability.\n- Resolve urgent account/security/finance items: investigate the Google security alert and enable 2FA, confirm Azure free account and billing limits, renew CoveredCA to keep the $0 Silver plan if needed, and reconcile recent payments (Gusto, Venmo, Chase).\n- Register or confirm attendance for priority events and hackathons (TechCrunch Disrupt + CoffeeSpace discount, Vibe AI Workflows Hackathon, Self‑Evolving Agents Hack, AI Dev/BUILD/Pulumi workshops, Pydantic meetup) and secure/confirm ticket logistics for concerts if attending.\n- Complete key admin tasks and platform actions: finish Mercury business credit app if outstanding, claim platform promos/credits (TechCrunch, Windsurf), accept relevant tool invites (Logfire/Streamlit) and evaluate product updates that affect projects (Claude memory, MGX).\n- Tidy inbox and notification noise: create filters for Upwork/job alerts, promos, and newsletters; unsubscribe from low‑value lists; save/read high‑value items (Neo4j newsletter, GPTDAO/OpenAI announcements).\n\nExecutive paragraph\nInbox activity is concentrated on AI/job leads (many Upwork gigs and LinkedIn alerts for GenAI, automation, and full‑stack roles), active application/interview follow‑ups, several time‑sensitive events and hackathons, and a handful of account/security and payment tasks. Priorities for this week are: follow up on viewed and in‑progress applications, quickly shortlist and apply to the best LinkedIn and Upwork opportunities with tailored materials, respond to recruiter and networking messages, resolve security/finance items (Google alert, Azure, CoveredCA, payments), register/confirm event attendance and ticket logistics, and trim inbox noise while saving relevant newsletters and product updates.\n\nSearchable tags (up to 8)\nUpwork, LinkedIn, AI-jobs, applications, events, security, Azure, inbox-cleanup"
+      },
+      "source": "dense",
+      "denseScore": 0.512081206
+    },
+    {
+      "id": "summary:thread_week:19a1c6e8bc98f713:2025-W43",
+      "score": 0.467626631,
+      "metadata": {
+        "bucket": "2025-W43",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "- Follow up on active applications and interviews: send brief thank-you/availability notes and request feedback where appropriate (JJA.CO, Sage Care, thrv, Burnt); log outcomes and next steps.\n- Shortlist and apply this week to top job leads: 1–3 tailored LinkedIn/company roles and 2–4 Upwork gigs (focus: AI/GenAI, prompt engineering, agent workflows, n8n/Make automation, RAG/chatbots, full‑stack Python); prepare resume, cover letter, proposals, and portfolio links.\n- Respond to recruiter and networking messages (MaxEleven, Nikhil, LinkedIn connections), confirm calendar slots, and send any requested materials or interview availability.\n- Resolve urgent account/security/finance items: investigate the Google security alert and enable 2FA, confirm Azure free account and billing limits, renew CoveredCA to keep the $0 Silver plan if needed, and reconcile recent payments (Gusto, Venmo, Chase).\n- Register or confirm attendance for priority events and hackathons (TechCrunch Disrupt + CoffeeSpace discount, Vibe AI Workflows Hackathon, Self‑Evolving Agents Hack, AI Dev/BUILD/Pulumi workshops, Pydantic meetup) and secure/confirm ticket logistics for concerts if attending.\n- Complete key admin tasks and platform actions: finish Mercury business credit app if outstanding, claim platform promos/credits (TechCrunch, Windsurf), accept relevant tool invites (Logfire/Streamlit) and evaluate product updates that affect projects (Claude memory, MGX).\n- Tidy inbox and notification noise: create filters for Upwork/job alerts, promos, and newsletters; unsubscribe from low‑value lists; save/read high‑value items (Neo4j newsletter, GPTDAO/OpenAI announcements).\n\nExecutive paragraph\nInbox activity is concentrated on AI/job leads (many Upwork gigs and LinkedIn alerts for GenAI, automation, and full‑stack roles), active application/interview follow‑ups, several time‑sensitive events and hackathons, and a handful of account/security and payment tasks. Priorities for this week are: follow up on viewed and in‑progress applications, quickly shortlist and apply to the best LinkedIn and Upwork opportunities with tailored materials, respond to recruiter and networking messages, resolve security/finance items (Google alert, Azure, CoveredCA, payments), register/confirm event attendance and ticket logistics, and trim inbox noise while saving relevant newsletters and product updates.\n\nSearchable tags (up to 8)\nUpwork, LinkedIn, AI-jobs, applications, events, security, Azure, inbox-cleanup",
+        "thread_id": "19a1c6e8bc98f713",
+        "type": "thread_week",
+        "week_key": "2025-W43"
+      },
+      "source": "dense",
+      "denseScore": 0.467626631
+    },
+    {
+      "id": "summary:thread_week:19a17f6c6714d2be:2025-W43",
+      "score": 0.436534941,
+      "metadata": {
+        "bucket": "2025-W43",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "- Follow up on active applications and interviews: send brief thank-you/availability notes and request feedback where appropriate (JJA.CO, Sage Care, thrv, Burnt); log outcomes and next steps.\n- Shortlist and apply this week to top job leads: 1–3 tailored LinkedIn/company roles and 2–4 Upwork gigs (focus: AI/GenAI, prompt engineering, agent workflows, n8n/Make automation, RAG/chatbots, full‑stack Python); prepare resume, cover letter, proposals, and portfolio links.\n- Respond to recruiter and networking messages (MaxEleven, Nikhil, LinkedIn connections), confirm calendar slots, and send any requested materials or interview availability.\n- Resolve urgent account/security/finance items: investigate the Google security alert and enable 2FA, confirm Azure free account and billing limits, renew CoveredCA to keep the $0 Silver plan if needed, and reconcile recent payments (Gusto, Venmo, Chase).\n- Register or confirm attendance for priority events and hackathons (TechCrunch Disrupt + CoffeeSpace discount, Vibe AI Workflows Hackathon, Self‑Evolving Agents Hack, AI Dev/BUILD/Pulumi workshops, Pydantic meetup) and secure/confirm ticket logistics for concerts if attending.\n- Complete key admin tasks and platform actions: finish Mercury business credit app if outstanding, claim platform promos/credits (TechCrunch, Windsurf), accept relevant tool invites (Logfire/Streamlit) and evaluate product updates that affect projects (Claude memory, MGX).\n- Tidy inbox and notification noise: create filters for Upwork/job alerts, promos, and newsletters; unsubscribe from low‑value lists; save/read high‑value items (Neo4j newsletter, GPTDAO/OpenAI announcements).\n\nExecutive paragraph\nInbox activity is concentrated on AI/job leads (many Upwork gigs and LinkedIn alerts for GenAI, automation, and full‑stack roles), active application/interview follow‑ups, several time‑sensitive events and hackathons, and a handful of account/security and payment tasks. Priorities for this week are: follow up on viewed and in‑progress applications, quickly shortlist and apply to the best LinkedIn and Upwork opportunities with tailored materials, respond to recruiter and networking messages, resolve security/finance items (Google alert, Azure, CoveredCA, payments), register/confirm event attendance and ticket logistics, and trim inbox noise while saving relevant newsletters and product updates.\n\nSearchable tags (up to 8)\nUpwork, LinkedIn, AI-jobs, applications, events, security, Azure, inbox-cleanup",
+        "thread_id": "19a17f6c6714d2be",
+        "type": "thread_week",
+        "week_key": "2025-W43"
+      },
+      "source": "dense",
+      "denseScore": 0.436534941
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

@@ -12,9 +12,9 @@
     "smoke:webhook": "node dist/smoke/smokeWebhook.js"
   },
   "dependencies": {
-    "@azure/functions": "^4.4.0",
+    "@azure/functions": "^4.8.0",
     "@azure/service-bus": "^7.9.5",
-    "@pinecone-database/pinecone": "^2.2.2",
+    "@pinecone-database/pinecone": "^6.1.2",
     "openai": "^4.57.0"
   },
   "devDependencies": {

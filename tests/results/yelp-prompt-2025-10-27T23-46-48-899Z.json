@@ -1,0 +1,110 @@
+{
+  "case": {
+    "id": "yelp-prompt",
+    "scenario": "User asks what Yelp wanted",
+    "user_query": "What did Yelp ask me to do recently?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Yelp review",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "It should mention Yelp asking for a review"
+  },
+  "search_matches": [
+    {
+      "id": "19a0fd4af258b0eb#0",
+      "score": 0.40608412,
+      "metadata": {
+        "date": 1761202188,
+        "email_id": "19a0fd4af258b0eb",
+        "from": "no-reply@amazon.com",
+        "snippet": "Your opinion matters! Seller Vita Bloom Labs requests you to share your experience for your recent order with other Amazon shoppers. Please take a moment to review your recent Amazon purchase. 114-",
+        "subject": "Did your recent Amazon order meet your expectations? Review it on Amazon",
+        "thread_id": "19a0fd4af258b0eb",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.40608412
+    },
+    {
+      "id": "19a07c070cb14c04#0",
+      "score": 0.401087821,
+      "metadata": {
+        "date": 1761066643,
+        "email_id": "19a07c070cb14c04",
+        "from": "no-reply@amazon.com",
+        "snippet": "Your opinion matters! Seller Banyan Botanicals requests you to share your experience for your recent order with other Amazon shoppers. Please take a moment to review your recent Amazon purchase. 114-",
+        "subject": "Did your recent Amazon order meet your expectations? Review it on Amazon",
+        "thread_id": "19a07c070cb14c04",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.401087821
+    },
+    {
+      "id": "19a17dd7d886104a#0",
+      "score": 0.399179518,
+      "metadata": {
+        "date": 1761336982,
+        "email_id": "19a17dd7d886104a",
+        "from": "no-reply@mail.yelp.com",
+        "snippet": "Don't just save it for the group chat—write a review, Homen!͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Wait, how was Beastea? 💭",
+        "thread_id": "19a17dd7d886104a",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.399179518
+    },
+    {
+      "id": "19a0e06add603c64#0",
+      "score": 0.335407287,
+      "metadata": {
+        "date": 1761171917,
+        "email_id": "19a0e06add603c64",
+        "from": "hshum2018@gmail.com",
+        "snippet": "Hi Jamie, No worries, thank you for the update! Hope you had a great time during your vacation!!! Best regards, Homen Shum CafeCorner LLC | (408) 333-5386 I Hshum2018@gmail.com On Wed, Oct 22, 2025 at",
+        "subject": "Re: Invoice & Timesheet – Homen Shum (Apr 28 – May 31, 2025)",
+        "thread_id": "19737ced0c23c25e",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.335407287
+    },
+    {
+      "id": "19a1cc035932e2db#0",
+      "score": 0.334932387,
+      "metadata": {
+        "date": 1761418949,
+        "email_id": "19a1cc035932e2db",
+        "from": "jobs-noreply@linkedin.com",
+        "snippet": "Your application was viewed by JJA.CO ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ",
+        "subject": "Your application was viewed by JJA.CO",
+        "thread_id": "19a1cc035932e2db",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.334932387
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "mail.yelp.com",
+        "count": 2
+      },
+      {
+        "key": "google.com",
+        "count": 1
+      },
+      {
+        "key": "booksy.com",
+        "count": 2
+      }
+    ]
+  }
+}

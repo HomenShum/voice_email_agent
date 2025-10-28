@@ -1,0 +1,64 @@
+{
+  "case": {
+    "id": "rollup-week",
+    "scenario": "User asks for a weekly rollup for a specific thread",
+    "user_query": "Give me the weekly summary for the OpenAI @ UC Berkeley thread",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "OpenAI UC Berkeley weekly summary",
+      "types": [
+        "thread_week"
+      ],
+      "topK": 5
+    },
+    "expect": "A weekly rollup summary with themes such as 'event', 'OpenAI', 'Berkeley', 'speakers'"
+  },
+  "search_matches": [
+    {
+      "id": "summary:thread_week:19a17f6c6714d2be:2025-W43",
+      "score": 0.469137251,
+      "metadata": {
+        "bucket": "2025-W43",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "1) Actionable bullet points\n- Note duplicate emails (both timestamped 2025-10-24T20:44:00.000Z) from kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com with subject \"OpenAI @ UC Berkeley\" / \"Email from GPTDAO\" — log as duplicates in thread 19a17f6c6714d2be (2025-W43).\n- Contact Kris Wang / GPTDAO (kriswang-gptdao.ai@shared1.ccsend.com) to request the complete email body or event details (the snippets only contain CSS comments).\n- If this is for a signup landing page, review the landing page CSS to confirm the intent to hide .layout--email_signup_fineprint and ensure compliance with disclosure/consent requirements.\n- Confirm whether this message pertains to an OpenAI @ UC Berkeley event; if so, coordinate with UC Berkeley and OpenAI contacts to obtain event date/time, RSVP flow, and public copy.\n- Mark mailing-list/mailer configuration for potential issue (duplicate sends) and ask the sender to verify distribution settings.\n\n2) Executive paragraph\nTwo duplicate emails dated 2025-10-24T20:44:00.000Z were sent from kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com with the subject \"OpenAI @ UC Berkeley\" (labeled \"Email from GPTDAO\"), but the captured content only contains CSS comment/snippet instructions about hiding .layout--email_signup_fineprint on a signup landing page. Follow up with Kris Wang / GPTDAO to request the full message and confirm whether this concerns an OpenAI @ UC Berkeley event; meanwhile, review the landing-page CSS for disclosure compliance and flag the duplicate send for the mailing-list owner.\n\n3) Searchable tags (up to 8)\nOpenAI, UC Berkeley, GPTDAO, Kris Wang, Email, Signup landing page, CSS (.layout--email_signup_fineprint), 2025-10-24",
+        "thread_id": "19a17f6c6714d2be",
+        "type": "thread_week",
+        "week_key": "2025-W43"
+      },
+      "source": "dense",
+      "denseScore": 0.469137251
+    },
+    {
+      "id": "summary:thread_week:19a1c6e8bc98f713:2025-W43",
+      "score": 0.462785751,
+      "metadata": {
+        "bucket": "2025-W43",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "1) Actionable bullets\n- On 2025-10-25, kriswang-gptdao.ai@shared1.ccsend.com (Kris Wang / GPTDAO) sent duplicated emails to hshum2018@gmail.com with subject \"OpenAI @ UC Berkeley :: Email from GPTDAO\" — confirm receipt with recipient H. Shum and whether this was intentional.\n- Ask Kris Wang / GPTDAO to resend the correct HTML/email content (the sent message contains raw CSS/comment fragments about .layout--email_signup_fineprint and looks malformed).\n- Fix the email/template: ensure the signup-landing-page CSS handles .layout--email_signup_fineprint correctly (show/hide as intended) and remove stray comment fragments before sending.\n- Investigate why two identical sends occurred at the same timestamp (2025-10-25T17:33:18.000Z) and apply mailing-list deduplication or delivery logging to prevent duplicates.\n- Verify that signup landing-page links, fine print, and rendering work across major mail clients and that the OpenAI @ UC Berkeley event info displays properly.\n- If this was an event/announcement, confirm event details and next steps with OpenAI, UC Berkeley contacts and with GPTDAO for any required follow-up or corrections.\n\n2) Executive paragraph\nOn 2025-10-25, Kris Wang (kriswang-gptdao.ai@shared1.ccsend.com) sent duplicated, malformed emails to H. Shum (hshum2018@gmail.com) titled \"OpenAI @ UC Berkeley :: Email from GPTDAO\" that contain raw CSS/comments (notably .layout--email_signup_fineprint). Recommend asking GPTDAO to resend corrected content, patch the email template to handle signup fine print and rendering, investigate duplicate delivery at 2025-10-25T17:33:18.000Z, and confirm recipients and event follow-up with OpenAI and UC Berkeley contacts.\n\n3) Searchable tags (up to 8)\n- OpenAI\n- UC Berkeley\n- GPTDAO\n- Kris Wang\n- H. Shum (hshum2018@gmail.com)\n- 2025-10-25\n- Email/template issue\n- thread-19a1c6e8bc98f713",
+        "thread_id": "19a1c6e8bc98f713",
+        "type": "thread_week",
+        "week_key": "2025-W43"
+      },
+      "source": "dense",
+      "denseScore": 0.462785751
+    },
+    {
+      "id": "summary:week:2025-W43",
+      "score": 0.512029707,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "type": "summary_week",
+        "week_key": "2025-W43",
+        "summary_text": "- Follow up on active applications and interviews: send brief thank-you/availability notes and request feedback where appropriate (JJA.CO, Sage Care, thrv, Burnt); log outcomes and next steps.\n- Shortlist and apply this week to top job leads: 1–3 tailored LinkedIn/company roles and 2–4 Upwork gigs (focus: AI/GenAI, prompt engineering, agent workflows, n8n/Make automation, RAG/chatbots, full‑stack Python); prepare resume, cover letter, proposals, and portfolio links.\n- Respond to recruiter and networking messages (MaxEleven, Nikhil, LinkedIn connections), confirm calendar slots, and send any requested materials or interview availability.\n- Resolve urgent account/security/finance items: investigate the Google security alert and enable 2FA, confirm Azure free account and billing limits, renew CoveredCA to keep the $0 Silver plan if needed, and reconcile recent payments (Gusto, Venmo, Chase).\n- Register or confirm attendance for priority events and hackathons (TechCrunch Disrupt + CoffeeSpace discount, Vibe AI Workflows Hackathon, Self‑Evolving Agents Hack, AI Dev/BUILD/Pulumi workshops, Pydantic meetup) and secure/confirm ticket logistics for concerts if attending.\n- Complete key admin tasks and platform actions: finish Mercury business credit app if outstanding, claim platform promos/credits (TechCrunch, Windsurf), accept relevant tool invites (Logfire/Streamlit) and evaluate product updates that affect projects (Claude memory, MGX).\n- Tidy inbox and notification noise: create filters for Upwork/job alerts, promos, and newsletters; unsubscribe from low‑value lists; save/read high‑value items (Neo4j newsletter, GPTDAO/OpenAI announcements).\n\nExecutive paragraph\nInbox activity is concentrated on AI/job leads (many Upwork gigs and LinkedIn alerts for GenAI, automation, and full‑stack roles), active application/interview follow‑ups, several time‑sensitive events and hackathons, and a handful of account/security and payment tasks. Priorities for this week are: follow up on viewed and in‑progress applications, quickly shortlist and apply to the best LinkedIn and Upwork opportunities with tailored materials, respond to recruiter and networking messages, resolve security/finance items (Google alert, Azure, CoveredCA, payments), register/confirm event attendance and ticket logistics, and trim inbox noise while saving relevant newsletters and product updates.\n\nSearchable tags (up to 8)\nUpwork, LinkedIn, AI-jobs, applications, events, security, Azure, inbox-cleanup"
+      },
+      "source": "dense",
+      "denseScore": 0.512029707
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

@@ -1,4 +1,19 @@
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+
+function loadAzureFunctionsRuntime(): any {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const path = require("path");
+  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require(realDir);
+  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require("@azure/functions");
+  }
+}
+
+const { app } = loadAzureFunctionsRuntime();
 import crypto from "node:crypto";
 import { enqueueBackfill } from "../shared/bus";
 
@@ -16,7 +31,7 @@ app.http("nylasWebhook", {
   handler: async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     try {
       if (req.method === "GET") {
-        const challenge = (req.query.get("challenge") || "").trim();
+        const challenge = (req.query.get("challenge") || req.query.get("nylas_challenge") || req.query.get("hub.challenge") || "").toString().trim();
         if (!challenge) return bad("Missing challenge");
         // Nylas expects exact value echoed back with 200 OK
         return { status: 200, body: challenge, headers: { "content-type": "text/plain" } };

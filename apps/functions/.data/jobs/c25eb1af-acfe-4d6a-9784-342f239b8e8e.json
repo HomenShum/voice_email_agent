@@ -1,0 +1,11 @@
+{
+  "jobId": "c25eb1af-acfe-4d6a-9784-342f239b8e8e",
+  "grantId": "grant-smoke",
+  "type": "delta",
+  "status": "error",
+  "processed": 0,
+  "total": 100000,
+  "createdAt": "2025-10-28T02:08:00.642Z",
+  "updatedAt": "2025-10-28T02:08:01.211Z",
+  "message": "Nylas API error 401: {\"request_id\":\"464158377-f4e9618c-1b5d-4d5a-8170-b5577c4fdf00\",\"error\":{\"type\":\"token.unauthorized_access\",\"message\":\"Bearer token invalid\"}}\n"
+}

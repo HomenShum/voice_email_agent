@@ -1,0 +1,106 @@
+{
+  "case": {
+    "id": "security-alert",
+    "scenario": "User asks to find a Google security alert email",
+    "user_query": "Find the security alert from Google",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Security alert",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "At least one result has subject containing 'Security alert' and from like accounts.google.com"
+  },
+  "search_matches": [
+    {
+      "id": "19a0dc1816413f94#0",
+      "score": 0.392290115,
+      "metadata": {
+        "date": 1761167376,
+        "email_id": "19a0dc1816413f94",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! AI Agent Development for Cybersecurity Workflow We are currently",
+        "subject": "New job: AI Agent Development for Cybersecurity Workflow",
+        "thread_id": "19a0dc1816413f94",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.392290115
+    },
+    {
+      "id": "19a089f917a106ea#0",
+      "score": 0.375291824,
+      "metadata": {
+        "date": 1761081266,
+        "email_id": "19a089f917a106ea",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Production-Ready Deployment Infrastructure (Mac/Windows Launcher",
+        "subject": "New job: Production-Ready Deployment Infrastructure (Mac/Windows Launchers + Desktop App)",
+        "thread_id": "19a08386feae24a9",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.375291824
+    },
+    {
+      "id": "19a08386feae24a9#0",
+      "score": 0.375080109,
+      "metadata": {
+        "date": 1761074507,
+        "email_id": "19a08386feae24a9",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Production-Ready Deployment Infrastructure (Mac/Windows Launcher",
+        "subject": "New job: Production-Ready Deployment Infrastructure (Mac/Windows Launchers + Desktop App)",
+        "thread_id": "19a08386feae24a9",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.375080109
+    },
+    {
+      "id": "19a14c309388477d#0",
+      "score": 0.368591338,
+      "metadata": {
+        "date": 1761284917,
+        "email_id": "19a14c309388477d",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! AI prompt engenier (urgent) READ in full, and DON'T use AI to",
+        "subject": "New job: AI prompt engenier (urgent)",
+        "thread_id": "19a14c309388477d",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.368591338
+    },
+    {
+      "id": "19a0cdfbf4cfd9ee#0",
+      "score": 0.366025954,
+      "metadata": {
+        "date": 1761152581,
+        "email_id": "19a0cdfbf4cfd9ee",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! AI Enhancement & Response Formatting Specialist for unLocked",
+        "subject": "New job: AI Enhancement & Response Formatting Specialist for unLocked AI (Built in Lovable)",
+        "thread_id": "19a0cdfbf4cfd9ee",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.366025954
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "accounts.google.com",
+        "count": 4
+      },
+      {
+        "key": "chase.com",
+        "count": 1
+      }
+    ]
+  }
+}

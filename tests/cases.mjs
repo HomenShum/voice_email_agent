@@ -93,5 +93,37 @@ export const CASES = [
     expect:
       "Results include only items after the last received_after checkpoint; minimal overlap with already processed items",
   },
+  {
+    id: "attachment-summary",
+    scenario: "User asks which recent emails included attachments",
+    user_query: "Which emails had attachments recently?",
+    namespace: "22dd5c25-157e-4377-af23-e06602fdfcec",
+    search: {
+      query: "calendar invite attachment",
+      types: ["message", "email"],
+      topK: 10,
+    },
+    expect:
+      "At least one match indicates the email had attachments and exposes attachment-related metadata.",
+    assert({ matches }) {
+      const withAttachment = (matches || []).find((m) => {
+        const meta = m?.metadata || {};
+        return (
+          String(meta?.type || "").match(/message|email/i) &&
+          meta.has_attachments === true
+        );
+      });
+      if (!withAttachment) {
+        throw new Error("Expected a message result with has_attachments=true");
+      }
+      const meta = withAttachment.metadata || {};
+      if (
+        typeof meta.message_id === "undefined" &&
+        typeof meta.email_id === "undefined" &&
+        typeof meta.thread_id === "undefined"
+      ) {
+        throw new Error("Attachment-bearing message missing identifier metadata (message/email/thread)");
+      }
+    },
+  },
 ];
-

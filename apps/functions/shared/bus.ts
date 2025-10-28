@@ -7,6 +7,7 @@ export interface BackfillJob {
   pageToken?: string;
   attempt?: number; // exponential backoff attempt count
   processed?: number; // total processed so far
+  jobId?: string; // optional tracking id for UI progress
 }
 
 const SB_CONNECTION = process.env.SERVICEBUS_CONNECTION;

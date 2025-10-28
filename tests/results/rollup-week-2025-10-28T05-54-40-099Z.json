@@ -1,0 +1,119 @@
+{
+  "case": {
+    "id": "rollup-week",
+    "scenario": "User asks for a weekly rollup for a specific thread",
+    "user_query": "Give me the weekly summary for the OpenAI @ UC Berkeley thread",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "OpenAI UC Berkeley weekly summary",
+      "types": [
+        "thread_week"
+      ],
+      "topK": 5
+    },
+    "expect": "A weekly rollup summary with themes such as 'event', 'OpenAI', 'Berkeley', 'speakers'"
+  },
+  "search_matches": [
+    {
+      "id": "summary:week:2025-W43",
+      "score": 0.512081206,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "type": "summary_week",
+        "week_key": "2025-W43",
+        "summary_kind": "week",
+        "summary_key": "2025-W43",
+        "summary_source": "file",
+        "summary_text": "- Follow up on active applications and interviews: send brief thank-you/availability notes and request feedback where appropriate (JJA.CO, Sage Care, thrv, Burnt); log outcomes and next steps.\n- Shortlist and apply this week to top job leads: 1–3 tailored LinkedIn/company roles and 2–4 Upwork gigs (focus: AI/GenAI, prompt engineering, agent workflows, n8n/Make automation, RAG/chatbots, full‑stack Python); prepare resume, cover letter, proposals, and portfolio links.\n- Respond to recruiter and networking messages (MaxEleven, Nikhil, LinkedIn connections), confirm calendar slots, and send any requested materials or interview availability.\n- Resolve urgent account/security/finance items: investigate the Google security alert and enable 2FA, confirm Azure free account and billing limits, renew CoveredCA to keep the $0 Silver plan if needed, and reconcile recent payments (Gusto, Venmo, Chase).\n- Register or confirm attendance for priority events and hackathons (TechCrunch Disrupt + CoffeeSpace discount, Vibe AI Workflows Hackathon, Self‑Evolving Agents Hack, AI Dev/BUILD/Pulumi workshops, Pydantic meetup) and secure/confirm ticket logistics for concerts if attending.\n- Complete key admin tasks and platform actions: finish Mercury business credit app if outstanding, claim platform promos/credits (TechCrunch, Windsurf), accept relevant tool invites (Logfire/Streamlit) and evaluate product updates that affect projects (Claude memory, MGX).\n- Tidy inbox and notification noise: create filters for Upwork/job alerts, promos, and newsletters; unsubscribe from low‑value lists; save/read high‑value items (Neo4j newsletter, GPTDAO/OpenAI announcements).\n\nExecutive paragraph\nInbox activity is concentrated on AI/job leads (many Upwork gigs and LinkedIn alerts for GenAI, automation, and full‑stack roles), active application/interview follow‑ups, several time‑sensitive events and hackathons, and a handful of account/security and payment tasks. Priorities for this week are: follow up on viewed and in‑progress applications, quickly shortlist and apply to the best LinkedIn and Upwork opportunities with tailored materials, respond to recruiter and networking messages, resolve security/finance items (Google alert, Azure, CoveredCA, payments), register/confirm event attendance and ticket logistics, and trim inbox noise while saving relevant newsletters and product updates.\n\nSearchable tags (up to 8)\nUpwork, LinkedIn, AI-jobs, applications, events, security, Azure, inbox-cleanup",
+        "week_start_iso": "2025-10-20T00:00:00.000Z",
+        "week_end_iso": "2025-10-26T23:59:59.999Z"
+      },
+      "source": "dense",
+      "denseScore": 0.512081206
+    },
+    {
+      "id": "summary:thread_week:19a27b31737035c1:2025-W44",
+      "score": 0.4936257,
+      "metadata": {
+        "bucket": "2025-W44",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "Bullet points (actionable)\n- Urgent: Purchase remaining tickets before the 15% off promotion ends tonight (email sent 2025-10-27 by Kris Wang via kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com). Only ~50 tickets left.\n- Register for GPTDAO / AI Investment Summit 2025 — live Sunday, Nov 2, 2025 at UC Berkeley (genaisummit.ai) to secure Student Pass ($69) or Industry Pass ($169) pricing while inventory lasts.\n- Note featured speaker Julia Villagra (OpenAI Advisor; former OpenAI Chief People Officer) is scheduled to speak live — consider highlighting her session in promotion or scheduling.\n- Confirm logistics: event includes complimentary lunch and expects 1,200+ founders and investors — plan travel, badges, or meeting slots accordingly.\n- If you need press/partnership or special accommodations, contact the GPTDAO & AI Investment Summit 2025 Team (signed by Kris Wang) via genaisummit.ai immediately.\n- Share this final‑call offer with students, investors, or colleagues who may want the discounted passes before tonight’s deadline.\n\nExecutive summary (short)\nAn email from Kris Wang (kriswang-gptdao.ai@shared1.ccsend.com) to hshum2018@gmail.com on 2025-10-27 announces a final‑call 15% off promotion for the GPTDAO / AI Investment Summit 2025 (genaisummit.ai), a live event on Sunday, Nov 2, 2025 at UC Berkeley; roughly 50 tickets remain, last student passes are $69 and industry passes $169, complimentary lunch is provided, and speakers include Julia Villagra (OpenAI Advisor; former OpenAI Chief People Officer).\n\nSearchable tags (up to 8)\nGPTDAO; AI Investment Summit 2025; UC Berkeley; Julia Villagra; Kris Wang; genaisummit.ai; tickets; 2025-11-02",
+        "thread_id": "19a27b31737035c1",
+        "type": "thread_week",
+        "week_key": "2025-W44",
+        "summary_kind": "thread",
+        "summary_key": "19a27b31737035c1@2025-W44",
+        "summary_source": "metadata",
+        "week_start_iso": "2025-10-27T00:00:00.000Z",
+        "week_end_iso": "2025-11-02T23:59:59.999Z"
+      },
+      "source": "dense",
+      "denseScore": 0.4936257
+    },
+    {
+      "id": "summary:thread_week:19a26a164dfa6033:2025-W44",
+      "score": 0.492301971,
+      "metadata": {
+        "bucket": "2025-W44",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "1) Actionable bullet points\n- Buy tickets ASAP: only 100 tickets remain for the GPTDAO / AI Investment Summit 2025 — use the limited 15% off promotion before sellout.\n- Note event logistics: Sunday, Nov 2, 2025 — live at UC Berkeley; one-day AI & VC summit.\n- Pricing and passes: last few Student Passes $69; last few Industry Passes $169 — complimentary lunch included.\n- Organizer/contact: email sent by Kris Wang on behalf of GPTDAO & the AI Investment Summit 2025 Team (kriswang-gptdao.ai@shared1.ccsend.com → hshum2018@gmail.com, 2025-10-27T17:05:02.000Z); event website: genaisummit.ai.\n- Promote to networks: share with students, investors, and VC/AI leaders who may want in-person access before tickets sell out.\n\n2) Executive paragraph\nWeekly rollup (2025-W44, thread 19a26a164dfa6033): A promotional email from Kris Wang (kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com, 2025-10-27T17:05:02Z) warns that only 100 tickets remain for the GPTDAO / AI Investment Summit 2025, a one-day AI & VC event live at UC Berkeley on Sunday, Nov 2, 2025; a limited 15% off promotion is available, with last few Student Passes at $69 and Industry Passes at $169, complimentary lunch included — register via genaisummit.ai.\n\n3) Searchable tags (up to 8)\nGPTDAO; AI Investment Summit 2025; UC Berkeley; Kris Wang; Nov 2 2025; genaisummit.ai; tickets/discount; 2025-10-27 (email)",
+        "thread_id": "19a26a164dfa6033",
+        "type": "thread_week",
+        "week_key": "2025-W44",
+        "summary_kind": "thread",
+        "summary_key": "19a26a164dfa6033@2025-W44",
+        "summary_source": "metadata",
+        "week_start_iso": "2025-10-27T00:00:00.000Z",
+        "week_end_iso": "2025-11-02T23:59:59.999Z"
+      },
+      "source": "dense",
+      "denseScore": 0.492301971
+    },
+    {
+      "id": "summary:thread_week:19a25c5d233b6a62:2025-W44",
+      "score": 0.482181579,
+      "metadata": {
+        "bucket": "2025-W44",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "1) Actionable bullet points\n- Register for the virtual webinar \"Deepchecks x AWS Webinar: Building Trustworthy AI Agents\" — Nov 12, 2025 at 08:00 AM PST; add to your calendar. (Event announced via info@deepchecks.com on 2025-10-27T13:05:13.000Z.)\n- Plan to attend demos on building reliable agentic systems using Amazon SageMaker presented by AWS speakers David Oh and Jia You.\n- Watch the Deepchecks demo of the Deepchecks LLM Evaluation platform (Deepchecks speaker listed as Phi — confirm full name if needed).\n- Prepare technical questions/topics on validation, evaluation, and reliability of agentic AI systems for the Q&A.\n- Share the invite with ML engineering, MLOps, and compliance/risk teams who work on agentic LLM deployments.\n- For details or follow-up, contact info@deepchecks.com or the event organizers (Deepchecks + AWS).\n\n2) Executive paragraph\nWeekly thread rollup 2025-W44 (thread 19a25c5d233b6a62): Deepchecks and AWS are co-hosting a technical webinar titled \"Building Trustworthy AI Agents\" on November 12, 2025 at 08:00 AM PST (announced 2025-10-27T13:05:13.000Z). AWS speakers David Oh and Jia You will demonstrate how to build reliable agentic systems on Amazon SageMaker, and Deepchecks will demo its LLM Evaluation platform (speaker listed as Phi). The session covers technical foundations for building, validating, and evaluating agentic AI systems; registration is available and the event is virtual.\n\n3) Searchable tags (up to 8)\nDeepchecks; AWS; Amazon SageMaker; Deepchecks LLM Evaluation; Agentic AI; Webinar; David Oh; Jia You",
+        "thread_id": "19a25c5d233b6a62",
+        "type": "thread_week",
+        "week_key": "2025-W44",
+        "summary_kind": "thread",
+        "summary_key": "19a25c5d233b6a62@2025-W44",
+        "summary_source": "metadata",
+        "week_start_iso": "2025-10-27T00:00:00.000Z",
+        "week_end_iso": "2025-11-02T23:59:59.999Z"
+      },
+      "source": "dense",
+      "denseScore": 0.482181579
+    },
+    {
+      "id": "summary:thread_week:19a17f6c6714d2be:2025-W43",
+      "score": 0.469268858,
+      "metadata": {
+        "bucket": "2025-W43",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "summary_scope": "thread_week",
+        "summary_text": "1) Actionable bullet points\n- Note duplicate emails (both timestamped 2025-10-24T20:44:00.000Z) from kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com with subject \"OpenAI @ UC Berkeley\" / \"Email from GPTDAO\" — log as duplicates in thread 19a17f6c6714d2be (2025-W43).\n- Contact Kris Wang / GPTDAO (kriswang-gptdao.ai@shared1.ccsend.com) to request the complete email body or event details (the snippets only contain CSS comments).\n- If this is for a signup landing page, review the landing page CSS to confirm the intent to hide .layout--email_signup_fineprint and ensure compliance with disclosure/consent requirements.\n- Confirm whether this message pertains to an OpenAI @ UC Berkeley event; if so, coordinate with UC Berkeley and OpenAI contacts to obtain event date/time, RSVP flow, and public copy.\n- Mark mailing-list/mailer configuration for potential issue (duplicate sends) and ask the sender to verify distribution settings.\n\n2) Executive paragraph\nTwo duplicate emails dated 2025-10-24T20:44:00.000Z were sent from kriswang-gptdao.ai@shared1.ccsend.com to hshum2018@gmail.com with the subject \"OpenAI @ UC Berkeley\" (labeled \"Email from GPTDAO\"), but the captured content only contains CSS comment/snippet instructions about hiding .layout--email_signup_fineprint on a signup landing page. Follow up with Kris Wang / GPTDAO to request the full message and confirm whether this concerns an OpenAI @ UC Berkeley event; meanwhile, review the landing-page CSS for disclosure compliance and flag the duplicate send for the mailing-list owner.\n\n3) Searchable tags (up to 8)\nOpenAI, UC Berkeley, GPTDAO, Kris Wang, Email, Signup landing page, CSS (.layout--email_signup_fineprint), 2025-10-24",
+        "thread_id": "19a17f6c6714d2be",
+        "type": "thread_week",
+        "week_key": "2025-W43",
+        "summary_kind": "thread",
+        "summary_key": "19a17f6c6714d2be@2025-W43",
+        "summary_source": "metadata",
+        "week_start_iso": "2025-10-20T00:00:00.000Z",
+        "week_end_iso": "2025-10-26T23:59:59.999Z"
+      },
+      "source": "dense",
+      "denseScore": 0.469268858
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "jobId": "32b866ee-2ac3-4936-9633-ef5fa8b61379",
+  "grantId": "grant-smoke",
+  "type": "delta",
+  "status": "error",
+  "processed": 0,
+  "total": 100000,
+  "createdAt": "2025-10-28T02:02:00.582Z",
+  "updatedAt": "2025-10-28T02:02:01.171Z",
+  "message": "Nylas API error 503: \n"
+}

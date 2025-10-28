@@ -1,0 +1,33 @@
+{
+  "case": {
+    "id": "rollup-week",
+    "scenario": "User asks for a weekly rollup for a specific thread",
+    "user_query": "Give me the weekly summary for the OpenAI @ UC Berkeley thread",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "OpenAI UC Berkeley weekly summary",
+      "types": [
+        "thread_week"
+      ],
+      "topK": 5
+    },
+    "expect": "A weekly rollup summary with themes such as 'event', 'OpenAI', 'Berkeley', 'speakers'"
+  },
+  "search_matches": [
+    {
+      "id": "summary:week:2025-W43",
+      "score": 0.512081206,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "type": "summary_week",
+        "week_key": "2025-W43"
+      },
+      "source": "dense",
+      "denseScore": 0.512081206
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

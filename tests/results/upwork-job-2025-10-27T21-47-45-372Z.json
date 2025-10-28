@@ -1,0 +1,100 @@
+{
+  "case": {
+    "id": "upwork-job",
+    "scenario": "User asks for the Upwork job alert summary",
+    "user_query": "Summarize the Upwork job alert",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Upwork New job alert",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A result describing an Upwork job alert with brief job info"
+  },
+  "search_matches": [
+    {
+      "id": "199bf12f89737aad#0",
+      "score": 0.732301712,
+      "values": [],
+      "metadata": {
+        "date": 1759847315,
+        "email_id": "199bf12f89737aad",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! n8n workflow: improvement of an automated HeyGen news bulletin W",
+        "subject": "New job: n8n workflow: improvement of an automated HeyGen news bulletin",
+        "thread_id": "199bf12f89737aad",
+        "type": "message"
+      }
+    },
+    {
+      "id": "199e844ca1faf0e6#0",
+      "score": 0.727558136,
+      "values": [],
+      "metadata": {
+        "date": 1760538446,
+        "email_id": "199e844ca1faf0e6",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Subscription and AI-Powered Platform — Full SaaS Build NOTE:",
+        "subject": "New job: Subscription and AI-Powered Platform — Full SaaS Build",
+        "thread_id": "199e844ca1faf0e6",
+        "type": "message"
+      }
+    },
+    {
+      "id": "199bca61004cdb2f#0",
+      "score": 0.726739943,
+      "values": [],
+      "metadata": {
+        "date": 1759806623,
+        "email_id": "199bca61004cdb2f",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Al & Software Implementor (Client Onboarding + API",
+        "subject": "New job: Al & Software Implementor (Client Onboarding + API Integration Specialist)",
+        "thread_id": "199bca61004cdb2f",
+        "type": "message"
+      }
+    },
+    {
+      "id": "199bdc82ca339a72#0",
+      "score": 0.725839674,
+      "values": [],
+      "metadata": {
+        "date": 1759825636,
+        "email_id": "199bdc82ca339a72",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! Untitled job post We're a fast-moving team building cutting-",
+        "subject": "New job: Untitled job post",
+        "thread_id": "199bdc82ca339a72",
+        "type": "message"
+      }
+    },
+    {
+      "id": "199cbf11bd8b20b6#0",
+      "score": 0.724123,
+      "values": [],
+      "metadata": {
+        "date": 1760063200,
+        "email_id": "199cbf11bd8b20b6",
+        "from": "donotreply@upwork.com",
+        "snippet": "Upwork Upwork New job alert Hi, Homen! This job looks like a match for you. Check it out, and be one of the first to submit a proposal! n8n Workflow Developer – Talent Screening & Hiring Automation",
+        "subject": "New job: n8n Workflow Developer – Talent Screening & Hiring Automation",
+        "thread_id": "199cbf11bd8b20b6",
+        "type": "message"
+      }
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "upwork.com",
+        "count": 5
+      }
+    ]
+  }
+}

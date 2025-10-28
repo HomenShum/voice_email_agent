@@ -1,0 +1,109 @@
+{
+  "at": "2025-10-28T00-53-59-352Z",
+  "totals": {
+    "cases": 9,
+    "pass": 8,
+    "fail": 1
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Results include multiple emails from no-reply@accounts.google.com with subjects containing 'Security alert'; aggregation confirms 4 from accounts.google.com."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches include multiple emails titled 'OpenAI @ UC Berkeley' and 'OpenAI Advisor @ UC Berkeley' from kriswang-gptdao.ai (GPTDAO), satisfying the UC Berkeley event request."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "A recent email from no-reply@mail.yelp.com titled 'Wait, how was Beastea? 💭' indicates Yelp prompting for post-visit feedback, i.e., a review. This matches the expectation; no contradictory information is present."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches include Bandsintown notifications referencing LANY (presale code, tickets available, tour announcement) and a Bandsintown welcome email; aggregation accurately groups counts by bandsintown domains."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches list multiple Upwork job alert emails with subjects and snippets that provide brief job info; aggregation confirms all from upwork.com with count, supporting a concise summary."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Returned summaries are generic job- and admin-focused and do not reference the 'OpenAI @ UC Berkeley' thread or themes like event details, Berkeley, OpenAI, or speakers. The items include a general week summary and two thread_week entries with identical non-relevant content, and the aggregation is empty, so they do not meet the user’s requested weekly rollup for that specific thread."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The monthly summary for 2025-10 clearly highlights job alert themes (AI/automation roles, LLM/agent/RAG, n8n/Make, full-stack) and recruiter activity, matching the request for a monthly rollup. While it includes additional tasks, it still provides relevant job-alert-focused highlights without contradictions."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "All returned items are unread and have dates strictly greater than the provided received_after checkpoint (1760918400, 2025-10-20T00:00:00Z). No older items are included, indicating minimal overlap. Aggregation counts (1 streamlit, 4 linkedin) match the results."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "attachment-summary",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches include emails explicitly marked with has_attachments: true and relevant metadata (e.g., subjects, from, date_created). Examples: msg:19a0f069eeb457f0 (2025-10-23) and msg:19a124894d47b5ab (2025-10-23)."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\attachment-summary-2025-10-28T00-53-59-352Z.json",
+      "regression_changed": true
+    }
+  ]
+}

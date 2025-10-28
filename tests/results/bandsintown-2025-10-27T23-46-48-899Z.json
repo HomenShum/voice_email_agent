@@ -1,0 +1,109 @@
+{
+  "case": {
+    "id": "bandsintown",
+    "scenario": "User asks band notification summary",
+    "user_query": "Summarize the Bandsintown update",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Bandsintown LANY",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A match referencing LANY or Bandsintown"
+  },
+  "search_matches": [
+    {
+      "id": "19a03713fa8ea000#0",
+      "score": 0.745376587,
+      "metadata": {
+        "date": 1760994344,
+        "email_id": "19a03713fa8ea000",
+        "from": "notifications@ppt.bandsintown.com",
+        "snippet": "Bandsintown - You got a new message from LANY ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "Use code SOFTWORLDTOUR for LANY pre-sale tickets! ...",
+        "thread_id": "19a03713fa8ea000",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.745376587
+    },
+    {
+      "id": "19a17dce18deb934#0",
+      "score": 0.745298386,
+      "metadata": {
+        "date": 1761336942,
+        "email_id": "19a17dce18deb934",
+        "from": "notifications@ppt.bandsintown.com",
+        "snippet": "Bandsintown - You got a new message from LANY ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "Soft World Tour Part 1 - tickets available ...",
+        "thread_id": "19a17dce18deb934",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.745298386
+    },
+    {
+      "id": "19a02353421ac71a#0",
+      "score": 0.571609497,
+      "metadata": {
+        "date": 1760973632,
+        "email_id": "19a02353421ac71a",
+        "from": "events@mail.stubhub.com",
+        "snippet": "Tickets are available now. Get yours before they sell out. Secure your spot for an unforgettable live performance. Lany tickets are available now Secure your tickets before they sell out. This is an",
+        "subject": "Don't miss Lany live!",
+        "thread_id": "19a02353421ac71a",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.571609497
+    },
+    {
+      "id": "19a0d2b51f3e9b34#0",
+      "score": 0.564125061,
+      "metadata": {
+        "date": 1761157533,
+        "email_id": "19a0d2b51f3e9b34",
+        "from": "notifications@updates.bandsintown.com",
+        "snippet": "Bandsintown - Here's your weekly list of upcoming shows. ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌",
+        "subject": "Upcoming Live Shows: Subtronics, VOILÀ, Deorro, Marianas Trench",
+        "thread_id": "19a0d2b51f3e9b34",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.564125061
+    },
+    {
+      "id": "19a190d9707bca6a#0",
+      "score": 0.3763237,
+      "metadata": {
+        "date": 1761356912,
+        "email_id": "19a190d9707bca6a",
+        "from": "info@templesf.com",
+        "snippet": "This Weekend's Line-Up is Here Your Weekend Just Got Major Temple San Francisco is turning up the energy with back-to-back shows that blend global talent and festival-level production. Get wild at",
+        "subject": "Tee Grizzley Takes Over for Day of the Dead 💀 + Feed Me + K‑Pop Nights",
+        "thread_id": "19a190d9707bca6a",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.3763237
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "ppt.bandsintown.com",
+        "count": 4
+      },
+      {
+        "key": "welcome.bandsintown.com",
+        "count": 1
+      }
+    ]
+  }
+}

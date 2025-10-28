@@ -91,6 +91,14 @@ async function run() {
       aggregation,
     };
     const snapPath = writeSnapshot(id, snapshot);
+    if (typeof c.assert === "function") {
+      await c.assert({
+        matches: snapshot.search_matches,
+        search: searchRes,
+        aggregation,
+        case: c,
+      });
+    }
 
     // 4) judge
     const judge = await judgeCase({
@@ -135,4 +143,3 @@ run().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-

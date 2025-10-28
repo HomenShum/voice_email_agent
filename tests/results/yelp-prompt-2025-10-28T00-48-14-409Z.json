@@ -1,0 +1,114 @@
+{
+  "case": {
+    "id": "yelp-prompt",
+    "scenario": "User asks what Yelp wanted",
+    "user_query": "What did Yelp ask me to do recently?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Yelp review",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "It should mention Yelp asking for a review"
+  },
+  "search_matches": [
+    {
+      "id": "msg:19a17dd7d886104a",
+      "score": 0.577908576,
+      "metadata": {
+        "date_created": "2025-10-24T20:16:22.000Z",
+        "from": "no-reply@mail.yelp.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "Wait, how was Beastea? 💭",
+        "thread_id": "19a17dd7d886104a",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.577908576
+    },
+    {
+      "id": "198a96c7d8ccb2c8#0",
+      "score": 0.515771925,
+      "metadata": {
+        "date": 1755189115,
+        "email_id": "198a96c7d8ccb2c8",
+        "from": "google-maps-noreply@google.com",
+        "snippet": "A business you reviewed has responded to your post Simmer Huang / Miao Grill replied to your review Thank you for posting a review on Google. Homen Delicious chicken wing dry pot and wonderful service",
+        "subject": "Simmer Huang / Miao Grill replied to your review on Google",
+        "thread_id": "198a96c7d8ccb2c8",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.515771925
+    },
+    {
+      "id": "199a640a65d0dee2#0",
+      "score": 0.481940359,
+      "metadata": {
+        "date": 1759430879,
+        "email_id": "199a640a65d0dee2",
+        "from": "no-reply@mail.yelp.com",
+        "snippet": "Important updates to Yelp's terms ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Updates to Yelp’s Terms of Service and Privacy Policy",
+        "thread_id": "199a640a65d0dee2",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.481940359
+    },
+    {
+      "id": "197410c7a430ebe2#0",
+      "score": 0.480857909,
+      "metadata": {
+        "date": 1749143026,
+        "email_id": "197410c7a430ebe2",
+        "from": "no-reply@booksy.com",
+        "snippet": "Booksy Hello, Please write a review of your past visit with Kangnam Style Hair Salon. Review Please note that we appreciate honest and reliable reviews. Our suggestions: • advantages, disadvantages,",
+        "subject": "Review your service experience",
+        "thread_id": "197410c7a430ebe2",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.480857909
+    },
+    {
+      "id": "198a989b2883f75c#0",
+      "score": 0.480711043,
+      "metadata": {
+        "date": 1755191030,
+        "email_id": "198a989b2883f75c",
+        "from": "no-reply@booksy.com",
+        "snippet": "Booksy Hello, Please write a review of your past visit with Kangnam Style Hair Salon. Review Please note that we appreciate honest and reliable reviews. Our suggestions: • advantages, disadvantages,",
+        "subject": "Review your service experience",
+        "thread_id": "198a989b2883f75c",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.480711043
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "mail.yelp.com",
+        "count": 2
+      },
+      {
+        "key": "google.com",
+        "count": 1
+      },
+      {
+        "key": "booksy.com",
+        "count": 2
+      }
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "at": "2025-10-27T23-01-29-088Z",
+  "totals": {
+    "cases": 8,
+    "pass": 6,
+    "fail": 2
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The results include multiple messages from no-reply@accounts.google.com with subjects containing 'Security alert' (e.g., 'Critical security alert for 1974yangao@gmail.com' and 'Security alert for 1974yangao@gmail.com'). Aggregation also shows 4 messages from accounts.google.com, satisfying the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The search results include multiple emails with subjects matching 'OpenAI @ UC Berkeley' and an 'OpenAI Advisor @ UC Berkeley' announcement, as well as a related 'Announcing OpenAI's GPT-5 Startup Hackathon' message. The aggregation groups show the expected sender domains. These outputs directly match the expectation of UC Berkeley / GPTDAO/OpenAI event announcements."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Results include an email from no-reply@mail.yelp.com with subject 'Wait, how was Beastea? 💭', which clearly indicates Yelp asked for feedback/a review. Aggregation also shows two messages from mail.yelp.com (the other being a Terms update), so the outputs support the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The matches include multiple Bandsintown emails and explicitly reference LANY (snippets: \"You got a new message from LANY\" and subjects about the Soft World Tour and pre-sale code). The aggregation correctly shows 4 messages from ppt.bandsintown.com and 1 from welcome.bandsintown.com, so the outputs both enable a summary and meet the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The outputs list five Upwork job-alert messages with subjects and snippets (job titles: n8n workflow: improvement of an automated HeyGen news bulletin; Subscription and AI-Powered Platform — Full SaaS Build; AI & Software Implementor (Client Onboarding + API Integration Specialist); Untitled job post; n8n Workflow Developer – Talent Screening & Hiring Automation). The aggregation correctly shows all five messages are from upwork.com. This matches the expectation of a brief description of an Upwork job alert."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The provided weekly summary does not relate to the requested 'OpenAI @ UC Berkeley' thread. The match covers job leads, applications, account/security items, and generic events (TechCrunch, hackathons) and includes no mention of 'OpenAI', 'Berkeley', the specific event/thread, or speakers. The aggregation data is empty, so there is no supporting grouping for the requested thread. Therefore it fails to meet the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The provided monthly summary explicitly highlights job-alert themes (Upwork and LinkedIn/Dice/Indeed leads, AI/GenAI/ML/full‑stack roles, recruiter messages, active application follow-ups) and lists actionable priorities (follow up, triage/top applications, submit proposals), matching the expectation for a monthly rollup about job alerts with no contradictory information."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The results list unread items and domain counts, but provide no received_after / last-checkpoint or any indication that items were filtered to be strictly after the last run. Without the checkpoint value or evidence of filtering, we cannot verify that these are only new items or that overlap with already-processed items is minimal."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-27T23-01-29-088Z.json",
+      "regression_changed": false
+    }
+  ]
+}

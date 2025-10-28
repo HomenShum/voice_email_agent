@@ -1,0 +1,14 @@
+# Exclude local build artifacts and dependencies from deployment package
+node_modules
+dist
+bin
+obj
+.vscode
+.git
+coverage
+.tmp
+*.log
+
+# Leave ts sources for Oryx remote build
+# Do NOT exclude src or tsconfig.json
+

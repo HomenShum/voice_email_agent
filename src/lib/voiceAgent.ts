@@ -1,24 +1,94 @@
-import { RealtimeAgent, RealtimeSession } from '@openai/agents/realtime';
-import { registerTools } from './tools';
+import { RealtimeSession } from '@openai/agents/realtime';
+import {
+  createRouterBundle,
+  type RouterBundle,
+} from './agents';
+import {
+  addToolCallListener,
+  calendarToolset,
+  contactsToolset,
+  emailOpsToolset,
+  insightToolset,
+  syncToolset,
+  type ToolCallRecord,
+} from './tools';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
+let activeRouterBundle: RouterBundle | null = null;
 
 let onTranscript: undefined | ((history: unknown[]) => void);
 export function setTranscriptHandler(fn: (history: unknown[]) => void) {
   onTranscript = fn;
 }
 
+function truncate(value: string, length = 80) {
+  if (!value) return '';
+  return value.length > length ? `${value.slice(0, length - 3)}...` : value;
+}
 
+function summarizeToolCall(record: ToolCallRecord): string {
+  try {
+    const data: any = record.result;
+    switch (record.name) {
+      case 'count_emails':
+        return `total=${data?.total ?? 'n/a'}`;
+      case 'search_emails':
+        return `matches=${Array.isArray(data?.results) ? data.results.length : 0}`;
+      case 'aggregate_emails':
+        return `groups=${Array.isArray(data?.groups) ? data.groups.length : 0}`;
+      case 'analyze_emails':
+        return data?.summary ? `summary=${truncate(String(data.summary), 80)}` : '';
+      case 'list_unread_messages':
+        return `unread=${Array.isArray(data?.messages) ? data.messages.length : 0}`;
+      case 'list_contacts':
+        return `contacts=${Array.isArray(data?.data) ? data.data.length : 0}`;
+      case 'list_events':
+        return `events=${Array.isArray(data?.data) ? data.data.length : 0}`;
+      default:
+        if (Array.isArray(data)) return `items=${data.length}`;
+        if (data && typeof data === 'object') {
+          const keys = Object.keys(data);
+          return keys.length ? `keys=${keys.slice(0, 3).join(',')}` : '';
+        }
+        return '';
+    }
+  } catch {
+    return '';
+  }
+}
+
+function wireScratchpads(bundle: RouterBundle) {
+  addToolCallListener((record) => {
+    if (!record.agentId) return;
+    const pad = (bundle.runtime.router.scratchpads as Record<string, any>)[record.agentId];
+    if (!pad || typeof pad.add !== 'function') return;
+    pad.add({
+      toolName: record.name,
+      timestamp: record.timestamp,
+      summary: record.error ? `error=${truncate(record.error, 60)}` : summarizeToolCall(record),
+      parameters: record.parameters,
+      result: record.result,
+      filters: record.parameters?.filters ?? undefined,
+    });
+  });
+}
 
 export async function createVoiceSession() {
-  const agent = new RealtimeAgent({
-    name: 'Assistant',
-    instructions:
-      'You are a helpful voice assistant. Be concise. Always reply with a short 1-2 sentence acknowledgement/plan before any tool calls; then, if needed, call tools; after tools complete, provide a final answer based on the actual tool results. Announce when you are about to execute a tool with a brief one-liner to buy time (e.g., \'Got it — checking now.\'). IMPORTANT: When tools return data, you MUST read and report the actual results - never say you don\'t have access if the tool call succeeded. Tool usage: When users ask for the TOTAL count of ALL messages/emails (e.g., "how many messages do I have in total"), use count_emails which returns the total number of indexed emails from Pinecone. When users ask "what emails do I have" or want recent unread, use list_unread_messages. When the user asks about email content or wants to search, use search_emails. For breakdowns by category/domain/sender, call aggregate_emails with an appropriate group_by (e.g., from_domain). For executive summaries over results, call analyze_emails. You can also use list_contacts for contacts and list_events for calendar events. Use the filters parameter on these tools when the user specifies constraints (e.g., unread, from, date ranges). Time ranges: Interpret \'last week\' and \'the week before that\' using ISO weeks in UTC (Monday-Sunday). \'The week before that\' means the ISO week prior to the previously referenced week. For relative ranges like \'past N days\' or \'last N days\', compute the day span (now−N days to now) and include this as a date filter. When the user asks for \'emails in the past N days\', first call search_emails with the date filter (to populate the dashboard total and top 10), and optionally call count_emails for the total count. Always cite the explicit range in your answer as: Week YYYY-Www (Mon YYYY-MM-DD to Sun YYYY-MM-DD UTC) or, for day spans, (YYYY-MM-DD to YYYY-MM-DD UTC).',
-    tools: registerTools(),
+  const routerBundle = createRouterBundle({
+    tools: {
+      email: Array.from(emailOpsToolset),
+      insights: Array.from(insightToolset),
+      contacts: Array.from(contactsToolset),
+      calendar: Array.from(calendarToolset),
+      sync: Array.from(syncToolset),
+    },
+    onProgress: (message) => console.debug('[router]', message),
   });
 
-  const session = new RealtimeSession(agent, {
+  activeRouterBundle = routerBundle;
+  wireScratchpads(routerBundle);
+
+  const session = new RealtimeSession(routerBundle.router, {
     model: 'gpt-realtime',
     config: {
       inputAudioTranscription: { model: 'gpt-4o-mini-transcribe' },
@@ -31,7 +101,7 @@ export async function createVoiceSession() {
       onTranscript?.(history);
     } catch {}
   });
-  // Auto-approve tool calls so the model can announce first, then execute quickly
+
   session.on?.('tool_approval_requested', (_context: any, _agent: any, request: any) => {
     try {
       console.debug('[voice] tool_approval_requested', request?.approvalItem?.name || request);
@@ -45,8 +115,7 @@ export async function createVoiceSession() {
     }
   });
 
-
-  const REALTIME_MODEL = 'gpt-realtime'; // GA model; falls back to preview if not enabled
+  const REALTIME_MODEL = 'gpt-realtime';
   const r = await fetch(`${API_BASE}/api/realtime/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -54,18 +123,29 @@ export async function createVoiceSession() {
   });
   const raw = await r.text();
   let data: any = undefined;
-  try { data = JSON.parse(raw); } catch { /* ignore */ }
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    /* ignore */
+  }
   if (!r.ok) {
     console.error('[realtime] session error', data || raw);
     throw new Error(`Failed to get ephemeral token: ${r.status}`);
   }
-  const token = (data?.client_secret?.value) || data?.value || data?.secret;
+  const token = data?.client_secret?.value || data?.value || data?.secret;
   if (!token) throw new Error('No client secret returned');
-  console.log('[voice] Got ephemeral token:', token.substring(0, 20) + '...', 'Full response:', JSON.stringify(data).substring(0, 300));
+  console.log('[voice] Got ephemeral token:', `${token.substring(0, 20)}...`, 'Full response:', JSON.stringify(data).substring(0, 300));
 
   console.log('[voice] Calling session.connect with model:', REALTIME_MODEL);
-  await session.connect({ apiKey: token, model: REALTIME_MODEL }); // WebRTC in-browser
+  await session.connect({ apiKey: token, model: REALTIME_MODEL });
   console.log('[voice] Connected successfully!');
   return session;
 }
 
+export function getRouterRuntime() {
+  return activeRouterBundle?.runtime ?? null;
+}
+
+export function getCallGraphSnapshot() {
+  return activeRouterBundle?.runtime.router.callGraph.snapshot() ?? null;
+}

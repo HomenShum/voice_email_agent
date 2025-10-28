@@ -1,6 +1,6 @@
-import { app, InvocationContext, Timer } from "@azure/functions";
+import type { InvocationContext, Timer } from "@azure/functions";
 import { enqueueBackfill } from "../shared/bus";
-import { getCheckpoint, listKnownGrants } from "../shared/storage";
+import { getCheckpoint, listKnownGrants, createJob } from "../shared/storage";
 
 function monthsAgoToEpochSeconds(months: number): number {
   const d = new Date();
@@ -8,8 +8,23 @@ function monthsAgoToEpochSeconds(months: number): number {
   return Math.floor(d.getTime() / 1000);
 }
 
-app.timer("deltaTimer", {
-  schedule: "0 0 * * * *", // top of every hour
+function loadAzureFunctionsRuntime(): any {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const path = require("path");
+  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require(realDir);
+  } catch {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require("@azure/functions");
+  }
+}
+
+const { app } = loadAzureFunctionsRuntime();
+
+if (process.env.SKIP_TIMER !== "1") app.timer("deltaTimer", {
+  schedule: "0 * * * * *", // every minute (local dev)
   handler: async (timer: Timer, ctx: InvocationContext): Promise<void> => {
     const envGrant = (process.env.NYLAS_GRANT_ID || "").trim();
     let grants: string[] = [];
@@ -32,8 +47,9 @@ app.timer("deltaTimer", {
       try {
         const cp = await getCheckpoint(grantId);
         const sinceEpoch = cp > 0 ? cp : monthsAgoToEpochSeconds(defaultMonths);
-        await enqueueBackfill({ grantId, sinceEpoch, max: defaultMax, processed: 0, attempt: 0 });
-        ctx.log(`deltaTimer: enqueued delta grantId=${grantId} since=${sinceEpoch} (cp=${cp}) max=${defaultMax}`);
+        const jobId = await createJob({ grantId, type: "delta", total: defaultMax, processed: 0 });
+        await enqueueBackfill({ grantId, sinceEpoch, max: defaultMax, processed: 0, attempt: 0, jobId });
+        ctx.log(`deltaTimer: enqueued delta grantId=${grantId} job=${jobId} since=${sinceEpoch} (cp=${cp}) max=${defaultMax}`);
       } catch (e: any) {
         ctx.error?.(`deltaTimer: failed to enqueue grantId=${grantId}: ${e?.message || e}`);
       }

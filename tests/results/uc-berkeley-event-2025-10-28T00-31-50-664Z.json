@@ -1,0 +1,117 @@
+{
+  "case": {
+    "id": "uc-berkeley-event",
+    "scenario": "User asks about UC Berkeley related announcement",
+    "user_query": "Show me the UC Berkeley event email",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "UC Berkeley OpenAI",
+      "types": [
+        "message",
+        "thread_day",
+        "thread_week",
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A result referencing OpenAI @ UC Berkeley or GPTDAO announcement"
+  },
+  "search_matches": [
+    {
+      "id": "19885beec25765d8#0",
+      "score": 0.658866882,
+      "metadata": {
+        "date": 1754590539,
+        "email_id": "19885beec25765d8",
+        "from": "cerebralvalley@mail.beehiiv.com",
+        "snippet": "This weekend in San Francisco, in partnership with OpenAI. Applications now live! ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ‌ ",
+        "subject": "Announcing OpenAI's GPT-5 Startup Hackathon",
+        "thread_id": "19885beec25765d8",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.658866882
+    },
+    {
+      "id": "199f861fc42feb37#0",
+      "score": 0.587051392,
+      "metadata": {
+        "date": 1760808795,
+        "email_id": "199f861fc42feb37",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "snippet": "With Sequoia, Meta Superintelligence Labs, BlackRock, Stanford, You.com ... Happy Weekend Homen! Take this chance to meet, OpenAI Advisor & Former Chief People Officer OpenAI GPT-5 Core Contributor",
+        "subject": "OpenAI Advisor @ UC Berkeley",
+        "thread_id": "199f861fc42feb37",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.587051392
+    },
+    {
+      "id": "msg:19a17f6c6714d2be",
+      "score": 0.583297729,
+      "metadata": {
+        "date_created": "2025-10-24T20:44:00.000Z",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "OpenAI @ UC Berkeley",
+        "thread_id": "19a17f6c6714d2be",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      },
+      "source": "dense",
+      "denseScore": 0.583297729
+    },
+    {
+      "id": "msg:19a1c6e8bc98f713",
+      "score": 0.583297729,
+      "metadata": {
+        "date_created": "2025-10-25T17:33:18.000Z",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "OpenAI @ UC Berkeley",
+        "thread_id": "19a1c6e8bc98f713",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.583297729
+    },
+    {
+      "id": "19a0cfbec914fe46#0",
+      "score": 0.54748255,
+      "metadata": {
+        "date": 1761154428,
+        "email_id": "19a0cfbec914fe46",
+        "from": "kriswang-gptdao.ai@shared1.ccsend.com",
+        "snippet": "With Sequoia, Meta Superintelligence Labs, BlackRock, Stanford, You.com ... 15% Off + Early Bird (Ending 10/26) Hi Homen! Take this chance to meet, OpenAI Advisor & Former Chief People Officer",
+        "subject": "OpenAI @ UC Berkeley",
+        "thread_id": "19a0cfbec914fe46",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.54748255
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "mail.beehiiv.com",
+        "count": 1
+      },
+      {
+        "key": "shared1.ccsend.com",
+        "count": 4
+      }
+    ]
+  }
+}

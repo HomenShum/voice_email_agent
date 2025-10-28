@@ -1,0 +1,111 @@
+{
+  "case": {
+    "id": "unread-delta",
+    "scenario": "Pull latest unread since the last pull; ensure we do not re-scan all",
+    "user_query": "Fetch unread since last run",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "recent unread",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "Results include only items after the last received_after checkpoint; minimal overlap with already processed items"
+  },
+  "search_matches": [
+    {
+      "id": "1978f4c5390fb99a#0",
+      "score": 0.589018822,
+      "metadata": {
+        "date": 1750455833,
+        "email_id": "1978f4c5390fb99a",
+        "from": "messages-noreply@linkedin.com",
+        "snippet": "Catch up on last week's unread messages ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Messages from Alan and 1 others are waiting",
+        "thread_id": "1978f4c5390fb99a",
+        "type": "message",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.589018822
+    },
+    {
+      "id": "19a13022024f2787#0",
+      "score": 0.46103,
+      "metadata": {
+        "date": 1761255498,
+        "email_id": "19a13022024f2787",
+        "from": "notifications@streamlit.discoursemail.com",
+        "snippet": "A brief summary since 2025-10-16 21:08:47 UTC Streamlit Since your last visit 3 12 157 New Topics Unread Notifications New Users Popular Topics Show the Community! October 19 Attention mechanism",
+        "subject": "[Streamlit] Summary",
+        "thread_id": "19a13022024f2787",
+        "type": "message",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.46103
+    },
+    {
+      "id": "197864232e1bb00e#0",
+      "score": 0.405816078,
+      "metadata": {
+        "date": 1750304175,
+        "email_id": "197864232e1bb00e",
+        "from": "notifications@streamlit.discoursemail.com",
+        "snippet": "A brief summary since 2025-06-12 03:34:00 UTC Streamlit Since your last visit 20 11 395 New Topics Unread Notifications New Users Popular Topics Using Streamlit June 15 Returning back to original page",
+        "subject": "[Streamlit] Summary",
+        "thread_id": "197864232e1bb00e",
+        "type": "message",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.405816078
+    },
+    {
+      "id": "19861cd0737b494a#0",
+      "score": 0.402001381,
+      "metadata": {
+        "date": 1753987483,
+        "email_id": "19861cd0737b494a",
+        "from": "notifications@streamlit.discoursemail.com",
+        "snippet": "A brief summary since 2025-07-24 18:16:25 UTC Streamlit Since your last visit 9 11 245 New Topics Unread Notifications New Users Popular Topics Show the Community! July 25 Steam reviews summary using",
+        "subject": "[Streamlit] Summary",
+        "thread_id": "19861cd0737b494a",
+        "type": "message",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.402001381
+    },
+    {
+      "id": "199eeda9a4e61790#0",
+      "score": 0.394464493,
+      "metadata": {
+        "date": 1760648928,
+        "email_id": "199eeda9a4e61790",
+        "from": "notifications@streamlit.discoursemail.com",
+        "snippet": "A brief summary since 2025-10-09 20:54:41 UTC Streamlit Since your last visit 8 12 198 New Topics Unread Notifications New Users Popular Topics Using Streamlit October 11 Streamlit_audio_stream_player",
+        "subject": "[Streamlit] Summary",
+        "thread_id": "199eeda9a4e61790",
+        "type": "message",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.394464493
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "linkedin.com",
+        "count": 1
+      },
+      {
+        "key": "streamlit.discoursemail.com",
+        "count": 4
+      }
+    ]
+  }
+}

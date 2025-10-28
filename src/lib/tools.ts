@@ -1,5 +1,6 @@
 import { tool } from '@openai/agents/realtime';
 import { z } from 'zod';
+import { peekToolContext } from './agents/toolContext';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
 const FUNCTIONS_BASE = (import.meta as any).env?.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
@@ -13,16 +14,23 @@ let onUnread: undefined | ((payload: unknown) => void);
 let onSyncStatus: undefined | ((payload: unknown) => void);
 let onEmailMetrics: undefined | ((payload: unknown) => void);
 let onToolCall: undefined | ((toolCall: ToolCallRecord) => void);
+const extraToolCallListeners = new Set<(toolCall: ToolCallRecord) => void>();
 
 // Tool call history tracking
 interface ToolCallRecord {
   id: string;
+  callId?: string;
   name: string;
   timestamp: number;
   parameters: any;
   result?: any;
   error?: string;
   duration?: number;
+  agentId?: string;
+  parentNodeId?: string;
+  graphNodeId?: string;
+  depth?: number;
+  filterSummary?: string;
 }
 
 let toolCallIdCounter = 0;
@@ -33,21 +41,55 @@ let onToolProgress: undefined | ((message: string) => void);
 export function setToolProgressHandler(fn: (message: string) => void) { onToolProgress = fn; }
 function progress(msg: string) { try { onToolProgress?.(msg); } catch (_) {} }
 
+interface LogToolCallOptions {
+  name: string;
+  parameters: any;
+  duration: number;
+  result?: any;
+  error?: string;
+  callId?: string;
+}
+
+function summarizeFilters(parameters: any): string | undefined {
+  try {
+    const filters = parameters?.filters;
+    if (!filters || typeof filters !== 'object') return undefined;
+    const serialized = JSON.stringify(filters);
+    return serialized.length > 200 ? `${serialized.slice(0, 197)}...` : serialized;
+  } catch {
+    return undefined;
+  }
+}
+
 // Tool call tracking
 export function setToolCallHandler(fn: (toolCall: ToolCallRecord) => void) { onToolCall = fn; }
-function logToolCall(name: string, parameters: any, result: any, duration: number, error?: string) {
+export function addToolCallListener(fn: (toolCall: ToolCallRecord) => void) { extraToolCallListeners.add(fn); }
+export function removeToolCallListener(fn: (toolCall: ToolCallRecord) => void) { extraToolCallListeners.delete(fn); }
+function logToolCall(options: LogToolCallOptions) {
   try {
+    const context = options.callId ? peekToolContext(options.callId) : undefined;
     const record: ToolCallRecord = {
       id: `tool-${++toolCallIdCounter}-${Date.now()}`,
-      name,
+      callId: options.callId,
+      name: options.name,
       timestamp: Date.now(),
-      parameters,
-      result: error ? undefined : result,
-      error,
-      duration
+      parameters: options.parameters,
+      result: options.error ? undefined : options.result,
+      error: options.error,
+      duration: options.duration,
+      agentId: context?.agentId,
+      parentNodeId: context?.parentNodeId,
+      graphNodeId: context?.graphNodeId,
+      depth: context?.depth,
+      filterSummary: summarizeFilters(options.parameters),
     };
     onToolCall?.(record);
-  } catch (_) {}
+    for (const listener of extraToolCallListeners) {
+      try { listener(record); } catch (err) { console.warn('[tools] extra listener failed', err); }
+    }
+  } catch (err) {
+    console.warn('[tools] logToolCall failed', err);
+  }
 }
 
 // Deterministic ISO-UTC week utilities and relative range resolution
@@ -217,6 +259,7 @@ const searchEmails = tool({
   parameters: z.object({ text: z.string(), top_k: z.number().nullable().optional(), filters: z.record(z.any()).nullable().optional() }),
   async execute({ text, top_k, filters }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { text, top_k, filters };
     progress(`search_emails starting — q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
@@ -239,11 +282,11 @@ const searchEmails = tool({
 
       onResults?.(data);
       onEmailMetrics?.(data);
-      logToolCall('search_emails', params, data, duration);
+      logToolCall({ name: 'search_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('search_emails', params, null, duration, String(error));
+      logToolCall({ name: 'search_emails', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -255,8 +298,9 @@ const listContacts = tool({
   description: 'List recent contacts from Nylas',
   needsApproval: true,
   parameters: z.object({ limit: z.number().nullable().optional().default(5) }),
-  async execute({ limit }) {
+  async execute({ limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { limit };
     try {
       const url = new URL(`${API_BASE}/nylas/contacts`);
@@ -265,11 +309,11 @@ const listContacts = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onContacts?.(data);
-      logToolCall('list_contacts', params, data, duration);
+      logToolCall({ name: 'list_contacts', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('list_contacts', params, null, duration, String(error));
+      logToolCall({ name: 'list_contacts', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -280,8 +324,9 @@ const listEvents = tool({
   description: 'List recent calendar events from Nylas',
   needsApproval: true,
   parameters: z.object({ calendar_id: z.string().nullable().default('primary').optional(), limit: z.number().optional().default(5) }),
-  async execute({ calendar_id, limit }) {
+  async execute({ calendar_id, limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { calendar_id, limit };
     try {
       const url = new URL(`${API_BASE}/nylas/events`);
@@ -291,11 +336,11 @@ const listEvents = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onEvents?.(data);
-      logToolCall('list_events', params, data, duration);
+      logToolCall({ name: 'list_events', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('list_events', params, null, duration, String(error));
+      logToolCall({ name: 'list_events', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -306,8 +351,9 @@ const listUnreadMessages = tool({
   description: 'List unread messages (summary) from Nylas',
   needsApproval: true,
   parameters: z.object({ limit: z.number().optional().default(5), sinceEpoch: z.number().nullable().optional() }),
-  async execute({ limit, sinceEpoch }) {
+  async execute({ limit, sinceEpoch }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { limit, sinceEpoch };
     try {
       const url = new URL(`${API_BASE}/nylas/unread`);
@@ -317,11 +363,11 @@ const listUnreadMessages = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onUnread?.(data);
-      logToolCall('list_unread_messages', params, data, duration);
+      logToolCall({ name: 'list_unread_messages', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('list_unread_messages', params, null, duration, String(error));
+      logToolCall({ name: 'list_unread_messages', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -332,8 +378,9 @@ const startSync = tool({
   description: 'Kick off on-login unread sync for the signed-in user',
   needsApproval: true,
   parameters: z.object({ sinceEpoch: z.number().nullable().optional(), limit: z.number().nullable().optional().default(25) }),
-  async execute({ sinceEpoch, limit }) {
+  async execute({ sinceEpoch, limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { sinceEpoch, limit };
     try {
       const res = await fetch(`${API_BASE}/sync/start`, {
@@ -344,11 +391,11 @@ const startSync = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onSyncStatus?.(data);
-      logToolCall('sync_start', params, data, duration);
+      logToolCall({ name: 'sync_start', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('sync_start', params, null, duration, String(error));
+      logToolCall({ name: 'sync_start', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -364,8 +411,9 @@ const startBackfill = tool({
     months: z.number().nullable().optional().default(12),
     max: z.number().nullable().optional().default(10000),
   }),
-  async execute({ grantId, months, max }) {
+  async execute({ grantId, months, max }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { grantId, months, max };
     try {
       const res = await fetch(`${FUNCTIONS_BASE}/api/sync/backfill`, {
@@ -376,11 +424,11 @@ const startBackfill = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onSyncStatus?.(data);
-      logToolCall('backfill_start', params, data, duration);
+      logToolCall({ name: 'backfill_start', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('backfill_start', params, null, duration, String(error));
+      logToolCall({ name: 'backfill_start', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -398,6 +446,7 @@ const aggregateEmails = tool({
   }),
   async execute({ metric, group_by, filters, top_k }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { metric, group_by, filters, top_k };
     progress(`aggregate_emails starting — metric=${metric}${group_by ? `, group_by=${group_by.join(',')}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
@@ -415,11 +464,11 @@ const aggregateEmails = tool({
       const _count = Array.isArray((data as any)?.groups) ? (data as any).groups.length : (typeof (data as any)?.count === 'number' ? (data as any).count : 0);
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       progress(`aggregate_emails finished — ${_count} group(s) in ${duration}ms`);
-      logToolCall('aggregate_emails', params, data, duration);
+      logToolCall({ name: 'aggregate_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('aggregate_emails', params, null, duration, String(error));
+      logToolCall({ name: 'aggregate_emails', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -432,6 +481,7 @@ const analyzeEmails = tool({
   parameters: z.object({ text: z.string(), filters: z.record(z.any()).nullable().optional(), top_k: z.number().nullable().optional() }),
   async execute({ text, filters, top_k }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { text, filters, top_k };
     progress(`analyze_emails starting — q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
@@ -448,11 +498,11 @@ const analyzeEmails = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       progress(`analyze_emails finished — ${duration}ms`);
-      logToolCall('analyze_emails', params, data, duration);
+      logToolCall({ name: 'analyze_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('analyze_emails', params, null, duration, String(error));
+      logToolCall({ name: 'analyze_emails', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -465,6 +515,7 @@ const countEmails = tool({
   parameters: z.object({ filters: z.record(z.any()).nullable().optional() }),
   async execute({ filters }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
     const params = { filters };
     progress(`count_emails starting${filters ? ' with filters' : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
@@ -483,18 +534,31 @@ const countEmails = tool({
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       const total = (data as any)?.total ?? 0;
       progress(`count_emails finished — ${total} total emails in ${duration}ms`);
-      logToolCall('count_emails', params, data, duration);
+      logToolCall({ name: 'count_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall('count_emails', params, null, duration, String(error));
+      logToolCall({ name: 'count_emails', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
 });
 
 
-export function registerTools() {
-  return [searchEmails, aggregateEmails, analyzeEmails, countEmails, listContacts, listEvents, listUnreadMessages, startSync, startBackfill];
-}
+export const emailOpsToolset = [searchEmails, listUnreadMessages, countEmails] as const;
+export const insightToolset = [aggregateEmails, analyzeEmails, countEmails] as const;
+export const contactsToolset = [listContacts] as const;
+export const calendarToolset = [listEvents] as const;
+export const syncToolset = [startSync, startBackfill] as const;
 
+export function registerTools() {
+  return Array.from(
+    new Set([
+      ...emailOpsToolset,
+      ...insightToolset,
+      ...contactsToolset,
+      ...calendarToolset,
+      ...syncToolset,
+    ]),
+  );
+}

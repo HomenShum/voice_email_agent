@@ -1,0 +1,106 @@
+{
+  "case": {
+    "id": "security-alert",
+    "scenario": "User asks to find a Google security alert email",
+    "user_query": "Find the security alert from Google",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "Security alert",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "At least one result has subject containing 'Security alert' and from like accounts.google.com"
+  },
+  "search_matches": [
+    {
+      "id": "1980a5d6a7f806c5#0",
+      "score": 0.548713684,
+      "metadata": {
+        "date": 1752520551,
+        "email_id": "1980a5d6a7f806c5",
+        "from": "no-reply@accounts.google.com",
+        "snippet": "This is a copy of a security alert sent to 1974yangao@gmail.com. hshum2018@gmail.com is the recovery email for this account. If you don't recognize this account, remove it. Sign-in attempt was",
+        "subject": "Critical security alert for 1974yangao@gmail.com",
+        "thread_id": "1980a5d6a7f806c5",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.548713684
+    },
+    {
+      "id": "197c2e4353c1ecd8#0",
+      "score": 0.548223495,
+      "metadata": {
+        "date": 1751321425,
+        "email_id": "197c2e4353c1ecd8",
+        "from": "no-reply@accounts.google.com",
+        "snippet": "This is a copy of a security alert sent to 1974yangao@gmail.com. hshum2018@gmail.com is the recovery email for this account. If you don't recognize this account, remove it. Sign-in attempt was",
+        "subject": "Critical security alert for 1974yangao@gmail.com",
+        "thread_id": "197c2e4353c1ecd8",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.548223495
+    },
+    {
+      "id": "198301657acc4876#0",
+      "score": 0.536254883,
+      "metadata": {
+        "date": 1753153427,
+        "email_id": "198301657acc4876",
+        "from": "no.reply.alerts@chase.com",
+        "snippet": "Security alert You signed in with a new device You successfully validated your device and signed in. Here are the details: Device: Apple iPhone - Chrome When: Jul 21, 2025 at 11:03 PM ET Possible",
+        "subject": "Chase security alert: You signed in with a new device",
+        "thread_id": "198301657acc4876",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.536254883
+    },
+    {
+      "id": "19843fb3673ec9af#0",
+      "score": 0.529813766,
+      "metadata": {
+        "date": 1753487193,
+        "email_id": "19843fb3673ec9af",
+        "from": "no-reply@accounts.google.com",
+        "snippet": "This is a copy of a security alert sent to 1974yangao@gmail.com. hshum2018@gmail.com is the recovery email for this account. If you don't recognize this account, remove it. New sign-in to your",
+        "subject": "Security alert for 1974yangao@gmail.com",
+        "thread_id": "19843fb2cfc378ef",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.529813766
+    },
+    {
+      "id": "19843fb2cfc378ef#0",
+      "score": 0.499319077,
+      "metadata": {
+        "date": 1753487191,
+        "email_id": "19843fb2cfc378ef",
+        "from": "no-reply@accounts.google.com",
+        "snippet": "This is a copy of a security alert sent to 1974yangao@gmail.com. hshum2018@gmail.com is the recovery email for this account. If you don't recognize this account, remove it. New passkey added to",
+        "subject": "Security alert for 1974yangao@gmail.com",
+        "thread_id": "19843fb2cfc378ef",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.499319077
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "accounts.google.com",
+        "count": 4
+      },
+      {
+        "key": "chase.com",
+        "count": 1
+      }
+    ]
+  }
+}

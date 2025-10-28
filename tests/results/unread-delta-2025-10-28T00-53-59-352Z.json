@@ -1,0 +1,121 @@
+{
+  "case": {
+    "id": "unread-delta",
+    "scenario": "Pull latest unread since the last pull; ensure we do not re-scan all",
+    "user_query": "Fetch unread since last run",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "recent unread",
+      "types": [
+        "message"
+      ],
+      "topK": 5
+    },
+    "expect": "Results include only items after the last received_after checkpoint; minimal overlap with already processed items"
+  },
+  "search_matches": [
+    {
+      "id": "19a13022024f2787#0",
+      "score": 0.461193085,
+      "metadata": {
+        "date": 1761255498,
+        "email_id": "19a13022024f2787",
+        "from": "notifications@streamlit.discoursemail.com",
+        "snippet": "A brief summary since 2025-10-16 21:08:47 UTC Streamlit Since your last visit 3 12 157 New Topics Unread Notifications New Users Popular Topics Show the Community! October 19 Attention mechanism",
+        "subject": "[Streamlit] Summary",
+        "thread_id": "19a13022024f2787",
+        "type": "message",
+        "unread": true,
+        "received_after": 1760918400,
+        "received_after_iso": "2025-10-20T00:00:00.000Z"
+      },
+      "source": "dense",
+      "denseScore": 0.461193085
+    },
+    {
+      "id": "19a05928ee4bb21b#0",
+      "score": 0.372096092,
+      "metadata": {
+        "date": 1761030082,
+        "email_id": "19a05928ee4bb21b",
+        "from": "messaging-digest-noreply@linkedin.com",
+        "snippet": "1 new message awaits your response ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "William just messaged you",
+        "thread_id": "19a05928ee4bb21b",
+        "type": "message",
+        "unread": true,
+        "received_after": 1760918400,
+        "received_after_iso": "2025-10-20T00:00:00.000Z"
+      },
+      "source": "dense",
+      "denseScore": 0.372096092
+    },
+    {
+      "id": "19a0fe2fe03afdfe#0",
+      "score": 0.372096092,
+      "metadata": {
+        "date": 1761203126,
+        "email_id": "19a0fe2fe03afdfe",
+        "from": "messaging-digest-noreply@linkedin.com",
+        "snippet": "1 new message awaits your response ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Nikhil just messaged you",
+        "thread_id": "19a0fe2fe03afdfe",
+        "type": "message",
+        "unread": true,
+        "received_after": 1760918400,
+        "received_after_iso": "2025-10-20T00:00:00.000Z"
+      },
+      "source": "dense",
+      "denseScore": 0.372096092
+    },
+    {
+      "id": "19a0e74dc2667d2e#0",
+      "score": 0.372096092,
+      "metadata": {
+        "date": 1761179131,
+        "email_id": "19a0e74dc2667d2e",
+        "from": "messaging-digest-noreply@linkedin.com",
+        "snippet": "1 new message awaits your response ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Jocelyn just messaged you",
+        "thread_id": "19a0e74dc2667d2e",
+        "type": "message",
+        "unread": true,
+        "received_after": 1760918400,
+        "received_after_iso": "2025-10-20T00:00:00.000Z"
+      },
+      "source": "dense",
+      "denseScore": 0.372096092
+    },
+    {
+      "id": "19a074d614904156#0",
+      "score": 0.372039825,
+      "metadata": {
+        "date": 1761059103,
+        "email_id": "19a074d614904156",
+        "from": "messaging-digest-noreply@linkedin.com",
+        "snippet": "1 new message awaits your response ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
+        "subject": "Amardeep just messaged you",
+        "thread_id": "19a074d614904156",
+        "type": "message",
+        "unread": true,
+        "received_after": 1760918400,
+        "received_after_iso": "2025-10-20T00:00:00.000Z"
+      },
+      "source": "dense",
+      "denseScore": 0.372039825
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "streamlit.discoursemail.com",
+        "count": 1
+      },
+      {
+        "key": "linkedin.com",
+        "count": 4
+      }
+    ]
+  }
+}

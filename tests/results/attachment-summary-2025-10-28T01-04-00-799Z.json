@@ -1,0 +1,226 @@
+{
+  "case": {
+    "id": "attachment-summary",
+    "scenario": "User asks which recent emails included attachments",
+    "user_query": "Which emails had attachments recently?",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "calendar invite attachment",
+      "types": [
+        "message",
+        "email"
+      ],
+      "topK": 10
+    },
+    "expect": "At least one match indicates the email had attachments and exposes attachment-related metadata."
+  },
+  "search_matches": [
+    {
+      "id": "19807db9f2c952ce#0",
+      "score": 0.517264366,
+      "metadata": {
+        "date": 1752478490,
+        "email_id": "19807db9f2c952ce",
+        "from": "joaquin.paz@lambdal.com",
+        "snippet": "AMO Advisory Sync This event isn't in your calendar yet You haven't interacted with joaquin.paz@lambdal.com before. Do you want to automatically add this and future invitations from them to",
+        "subject": "Invitation from an unknown sender: AMO Advisory Sync @ Tue Jul 15, 2025 11:30am - 12pm (PDT) (hshum2018@gmail.com)",
+        "thread_id": "19807db9f2c952ce",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.517264366
+    },
+    {
+      "id": "199baa501bca96cb#0",
+      "score": 0.506062448,
+      "metadata": {
+        "date": 1759773000,
+        "email_id": "199baa501bca96cb",
+        "from": "grady@edenprescott.com",
+        "snippet": "This event isn't in your calendar yet You haven't interacted with grady@edenprescott.com before. Do you want to automatically add this and future invitations from them to your calendar? Add to",
+        "subject": "Invitation from an unknown sender: Grady Lancaster (Homen Shum) @ Wed Oct 8, 2025 7am - 7:30am (PDT) (hshum2018@gmail.com)",
+        "thread_id": "199baa501bca96cb",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.506062448
+    },
+    {
+      "id": "msg:19a0f069eeb457f0",
+      "score": 0.465594292,
+      "metadata": {
+        "date_created": "2025-10-23T03:04:43.000Z",
+        "from": "brook@thrv.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": true,
+        "subject": "Appointment booked: Interviews (Homen Shum) @ Thu Oct 23, 2025 2pm - 3pm (PDT) (hshum2018@gmail.com)",
+        "thread_id": "19a0f069eeb457f0",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      },
+      "source": "dense",
+      "denseScore": 0.465594292
+    },
+    {
+      "id": "1987bced8d2b5599#0",
+      "score": 0.464873314,
+      "metadata": {
+        "date": 1754423810,
+        "email_id": "1987bced8d2b5599",
+        "from": "homen@ideaflow.io",
+        "snippet": "Homen Shun shared a calendar Homen Shun <homen@ideaflow.io> has invited you to see all event details on the calendar: \"Homen Shun\". Accept the invite to join this shared calendar. You",
+        "subject": "Accept your invitation to join shared calendar: \"Homen Shun\"",
+        "thread_id": "1987bced8d2b5599",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.464873314
+    },
+    {
+      "id": "msg:19a124894d47b5ab",
+      "score": 0.451248109,
+      "metadata": {
+        "date_created": "2025-10-23T18:15:38.000Z",
+        "from": "chan@theburntapp.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": true,
+        "subject": "Updated invitation: Homen <> Burnt @ Thu Oct 23, 2025 5pm - 6pm (PDT) (hshum2018@gmail.com)",
+        "thread_id": "19a124894d47b5ab",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      },
+      "source": "dense",
+      "denseScore": 0.451248109
+    },
+    {
+      "id": "msg:19a12ce13c0d2669",
+      "score": 0.439086854,
+      "metadata": {
+        "date_created": "2025-10-23T20:41:26.000Z",
+        "from": "usr-aHln6KHcXdwFn0R@user.luma-mail.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "You are invited to Trust, Safety & Compliance for Ai Agents in Healthcare",
+        "thread_id": "19a12ce13c0d2669",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": true
+      },
+      "source": "dense",
+      "denseScore": 0.439086854
+    },
+    {
+      "id": "msg:19a17b1901746d1c",
+      "score": 0.435726166,
+      "metadata": {
+        "date_created": "2025-10-24T19:28:24.000Z",
+        "from": "usr-031s41mSnC3XpXz@user.luma-mail.com",
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "has_attachments": false,
+        "subject": "You are invited to Self-Evolving Agents Hack",
+        "thread_id": "19a17b1901746d1c",
+        "to": [
+          "hshum2018@gmail.com"
+        ],
+        "type": "email",
+        "unread": false
+      },
+      "source": "dense",
+      "denseScore": 0.435726166
+    },
+    {
+      "id": "199f5337ffc81157#0",
+      "score": 0.432878435,
+      "metadata": {
+        "date": 1760755416,
+        "email_id": "199f5337ffc81157",
+        "from": "agarwalkunal1610@gmail.com",
+        "snippet": "Homen Shum and kunal agarwal This event isn't in your calendar yet You haven't interacted with agarwalkunal1610@gmail.com before. Do you want to automatically add this and future invitations",
+        "subject": "Invitation from an unknown sender: Homen Shum and kunal agarwal @ Sat Oct 18, 2025 10am - 10:30am (PDT) (hshum2018@gmail.com)",
+        "thread_id": "199f5337ffc81157",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.432878435
+    },
+    {
+      "id": "199f49f6c2374f63#0",
+      "score": 0.431070268,
+      "metadata": {
+        "date": 1760745712,
+        "email_id": "199f49f6c2374f63",
+        "from": "kate@purrfecthire.com",
+        "snippet": "Homen Shum and Katerine Forero This event isn't in your calendar yet You haven't interacted with kate@purrfecthire.com before. Do you want to automatically add this and future invitations from",
+        "subject": "Invitation from an unknown sender: Homen Shum and Katerine Forero @ Tue Oct 21, 2025 12:30pm - 1pm (PDT) (hshum2018@gmail.com)",
+        "thread_id": "199f49f6c2374f63",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.431070268
+    },
+    {
+      "id": "199a7d8494cc9319#0",
+      "score": 0.428185374,
+      "metadata": {
+        "date": 1759457593,
+        "email_id": "199a7d8494cc9319",
+        "from": "ben@develophealth.ai",
+        "snippet": "Interview with Develop Health This event isn't in your calendar yet You haven't interacted with ben@develophealth.ai before. Do you want to automatically add this and future invitations from",
+        "subject": "Invitation from an unknown sender: Interview with Develop Health @ Fri Oct 3, 2025 11:30am - 11:55am (PDT) (hshum2018@gmail.com)",
+        "thread_id": "199a7d8494cc9319",
+        "type": "message"
+      },
+      "source": "dense",
+      "denseScore": 0.428185374
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": [
+      {
+        "key": "lambdal.com",
+        "count": 1
+      },
+      {
+        "key": "edenprescott.com",
+        "count": 1
+      },
+      {
+        "key": "thrv.com",
+        "count": 1
+      },
+      {
+        "key": "ideaflow.io",
+        "count": 1
+      },
+      {
+        "key": "theburntapp.com",
+        "count": 1
+      },
+      {
+        "key": "user.luma-mail.com",
+        "count": 2
+      },
+      {
+        "key": "gmail.com",
+        "count": 1
+      },
+      {
+        "key": "purrfecthire.com",
+        "count": 1
+      },
+      {
+        "key": "develophealth.ai",
+        "count": 1
+      }
+    ]
+  }
+}

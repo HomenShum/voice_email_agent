@@ -1,0 +1,34 @@
+{
+  "case": {
+    "id": "rollup-month",
+    "scenario": "User asks for a monthly rollup",
+    "user_query": "Summarize the monthly highlights related to job alerts",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "monthly summary job alert",
+      "types": [
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A monthly rollup mentioning job alert themes"
+  },
+  "search_matches": [
+    {
+      "id": "summary:month:2025-10",
+      "score": 0.457263947,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "month_key": "2025-10",
+        "type": "summary_month",
+        "summary_text": "- Follow up on active applications and interviews: check JJA.CO (application viewed), review the Sage Care update, and request feedback from thrv (thank-you + feedback). Reply to any recruiter messages and platform DMs; schedule calls or next steps where requested.\n- Triage and apply to top job leads (Upwork + LinkedIn/Dice/Indeed): prioritize 2–5 AI/GenAI/ML/full‑stack roles (LLM/agent/RAG, n8n/Make automation, FastAPI/AWS, prompt engineering). Submit tailored Upwork proposals to the top 2–3 gigs this week and update resumes/cover letters for 2–3 LinkedIn targets.\n- Complete urgent account, security, and admin tasks: claim/secure the new Azure free account (verify billing limits, enable cost alerts), investigate the Google security alert (review activity, enable 2FA), and review Chase credit summary for issues. Renew Covered California $0 Silver plan before the deadline.\n- Register/confirm and calendar events you plan to attend: hackathon (Vibe AI Workflows / Pipelex Oct 29), Self‑Evolving Agents Hack, Pydantic SF meetup (Nov 11), TechCrunch/meetups, Pulumi/IBM watsonx/DeepLearning.AI webinars — RSVP and add prep items to calendar.\n- Reconcile finances and business admin: log Gusto payroll (IdeaFlow Inc), record Venmo payment to Andrea Lai, complete Mercury business credit application, and consider Windsurf.ai referral or other promos as needed.\n- Inbox cleanup and workflow hygiene: create filters for recurring job alerts/events/promos, unsubscribe or archive retail promotions (Godiva, Amazon, festival promos) while keeping technical newsletters (Neo4j, GPTDAO); star/label time-sensitive emails to avoid misses.\n- Note product updates & optional experiments: review Claude memory and MGX v1.2.5 release notes and decide whether to enable/test for workflows; track vendor discounts/offers (CoffeeSpace/TechCrunch) if attending events.\n\nExecutive paragraph\nYour inbox is dominated by AI/automation hiring activity (many Upwork and LinkedIn alerts for LLM/agent/RAG, n8n/Make, full‑stack roles) plus recruiter messages, a few active application updates (JJA.CO, Sage Care, thrv), and several event/webinar invites (hackathons, meetups, RAG/webinar series). Immediate priorities are to follow up on applications/interviews, pick and apply to the top job leads, secure accounts and resolve the Google/Azure/Covered California items, reconcile recent payments, and prune inbox noise while registering for must‑attend events.\n\nSearchable tags (up to 8)\nAI-jobs, upwork, application-followup, events-and-webinars, accounts-security, inbox-management, finance, product-updates"
+      },
+      "source": "dense",
+      "denseScore": 0.457263947
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

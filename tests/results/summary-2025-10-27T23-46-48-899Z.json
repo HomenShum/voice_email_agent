@@ -1,0 +1,98 @@
+{
+  "at": "2025-10-27T23-46-48-899Z",
+  "totals": {
+    "cases": 8,
+    "pass": 5,
+    "fail": 3
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "No matches are from accounts.google.com or have 'Security alert' in the subject; all are Upwork job alerts. The aggregation hints accounts.google.com emails exist but provides no items or subjects to satisfy the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches include multiple emails titled 'OpenAI @ UC Berkeley' from GPTDAO, aligning with the expected UC Berkeley event announcement. The results surface the relevant email with subject, sender, date, and snippet, sufficient for the user to identify the event email."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "A recent email from no-reply@mail.yelp.com says, “Don’t just save it for the group chat—write a review,” indicating Yelp asked for a review, matching the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Matches include Bandsintown emails referencing LANY (pre-sale code SOFTWORLDTOUR and Soft World Tour tickets) and a weekly Bandsintown update, which are sufficient to summarize. No contradictory information is present."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The outputs list five Upwork job alert emails with subjects and brief snippets, providing concise job titles and confirming they are new job alerts. This aligns with the request to summarize the Upwork job alert with brief job info, with no contradictory details."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The single match is a generic weekly inbox summary for 2025-W43 and not specific to the 'OpenAI @ UC Berkeley' thread. It does not mention OpenAI, Berkeley, event details, or speakers. The aggregation is empty and provides no per-thread rollup. Therefore it neither helps accomplish the requested task nor matches the expected content."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The match is a monthly summary for October that clearly highlights job alert themes (AI/GenAI/ML, LLM/agent/RAG, full-stack) and sources (Upwork, LinkedIn), plus related follow-ups. It aligns with the request and contains no contradictions."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "Aggregation contradicts matches (4 LinkedIn vs 1 Streamlit in matches, but counts reversed). No evidence of filtering by a received_after checkpoint; cannot confirm results are only after last run or that overlap is minimized."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-27T23-46-48-899Z.json",
+      "regression_changed": true
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "at": "2025-10-27T22-45-19-995Z",
+  "totals": {
+    "cases": 8,
+    "pass": 5,
+    "fail": 3
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Search results include multiple messages from no-reply@accounts.google.com with subjects containing 'Security alert' and 'Critical security alert', and aggregation shows 4 items from accounts.google.com, meeting the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "Search matches include multiple emails with subjects matching the expectation: 'OpenAI @ UC Berkeley' (several messages) and 'OpenAI Advisor @ UC Berkeley', plus an announcement ('Announcing OpenAI's GPT-5 Startup Hackathon'). Aggregation correctly groups results by sender domain (mail.beehiiv.com:1, shared1.ccsend.com:4). These outputs directly support finding the UC Berkeley event email/GPTDAO announcement."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "One of the matched messages is from no-reply@mail.yelp.com with subject 'Wait, how was Beastea? 💭', which clearly indicates Yelp asked for a review. The aggregation also shows two mail.yelp.com messages (the other being a terms update), so the outputs identify the review request as expected."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The matches include multiple Bandsintown notifications (from notifications@ppt.bandsintown.com and welcome.bandsintown.com) that explicitly reference LANY and the \"Soft World Tour\" (subjects mention pre-sale code SOFTWORLDTOUR and tickets available). Aggregation correctly groups counts by Bandsintown domains. This meets the expectation."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": true,
+        "correctness": true,
+        "pass": true,
+        "rationale": "The outputs list five Upwork job-alert messages with subjects and brief snippets (job titles and short descriptions), which matches the expectation of a brief Upwork job alert summary. The aggregation correctly shows all five are from upwork.com and there are no contradictory facts."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The outputs only include a single search hit (metadata for summary_week 2025-W43) and an empty aggregation. No actual weekly rollup text or extracted themes ('event', 'OpenAI', 'Berkeley', 'speakers') are provided, so this does not enable producing the requested summary or verifying those themes. The presence of a matching summary id suggests a relevant item exists, but the content needed to fulfill the expectation is missing."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The outputs include only a single search match pointing to a monthly summary (id: summary:month:2025-10) with no summary text or details about job-alert themes, and the aggregation by from_domain is empty. There is no content showing job alert highlights or themes, so the result would not help fulfill the user's request."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "The outputs list unread messages and provide domain counts, but they do not show any 'received_after' / last-checkpoint or evidence that results were filtered to only items after the last run. The matches include a range of timestamps (e.g. 1750304175, 1750455833, 1753987483, 1760648928, 1761255498) with no indication which, if any, are strictly after the previous checkpoint. Aggregation by domain does not prove incremental fetching or minimal overlap. Therefore the response does not meet the expectation of returning only items after the last received_after checkpoint."
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-27T22-45-19-995Z.json",
+      "regression_changed": true
+    }
+  ]
+}

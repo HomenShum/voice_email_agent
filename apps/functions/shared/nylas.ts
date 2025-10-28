@@ -14,8 +14,14 @@ export interface NylasMessage {
   subject?: string | null;
   from?: NylasEmailAddress[];
   to?: NylasEmailAddress[];
+  cc?: NylasEmailAddress[];
+  bcc?: NylasEmailAddress[];
   date?: number; // seconds since epoch
   unread?: boolean;
+  starred?: boolean;
+  size?: number;
+  labels?: { id?: string; name?: string | null }[];
+  folder?: { id?: string; name?: string | null } | null;
   attachments?: NylasAttachmentRef[];
   body?: string | null;
 }
@@ -83,8 +89,14 @@ export async function listMessages(params: ListMessagesParams): Promise<ListMess
       "subject",
       "from",
       "to",
+      "cc",
+      "bcc",
       "date",
       "unread",
+      "starred",
+      "size",
+      "labels",
+      "folder",
       "attachments",
       "body",
     ].join(",")
@@ -105,7 +117,7 @@ export async function listMessages(params: ListMessagesParams): Promise<ListMess
   }
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`Nylas API error ${res.status}: ${text}`);
+    throw new NylasApiError(`Nylas API error ${res.status}: ${text}`, res.status);
   }
 
   const data = await res.json();
@@ -139,7 +151,7 @@ export async function downloadAttachment(
   });
   if (!metaRes.ok) {
     const t = await metaRes.text().catch(() => "");
-    throw new Error(`Nylas attachment meta error ${metaRes.status}: ${t}`);
+    throw new NylasApiError(`Nylas attachment meta error ${metaRes.status}: ${t}`, metaRes.status);
   }
   const meta = await metaRes.json().catch(() => ({} as any));
   const data = meta?.data ?? {};
@@ -157,7 +169,7 @@ export async function downloadAttachment(
   });
   if (!dlRes.ok) {
     const t = await dlRes.text().catch(() => "");
-    throw new Error(`Nylas attachment download error ${dlRes.status}: ${t}`);
+    throw new NylasApiError(`Nylas attachment download error ${dlRes.status}: ${t}`, dlRes.status);
   }
   const arr = await dlRes.arrayBuffer();
   const content = Buffer.from(arr);
