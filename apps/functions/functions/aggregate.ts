@@ -21,7 +21,7 @@ function withCors(response: HttpResponseInit): HttpResponseInit {
 app.http("aggregate", {
   route: "aggregate",
   methods: ["POST", "OPTIONS"],
-  authLevel: "function",
+  authLevel: "anonymous",
   handler: async (req: HttpRequest): Promise<HttpResponseInit> => {
     // Handle preflight requests
     if (req.method === "OPTIONS") {

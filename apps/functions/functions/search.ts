@@ -109,7 +109,7 @@ function coerceBooleanFields(metadata: Record<string, unknown> | undefined): Rec
 app.http("search", {
   route: "search",
   methods: ["POST", "OPTIONS"],
-  authLevel: "function",
+  authLevel: "anonymous",
   handler: async (req: HttpRequest): Promise<HttpResponseInit> => {
     // Handle preflight requests
     if (req.method === "OPTIONS") {
