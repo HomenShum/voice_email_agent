@@ -49,7 +49,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
       <!-- Dashboard Widgets Panel -->
       <div id="dashboard-widgets-panel" class="sidebar-panel">
-        <h3>Dashboard</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="margin: 0;">Dashboard</h3>
+          <button id="refresh-dashboard" type="button" style="padding: 4px 8px; font-size: 0.8em;">🔄 Refresh</button>
+        </div>
 
         <!-- Recent Messages -->
         <div class="dashboard-widget">
@@ -407,37 +410,63 @@ async function initializeNylasData() {
 
 // Load dashboard data (recent messages, contacts, events)
 async function loadDashboardData(grantId: string) {
+  console.log('[dashboard] Loading dashboard data for grantId:', grantId);
+
   try {
     // Fetch recent messages
+    console.log('[dashboard] Fetching recent messages...');
     const messagesRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/unread?limit=5&grantId=${grantId}`);
+    console.log('[dashboard] Messages response status:', messagesRes.status);
     if (messagesRes.ok) {
       const messagesData = await messagesRes.json();
+      console.log('[dashboard] Messages data:', messagesData);
       displayRecentMessages(messagesData?.data || []);
+    } else {
+      const errorText = await messagesRes.text();
+      console.error('[dashboard] Messages error:', messagesRes.status, errorText);
+      displayRecentMessages([]);
     }
   } catch (e) {
     console.error('[dashboard] Failed to load recent messages:', e);
+    displayRecentMessages([]);
   }
 
   try {
     // Fetch recent contacts
+    console.log('[dashboard] Fetching recent contacts...');
     const contactsRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/contacts?limit=5&grantId=${grantId}`);
+    console.log('[dashboard] Contacts response status:', contactsRes.status);
     if (contactsRes.ok) {
       const contactsData = await contactsRes.json();
+      console.log('[dashboard] Contacts data:', contactsData);
       displayRecentContacts(contactsData?.data || []);
+    } else {
+      const errorText = await contactsRes.text();
+      console.error('[dashboard] Contacts error:', contactsRes.status, errorText);
+      displayRecentContacts([]);
     }
   } catch (e) {
     console.error('[dashboard] Failed to load recent contacts:', e);
+    displayRecentContacts([]);
   }
 
   try {
     // Fetch upcoming events
+    console.log('[dashboard] Fetching upcoming events...');
     const eventsRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/events?limit=5&grantId=${grantId}`);
+    console.log('[dashboard] Events response status:', eventsRes.status);
     if (eventsRes.ok) {
       const eventsData = await eventsRes.json();
+      console.log('[dashboard] Events data:', eventsData);
       displayUpcomingEvents(eventsData?.data || []);
+    } else {
+      const errorText = await eventsRes.text();
+      console.error('[dashboard] Events error:', eventsRes.status, errorText);
+      displayUpcomingEvents([]);
     }
   } catch (e) {
     console.error('[dashboard] Failed to load upcoming events:', e);
+    displayUpcomingEvents([]);
   }
 }
 
@@ -541,6 +570,35 @@ grantInput.addEventListener('change', () => {
 
 // Load Nylas data on startup
 initializeNylasData();
+
+// Dashboard refresh button
+const refreshDashboardBtn = document.querySelector<HTMLButtonElement>('#refresh-dashboard')!;
+refreshDashboardBtn.addEventListener('click', async () => {
+  const grantId = localStorage.getItem('nylasGrantId');
+  if (!grantId) {
+    alert('Please enter a Grant ID first');
+    return;
+  }
+
+  refreshDashboardBtn.disabled = true;
+  refreshDashboardBtn.textContent = '🔄 Loading...';
+
+  try {
+    await loadDashboardData(grantId);
+    refreshDashboardBtn.textContent = '✓ Refreshed';
+    setTimeout(() => {
+      refreshDashboardBtn.textContent = '🔄 Refresh';
+    }, 2000);
+  } catch (e) {
+    console.error('[dashboard] Refresh failed:', e);
+    refreshDashboardBtn.textContent = '✗ Failed';
+    setTimeout(() => {
+      refreshDashboardBtn.textContent = '🔄 Refresh';
+    }, 2000);
+  } finally {
+    refreshDashboardBtn.disabled = false;
+  }
+});
 
 // ========== Tools & Agents Panel ==========
 
