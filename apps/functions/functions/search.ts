@@ -1,19 +1,6 @@
 import type { HttpRequest, HttpResponseInit } from "@azure/functions";
+import { app } from "@azure/functions";
 
-function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
-  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(realDir);
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
-  }
-}
-
-const { app } = loadAzureFunctionsRuntime();
 // Compute ISO 8601 week start/end (UTC) from a key like "2025-W43".
 function computeIsoWeekRange(weekKey: string): { startIso: string; endIso: string } | null {
   if (!/^\d{4}-W\d{2}$/.test(weekKey)) return null;
@@ -51,9 +38,58 @@ function extractAtSubjectLiteral(q: string): string | null {
 }
 
 
-import { embedText } from "../shared/openai";
-import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone";
-import { loadSummary, getCheckpoint } from "../shared/storage";
+import { embedText } from "../shared/openai.js";
+import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone.js";
+import { loadSummary, getCheckpoint } from "../shared/storage.js";
+
+const BOOLEAN_METADATA_FIELDS = [
+  "has_attachments",
+  "has_files",
+  "has_images",
+  "has_calendar",
+  "has_links",
+  "unread",
+  "starred",
+  "is_flagged",
+  "is_internal",
+] as const;
+
+type BooleanField = (typeof BOOLEAN_METADATA_FIELDS)[number];
+
+function coerceBooleanFields(metadata: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (!metadata || typeof metadata !== "object") return metadata;
+
+  for (const field of BOOLEAN_METADATA_FIELDS) {
+    if (!(field in metadata)) continue;
+    const value = (metadata as Record<string, unknown>)[field];
+    if (typeof value === "boolean" || value === undefined || value === null) continue;
+
+    if (typeof value === "number") {
+      (metadata as Record<string, unknown>)[field as BooleanField] = value !== 0;
+      continue;
+    }
+
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (!normalized) {
+        (metadata as Record<string, unknown>)[field as BooleanField] = false;
+        continue;
+      }
+      if (["true", "1", "yes", "y", "on"].includes(normalized)) {
+        (metadata as Record<string, unknown>)[field as BooleanField] = true;
+        continue;
+      }
+      if (["false", "0", "no", "n", "off"].includes(normalized)) {
+        (metadata as Record<string, unknown>)[field as BooleanField] = false;
+        continue;
+      }
+    }
+
+    (metadata as Record<string, unknown>)[field as BooleanField] = Boolean(value);
+  }
+
+  return metadata;
+}
 
 // POST /api/search
 // Body: { grantId, query, topK=10, types?, threadId?, dateFrom?, dateTo?, bucket? }
@@ -155,7 +191,7 @@ app.http("search", {
 
       let augmented: any[] = [];
       for (const match of ranked) {
-        const metadata = { ...(match.metadata as Record<string, unknown> | undefined) };
+        const metadata = coerceBooleanFields({ ...(match.metadata as Record<string, unknown> | undefined) });
         if (metadata && /unread/i.test(String(query)) && typeof metadata.unread === "undefined") {
           metadata.unread = true;
         }
@@ -242,4 +278,3 @@ app.http("search", {
     }
   },
 });
-

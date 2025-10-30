@@ -1,6 +1,7 @@
 import { RealtimeAgent } from '@openai/agents/realtime';
 import { handoff } from '@openai/agents-core';
 import type { Tool } from '@openai/agents-core';
+import { z } from 'zod';
 import { attachAgentLifecycle, tagAgent } from './graphHooks';
 import {
   AUTOMATION_AGENT_ID,
@@ -12,14 +13,13 @@ import {
   SPECIALIST_IDS,
   createRouterRuntime,
 } from './runtime';
-import type { SpecialistId } from './runtime';
 import { createEmailOpsAgent } from './emailOpsAgent';
 import { createInsightAgent } from './insightAgent';
 import { createContactsAgent } from './contactsAgent';
 import { createCalendarAgent } from './calendarAgent';
 import { createAutomationAgent } from './automationAgent';
 
-const DISPLAY_NAMES: Record<(typeof SPECIALIST_IDS)[number], string> = {
+export const DISPLAY_NAMES: Record<(typeof SPECIALIST_IDS)[number], string> = {
   [EMAIL_AGENT_ID]: 'EmailOpsAgent',
   [INSIGHT_AGENT_ID]: 'InsightAgent',
   [CONTACTS_AGENT_ID]: 'ContactsAgent',
@@ -27,9 +27,27 @@ const DISPLAY_NAMES: Record<(typeof SPECIALIST_IDS)[number], string> = {
   [AUTOMATION_AGENT_ID]: 'AutomationAgent',
 };
 
-export type IntentDecision =
-  | { agentId: SpecialistId; confident: true; rationale: string }
-  | { agentId: null; confident: false; rationale: string };
+export const SPECIALIST_CAPABILITIES: Record<(typeof SPECIALIST_IDS)[number], string> = {
+  [EMAIL_AGENT_ID]:
+    'Email triage, LLM prioritisation (triage_recent_emails), unread listings, focused searches, message counts.',
+  [INSIGHT_AGENT_ID]:
+    'Analytics across emails: aggregations, trends, summaries and executive narratives using aggregate_emails and analyze_emails.',
+  [CONTACTS_AGENT_ID]:
+    'Contact lookup and enrichment through Nylas contacts APIs.',
+  [CALENDAR_AGENT_ID]:
+    'Calendar availability, event lookups, scheduling context via Nylas calendar APIs.',
+  [AUTOMATION_AGENT_ID]:
+    'Explains automation capabilities and outlines follow-up workflows (drafting/scheduling still limited).',
+};
+
+export const SPECIALIST_MANIFEST = [
+  { id: ROUTER_AGENT_ID, name: 'RouterAgent', description: 'Primary orchestrator that interprets user intent and delegates to specialists.' },
+  ...SPECIALIST_IDS.map((id) => ({
+    id,
+    name: DISPLAY_NAMES[id],
+    description: SPECIALIST_CAPABILITIES[id],
+  })),
+ ];
 
 export interface RouterDependencies {
   tools: {
@@ -46,40 +64,6 @@ export interface RouterBundle {
   router: RealtimeAgent;
   specialists: Record<(typeof SPECIALIST_IDS)[number], RealtimeAgent>;
   runtime: ReturnType<typeof createRouterRuntime>;
-}
-
-export function determineIntent(userText: string): IntentDecision {
-  const text = userText.trim().toLowerCase();
-  if (!text) {
-    return { agentId: null, confident: false, rationale: 'No user utterance captured yet.' };
-  }
-
-  const emailPatterns = /(unread|inbox|latest emails?|search my emails?|find (an|the) email|from:|subject:)/i;
-  if (emailPatterns.test(text)) {
-    return { agentId: EMAIL_AGENT_ID, confident: true, rationale: 'Matched email triage keywords.' };
-  }
-
-  const insightPatterns = /(summary|summarize|trend|insight|breakdown|stats?|metrics?|aggregate)/i;
-  if (insightPatterns.test(text)) {
-    return { agentId: INSIGHT_AGENT_ID, confident: true, rationale: 'Matched analytics/summary keywords.' };
-  }
-
-  const contactsPatterns = /(contact|who is|phone|email address|reach out|introduce)/i;
-  if (contactsPatterns.test(text)) {
-    return { agentId: CONTACTS_AGENT_ID, confident: true, rationale: 'Matched contact lookup keywords.' };
-  }
-
-  const calendarPatterns = /(calendar|availability|meeting|schedule|next week|free on)/i;
-  if (calendarPatterns.test(text)) {
-    return { agentId: CALENDAR_AGENT_ID, confident: true, rationale: 'Matched calendar-related keywords.' };
-  }
-
-  const automationPatterns = /(draft|reply for me|follow[- ]?up|auto(?:mate|mation)|send an email|schedule a task)/i;
-  if (automationPatterns.test(text)) {
-    return { agentId: AUTOMATION_AGENT_ID, confident: true, rationale: 'Matched automation keywords.' };
-  }
-
-  return { agentId: null, confident: false, rationale: 'No routing rule matched current utterance.' };
 }
 
 export function createRouterBundle(deps: RouterDependencies): RouterBundle {
@@ -111,6 +95,9 @@ export function createRouterBundle(deps: RouterDependencies): RouterBundle {
     tools: deps.tools.sync ?? [],
     handoffs: SPECIALIST_IDS.map((id) =>
       handoff(specialists[id], {
+        toolNameOverride: DISPLAY_NAMES[id],
+        toolDescriptionOverride: SPECIALIST_CAPABILITIES[id],
+        inputType: z.object({}),
         onHandoff: () => {
           runtime.router.progress(`[RouterAgent] Delegating to ${DISPLAY_NAMES[id]}.`);
         },
@@ -118,25 +105,26 @@ export function createRouterBundle(deps: RouterDependencies): RouterBundle {
     ) as any,
     instructions: (runContext) => {
       const utterance = extractLatestUserText(((runContext?.context as any)?.history) ?? []);
-      const decision = determineIntent(utterance);
-
-      if (!decision.confident || !decision.agentId) {
-        return [
-          'You are the RouterAgent. You must clarify ambiguous requests before delegating.',
-          `Ask ONE concise follow-up question to disambiguate the user intent. Rationale: ${decision.rationale}`,
-        ].join('\n');
-      }
-
-      const specialistName = DISPLAY_NAMES[decision.agentId];
-      const cacheSummary = runtime.router.scratchpads[decision.agentId].toInstructionSummary();
+      const latestRequest = utterance ? `"${utterance.trim()}"` : 'No new user request captured yet.';
+      const capabilityLines = SPECIALIST_IDS
+        .map((id) => `- ${DISPLAY_NAMES[id]}: ${SPECIALIST_CAPABILITIES[id]}`)
+        .join('\n');
+      const scratchpadDigest = SPECIALIST_IDS
+        .map((id) => `${DISPLAY_NAMES[id]} cache:\n${runtime.router.scratchpads[id].toInstructionSummary()}`)
+        .join('\n\n');
 
       return [
-        'You are the RouterAgent. Immediately acknowledge the user and announce the delegation path.',
-        `State: "Routing to ${specialistName}" and then invoke the corresponding handoff tool.`,
-        `Rationale: ${decision.rationale}`,
-        'After the specialist returns, summarise the concrete results referencing tool outputs by name.',
-        'Do not invent results - only cite actual tool payloads.',
-        `Specialist cache:\n${cacheSummary}`,
+        'You are the RouterAgent orchestrating this realtime conversation.',
+        `Latest user request: ${latestRequest}`,
+        'Available specialists and their focus areas:',
+        capabilityLines,
+        'Available delegation tools (call by exact name with an empty JSON object unless additional input is required): EmailOpsAgent, InsightAgent, ContactsAgent, CalendarAgent, AutomationAgent.',
+        'Your job: reason about the conversation and decide which specialist should handle the task. Do not rely on static heuristicsâ€”use judgment based on the userâ€™s actual words and context.',
+        'If the request is unclear or could map to multiple specialists, ask one brief clarifying question and do not delegate yet.',
+        'When confident, respond with "Routing to <SpecialistName>" and immediately invoke that specialistâ€™s handoff tool.',
+        'After the specialist completes, present a concise summary that cites the actual tool outputs by name. If no tools produced data, state that transparently.',
+        'Avoid fabricating capabilities or results.',
+        `Scratchpad briefings:\n${scratchpadDigest}`,
       ].join('\n');
     },
   });

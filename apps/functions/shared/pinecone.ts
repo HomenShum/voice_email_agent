@@ -96,7 +96,6 @@ const DATA_DIR = (() => {
   const candidates = [
     process.env.DATA_DIR,
     path.resolve(process.cwd(), ".data"),
-    path.resolve(__dirname, "..", ".data"),
   ].filter(Boolean) as string[];
   for (const p of candidates) {
     try {
@@ -311,50 +310,67 @@ export interface HybridQueryOptions {
   alpha?: number; // optional weighting between dense and sparse (0..1)
 }
 
+function dedupeById<T extends { id?: string }>(items: T[]): T[] {
+  if (!items.length) return items;
+  if (items.length === 1) {
+    const only = items[0];
+    return only && only.id ? items : [];
+  }
+  const map = new Map<string, T>();
+  for (const item of items) {
+    const id = item?.id;
+    if (!id) continue;
+    map.set(id, item);
+  }
+  return Array.from(map.values());
+}
+
 export async function upsertDenseVectors(namespace: string, vectors: VectorRecord[]): Promise<void> {
-  if (!vectors.length) return;
+  const uniqueVectors = dedupeById(vectors);
+  if (!uniqueVectors.length) return;
   if (process.env.SMOKE_TEST === "1" || process.env.PINECONE_DISABLE === "1") {
-    updateModality("dense", namespace, vectors.map(v => ({ id: v.id, metadata: v.metadata as any })));
+    updateModality("dense", namespace, uniqueVectors.map(v => ({ id: v.id, metadata: v.metadata as any })));
     const counts: Record<string, number> = {};
-    for (const v of vectors) {
+    for (const v of uniqueVectors) {
       const t = String((v.metadata as any)?.type || "");
       if (t) counts[t] = (counts[t] || 0) + 1;
     }
     const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([t,c])=>`${t}:${c}`).join(", ");
-    console.log(`[Pinecone:NOOP] upsert dense ${vectors.length} ns=${namespace} top5=[${top}] sampleIds=${vectors.slice(0,5).map(v=>v.id).join(",")}`);
+    console.log(`[Pinecone:NOOP] upsert dense ${uniqueVectors.length} ns=${namespace} top5=[${top}] sampleIds=${uniqueVectors.slice(0,5).map(v=>v.id).join(",")}`);
     return;
   }
   const ns = getDenseIndex().namespace(namespace);
-  await ns.upsert(vectors);
-  updateModality("dense", namespace, vectors.map(v => ({ id: v.id, metadata: v.metadata as any })));
+  await ns.upsert(uniqueVectors);
+  updateModality("dense", namespace, uniqueVectors.map(v => ({ id: v.id, metadata: v.metadata as any })));
   const counts: Record<string, number> = {};
-  for (const v of vectors) {
+  for (const v of uniqueVectors) {
     const t = String((v.metadata as any)?.type || "");
     if (t) counts[t] = (counts[t] || 0) + 1;
   }
   const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([t,c])=>`${t}:${c}`).join(", ");
-  console.log(`[pinecone] upsert dense ns=${namespace} batch=${vectors.length} top5=[${top}] sampleIds=${vectors.slice(0,5).map(v=>v.id).join(",")}`);
+  console.log(`[pinecone] upsert dense ns=${namespace} batch=${uniqueVectors.length} top5=[${top}] sampleIds=${uniqueVectors.slice(0,5).map(v=>v.id).join(",")}`);
 }
 
 export async function upsertSparseRecords(namespace: string, records: SparseRecord[]): Promise<void> {
-  if (!records.length) return;
+  const uniqueRecords = dedupeById(records);
+  if (!uniqueRecords.length) return;
   if (!SPARSE_INDEX_NAME) return;
   if (process.env.SMOKE_TEST === "1" || process.env.PINECONE_DISABLE === "1") {
-    updateModality("sparse", namespace, records.map(r => ({ id: r.id, metadata: r.metadata as any })));
+    updateModality("sparse", namespace, uniqueRecords.map(r => ({ id: r.id, metadata: r.metadata as any })));
     const counts: Record<string, number> = {};
-    for (const r of records) {
+    for (const r of uniqueRecords) {
       const t = String((r.metadata as any)?.type || "");
       if (t) counts[t] = (counts[t] || 0) + 1;
     }
     const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([t,c])=>`${t}:${c}`).join(", ");
-    console.log(`[Pinecone:NOOP] upsert sparse ${records.length} ns=${namespace} top5=[${top}] sampleIds=${records.slice(0,5).map(r=>r.id).join(",")}`);
+    console.log(`[Pinecone:NOOP] upsert sparse ${uniqueRecords.length} ns=${namespace} top5=[${top}] sampleIds=${uniqueRecords.slice(0,5).map(r=>r.id).join(",")}`);
     return;
   }
   try {
     const ns = getSparseIndexOrNull()?.namespace(namespace);
     if (!ns) return;
     await ns.upsert(
-      records.map(({ id, metadata, sparseValues, text }) => {
+      uniqueRecords.map(({ id, metadata, sparseValues, text }) => {
         if (text !== undefined) {
           return {
             id,
@@ -371,14 +387,14 @@ export async function upsertSparseRecords(namespace: string, records: SparseReco
         };
       })
     );
-    updateModality("sparse", namespace, records.map(r => ({ id: r.id, metadata: r.metadata as any })));
+    updateModality("sparse", namespace, uniqueRecords.map(r => ({ id: r.id, metadata: r.metadata as any })));
     const counts: Record<string, number> = {};
-    for (const r of records) {
+    for (const r of uniqueRecords) {
       const t = String((r.metadata as any)?.type || "");
       if (t) counts[t] = (counts[t] || 0) + 1;
     }
     const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([t,c])=>`${t}:${c}`).join(", ");
-    console.log(`[pinecone] upsert sparse ns=${namespace} batch=${records.length} top5=[${top}] sampleIds=${records.slice(0,5).map(r=>r.id).join(",")}`);
+    console.log(`[pinecone] upsert sparse ns=${namespace} batch=${uniqueRecords.length} top5=[${top}] sampleIds=${uniqueRecords.slice(0,5).map(r=>r.id).join(",")}`);
   } catch (err) {
     console.warn("[pinecone] sparse upsert failed (falling back to dense only)", err);
   }

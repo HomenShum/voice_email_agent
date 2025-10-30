@@ -1,21 +1,7 @@
 import type { HttpRequest, HttpResponseInit } from "@azure/functions";
-
-function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
-  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(realDir);
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
-  }
-}
-
-const { app } = loadAzureFunctionsRuntime();
-import { embedText } from "../shared/openai";
-import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone";
+import { app } from "@azure/functions";
+import { embedText } from "../shared/openai.js";
+import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone.js";
 
 // POST /api/aggregate
 // Body: { grantId, query, topK=50, types?, threadId?, dateFrom?, dateTo?, bucket?, groupBy="from_domain" }

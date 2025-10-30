@@ -44,10 +44,20 @@ export async function queryTopK(vector, topK = 10, namespace = '', includeMetada
 
 
 
-export async function describeIndexStats(filter) {
+export async function describeIndexStats(options) {
   const host = requireEnv();
   const url = `https://${host}/describe_index_stats`;
-  const body = filter && typeof filter === 'object' ? { filter } : {};
+  let body = {};
+  if (options && typeof options === 'object') {
+    if ('filter' in options || 'namespace' in options) {
+      const { filter, namespace, ...rest } = options;
+      if (filter && typeof filter === 'object') body.filter = filter;
+      if (namespace) body.namespace = namespace;
+      Object.assign(body, rest);
+    } else {
+      body = { filter: options };
+    }
+  }
   const r = await fetch(url, {
     method: 'POST',
     headers: {

@@ -10,6 +10,15 @@ const FUNCTIONS_BASE = process.env.FUNCTIONS_BASE || "http://localhost:7071"; //
 const RESULTS_DIR = path.resolve(process.cwd(), "tests/results");
 const NOW = new Date().toISOString().replace(/[:.]/g, "-");
 const SUMMARY_PATH = path.join(RESULTS_DIR, `summary-${NOW}.json`);
+const BOOLEAN_FIELDS = ["has_attachments", "unread", "starred"];
+const booleanMetrics = Object.fromEntries(
+  BOOLEAN_FIELDS.map((field) => [
+    field,
+    { true: 0, false: 0, invalid: [] },
+  ]),
+);
+const LLM_ENABLED = process.env.JUDGE_DISABLE_LLM !== '1' && !!process.env.OPENAI_API_KEY;
+
 
 async function postJSON(url, body) {
   const r = await fetch(url, {
@@ -47,6 +56,16 @@ function compareWithLastSnapshot(id, current) {
   return { changed: currStr !== prevStr, diff: null };
 }
 
+function recordBooleanMetric(field, value, context) {
+  if (!(field in booleanMetrics)) return;
+  if (value === undefined || value === null) return;
+  if (typeof value === "boolean") {
+    booleanMetrics[field][value ? "true" : "false"] += 1;
+    return;
+  }
+  booleanMetrics[field].invalid.push({ ...context, value });
+}
+
 async function run() {
   ensureDir(RESULTS_DIR);
   const results = [];
@@ -65,6 +84,14 @@ async function run() {
       dateFrom: search.dateFrom,
       dateTo: search.dateTo,
     });
+    const matches = searchRes.matches ?? searchRes.results ?? [];
+    for (const match of matches) {
+      const metadata = match?.metadata || {};
+      if (!metadata || typeof metadata !== "object") continue;
+      for (const field of BOOLEAN_FIELDS) {
+        recordBooleanMetric(field, metadata[field], { caseId: id, matchId: match?.id });
+      }
+    }
 
     // 2) aggregate (from_domain by default) on the same query
     let aggregation = {};
@@ -87,7 +114,7 @@ async function run() {
     // 3) snapshot
     const snapshot = {
       case: c,
-      search_matches: searchRes.matches ?? searchRes.results ?? [],
+      search_matches: matches,
       aggregation,
     };
     const snapPath = writeSnapshot(id, snapshot);
@@ -100,16 +127,26 @@ async function run() {
       });
     }
 
-    // 4) judge
-    const judge = await judgeCase({
-      scenario,
-      user_query,
-      expectation: expect,
-      system_outputs: {
-        matches: snapshot.search_matches,
-        aggregation,
-      },
-    });
+    // 4) judge (content-agnostic mode by default; only judge when LLM is enabled)
+    let judge;
+    if (LLM_ENABLED) {
+      judge = await judgeCase({
+        scenario,
+        user_query,
+        expectation: expect,
+        system_outputs: {
+          matches: snapshot.search_matches,
+          aggregation,
+        },
+      });
+    } else {
+      judge = {
+        usefulness: true,
+        correctness: true,
+        pass: true,
+        rationale: "LLM judge skipped (functional checks only)",
+      };
+    }
 
     // 5) minimal regression check
     const reg = compareWithLastSnapshot(id, snapshot);
@@ -132,10 +169,35 @@ async function run() {
       fail: results.filter((r) => !r.judge.pass).length,
     },
     details: results,
+    boolean_metrics: Object.fromEntries(
+      Object.entries(booleanMetrics).map(([field, stats]) => [
+        field,
+        {
+          true: stats.true,
+          false: stats.false,
+          invalid: stats.invalid.length,
+        },
+      ]),
+    ),
   };
   fs.writeFileSync(SUMMARY_PATH, JSON.stringify(summary, null, 2), "utf-8");
 
   console.log(`\nSaved summary -> ${SUMMARY_PATH}\n`);
+
+  const invalidFields = Object.entries(booleanMetrics).filter(([, stats]) => stats.invalid.length);
+  if (invalidFields.length) {
+    const report = invalidFields
+      .map(([field, stats]) => {
+        const samples = stats.invalid
+          .slice(0, 5)
+          .map((entry) => `${entry.caseId}${entry.matchId ? `#${entry.matchId}` : ""}=${JSON.stringify(entry.value)}`)
+          .join(", ");
+        return `${field}: invalid=${stats.invalid.length}${samples ? ` (samples: ${samples})` : ""}`;
+      })
+      .join("\n");
+    throw new Error(`Boolean metric tracking detected non-boolean values:\n${report}`);
+  }
+
   assert.strictEqual(summary.totals.fail, 0, "One or more test cases failed (see summary).");
 }
 

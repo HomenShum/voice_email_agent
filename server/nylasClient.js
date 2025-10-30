@@ -47,10 +47,19 @@ export async function listUnreadMessages({ grantId, limit = 5, received_after } 
 
 
 
-export async function listMessagesPage({ grantId, limit = 200, page_token, received_after } = {}) {
+export async function listMessagesPage({ grantId, limit = 200, page_token, received_after, view } = {}) {
   if (!grantId) throw new Error('grantId required');
   const params = { limit };
   if (page_token) params.page_token = page_token;
   if (received_after) params.received_after = received_after;
+  if (view) params.view = view;
   return nylasGet(`/grants/${grantId}/messages`, params, grantId);
+}
+
+export async function getMessage({ grantId, messageId, view } = {}) {
+  if (!grantId) throw new Error('grantId required');
+  if (!messageId) throw new Error('messageId required');
+  const params = {};
+  if (view) params.view = view;
+  return nylasGet(`/grants/${grantId}/messages/${messageId}`, params, grantId);
 }

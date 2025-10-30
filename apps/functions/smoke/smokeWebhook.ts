@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import { createHmac } from "node:crypto";
 
 async function main() {
   const webhookUrl = process.env.WEBHOOK_URL || "http://localhost:7071/api/webhooks/nylas";
@@ -15,7 +15,7 @@ async function main() {
   };
 
   const body = JSON.stringify(payload);
-  const signature = secret ? crypto.createHmac("sha256", secret).update(body, "utf8").digest("hex") : "";
+  const signature = secret ? createHmac("sha256", secret).update(body, "utf8").digest("hex") : "";
 
   console.log(`[SMOKE] Sending webhook to ${webhookUrl}`);
   const res = await fetch(webhookUrl, {

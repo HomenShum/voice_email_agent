@@ -31,10 +31,13 @@ $pineconeIndexHost = $envVars["PINECONE_INDEX_HOST"]
 $embedModel = if ($envVars["OPENAI_EMBED_MODEL"]) { $envVars["OPENAI_EMBED_MODEL"] } else { "text-embedding-3-small" }
 $textModel = if ($envVars["OPENAI_TEXT_MODEL"]) { $envVars["OPENAI_TEXT_MODEL"] } else { "gpt-5-mini" }
 $pineconeIndexName = if ($envVars["PINECONE_INDEX_NAME"]) { $envVars["PINECONE_INDEX_NAME"] } else { "emails" }
+$pineconeSparseIndexName = if ($envVars["PINECONE_SPARSE_INDEX_NAME"]) { $envVars["PINECONE_SPARSE_INDEX_NAME"] } else { "emails-sparse" }
 $nylasBase = if ($envVars["NYLAS_BASE"]) { $envVars["NYLAS_BASE"] } else { "https://api.us.nylas.com/v3" }
 $nylasWebhookSecret = if ($envVars["NYLAS_WEBHOOK_SECRET"]) { $envVars["NYLAS_WEBHOOK_SECRET"] } else { "dev" }
 $deltaDefaultMonths = if ($envVars["DELTA_DEFAULT_MONTHS"]) { $envVars["DELTA_DEFAULT_MONTHS"] } else { "1" }
-$deltaMax = if ($envVars["DELTA_MAX"]) { $envVars["DELTA_MAX"] } else { "100000" }
+$deltaMax = if ($envVars["DELTA_MAX"]) { $envVars["DELTA_MAX"] } else { "10000" }
+$deltaTimerSchedule = if ($envVars["DELTA_TIMER_SCHEDULE"]) { $envVars["DELTA_TIMER_SCHEDULE"] } else { "0 0 * * * *" }
+$deltaTimerRunOnStartup = if ($envVars["DELTA_TIMER_RUN_ON_STARTUP"]) { $envVars["DELTA_TIMER_RUN_ON_STARTUP"] } else { "0" }
 
 # Allow .env to override namespace/queue if provided
 if ($envVars["SERVICEBUS_NAMESPACE"]) { $SbNamespace = $envVars["SERVICEBUS_NAMESPACE"] }
@@ -42,19 +45,21 @@ if ($envVars["SB_QUEUE_BACKFILL"]) { $QueueName = $envVars["SB_QUEUE_BACKFILL"] 
 
 Write-Host "Loaded secrets from .env" -ForegroundColor Green
 
-# Get Service Bus connection string
-Write-Host "Getting Service Bus connection string..." -ForegroundColor Yellow
-$sbConnStr = az servicebus namespace authorization-rule keys list `
-  --name RootManageSharedAccessKey `
-  --namespace-name $SbNamespace `
-  --resource-group $ResourceGroup `
-  --query primaryConnectionString -o tsv
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to get Service Bus connection string" -ForegroundColor Red
-    exit 1
+# Get Service Bus connection string (prefer explicit .env value if provided)
+$sbConnStr = $envVars["SERVICEBUS_CONNECTION"]
+if (-not $sbConnStr) {
+  Write-Host "Getting Service Bus connection string from namespace..." -ForegroundColor Yellow
+  $sbConnStr = az servicebus namespace authorization-rule keys list `
+    --name RootManageSharedAccessKey `
+    --namespace-name $SbNamespace `
+    --resource-group $ResourceGroup `
+    --query primaryConnectionString -o tsv
+  if ($LASTEXITCODE -ne 0 -or -not $sbConnStr) {
+      Write-Host "Failed to get Service Bus connection string" -ForegroundColor Red
+      exit 1
+  }
 }
-Write-Host "OK Service Bus connection string retrieved" -ForegroundColor Green
+Write-Host "OK Service Bus connection string ready" -ForegroundColor Green
 
 # Skip App Insights connection string retrieval (optional)
 $appInsightsConnStr = ""
@@ -112,8 +117,16 @@ $settingsMap["NYLAS_BASE"] = $nylasBase
 $settingsMap["OPENAI_EMBED_MODEL"] = $embedModel
 $settingsMap["OPENAI_TEXT_MODEL"] = $textModel
 $settingsMap["PINECONE_INDEX_NAME"] = $pineconeIndexName
+$settingsMap["PINECONE_SPARSE_INDEX_NAME"] = $pineconeSparseIndexName
 $settingsMap["DELTA_DEFAULT_MONTHS"] = $deltaDefaultMonths
 $settingsMap["DELTA_MAX"] = $deltaMax
+$settingsMap["DELTA_TIMER_SCHEDULE"] = $deltaTimerSchedule
+$settingsMap["DELTA_TIMER_RUN_ON_STARTUP"] = $deltaTimerRunOnStartup
+# Worker/Node runtime configuration for Node.js v4 programming model
+$settingsMap["FUNCTIONS_WORKER_RUNTIME"] = "node"
+$settingsMap["FUNCTIONS_EXTENSION_VERSION"] = "~4"
+$settingsMap["WEBSITE_NODE_DEFAULT_VERSION"] = "22"
+$settingsMap["AzureWebJobsFeatureFlags"] = "EnableWorkerIndexing"
 # Optional: install devDependencies during remote build; Flex Consumption performs Oryx build automatically.
 $settingsMap["NPM_CONFIG_PRODUCTION"] = "false"
 if ($appInsightsConnStr) { $settingsMap["APPLICATIONINSIGHTS_CONNECTION_STRING"] = $appInsightsConnStr }
@@ -143,4 +156,3 @@ try {
 Write-Host "App settings configured" -ForegroundColor Green
 # Cleanup temp file
 Remove-Item -Path $tmpFile -ErrorAction SilentlyContinue
-

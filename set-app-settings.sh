@@ -25,6 +25,9 @@ echo "✓ Service Bus connection string retrieved"
 # Configure app settings
 echo "Configuring app settings..."
 
+DELTA_TIMER_SCHEDULE_VALUE="${DELTA_TIMER_SCHEDULE:-0 0 * * * *}"
+DELTA_TIMER_RUN_ON_STARTUP_VALUE="${DELTA_TIMER_RUN_ON_STARTUP:-0}"
+
 az functionapp config appsettings set \
   --name $FUNC_APP_NAME \
   --resource-group $RESOURCE_GROUP \
@@ -42,10 +45,11 @@ az functionapp config appsettings set \
     PINECONE_INDEX_HOST="$PINECONE_INDEX_HOST" \
     NYLAS_WEBHOOK_SECRET="dev" \
     DELTA_DEFAULT_MONTHS="1" \
-    DELTA_MAX="100000"
+    DELTA_MAX="10000" \
+    DELTA_TIMER_SCHEDULE="$DELTA_TIMER_SCHEDULE_VALUE" \
+    DELTA_TIMER_RUN_ON_STARTUP="$DELTA_TIMER_RUN_ON_STARTUP_VALUE"
 
 echo "✓ App settings configured"
 echo ""
 echo "Next step: Deploy Functions code"
 echo "cd apps/functions && func azure functionapp publish $FUNC_APP_NAME --build remote"
-

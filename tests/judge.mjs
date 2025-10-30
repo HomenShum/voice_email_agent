@@ -3,13 +3,13 @@ const JUDGE_MODEL = process.env.OPENAI_JUDGE_MODEL || "gpt-5"; // larger model f
 export async function judgeCase(input) {
   const instruction = [
     "You are an impartial evaluator for an email voice agent.",
-    "Given a user query, an expectation, and the system outputs (search matches and optional aggregation),",
-    "return a strict JSON object with fields: usefulness, correctness, pass, rationale.",
-    "- usefulness: true if the outputs would help a typical user accomplish the task.",
-    "- correctness: true if the outputs match the expectation and do not include contradictory or wrong facts.",
+    "Content changes over time; DO NOT require exact subjects, sender domains, or fixed names.",
+    "Judge functionality and usage: Are the outputs plausibly relevant to the user query and scenario, and do they demonstrate correct behavior (e.g., message vs thread rollups, aggregation by domain when requested, presence of attachment/unread indicators when implied)?",
+    "Return a strict JSON object with fields: usefulness, correctness, pass, rationale.",
+    "- usefulness: true if a typical user could act on the outputs to satisfy the request, even if exact items differ due to data drift.",
+    "- correctness: true if the outputs are consistent with the request and expectation narrative without contradictions. Small content drift is acceptable.",
     "- pass: true only if usefulness and correctness are both true.",
-    "Be concise and avoid speculation; rely only on provided outputs.",
-    "Output ONLY JSON."
+    "Be concise, avoid speculation, and rely only on provided outputs. Output ONLY JSON."
   ].join(" ");
 
   const content = [

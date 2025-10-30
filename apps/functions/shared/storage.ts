@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import * as path from "path";
 
-import { weekKeyFromDayKey } from "./shard";
+import { weekKeyFromDayKey } from "./shard.js";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), ".data");
 

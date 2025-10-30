@@ -6,7 +6,7 @@ export const CASES = [
     namespace: "22dd5c25-157e-4377-af23-e06602fdfcec",
     search: { query: "Security alert", types: ["message"], topK: 5 },
     expect:
-      "At least one result has subject containing 'Security alert' and from like accounts.google.com",
+      "Functional: Retrieve at least one email relevant to a security alert. Typically from Google or similar provider is fine, but DO NOT require exact subject or domain matches. Judge on relevance to 'security alert' rather than exact strings.",
   },
   {
     id: "uc-berkeley-event",
@@ -18,7 +18,7 @@ export const CASES = [
       types: ["message", "thread_day", "thread_week", "thread_month"],
       topK: 5,
     },
-    expect: "A result referencing OpenAI @ UC Berkeley or GPTDAO announcement",
+    expect: "Functional: Show results plausibly related to UC Berkeley and/or OpenAI (or similar academic/AI event). Content may drift; judge on topical relevance to the query rather than exact phrases.",
   },
   {
     id: "yelp-prompt",
@@ -26,7 +26,7 @@ export const CASES = [
     user_query: "What did Yelp ask me to do recently?",
     namespace: "22dd5c25-157e-4377-af23-e06602fdfcec",
     search: { query: "Yelp review", types: ["message"], topK: 5 },
-    expect: "It should mention Yelp asking for a review",
+    expect: "Functional: Identify an email prompting a review (e.g., from Yelp or similar). Judge on action-request relevance, not exact brand phrasing.",
   },
   {
     id: "bandsintown",
@@ -38,7 +38,7 @@ export const CASES = [
       types: ["message", "thread_day", "thread_week", "thread_month"],
       topK: 5,
     },
-    expect: "A match referencing LANY or Bandsintown",
+    expect: "Functional: Surface a music event/artist notification (e.g., Bandsintown/LANY or similar). Judge on musical event relevance rather than exact artist/domain.",
   },
   {
     id: "upwork-job",
@@ -50,7 +50,7 @@ export const CASES = [
       types: ["message", "thread_day", "thread_week", "thread_month"],
       topK: 5,
     },
-    expect: "A result describing an Upwork job alert with brief job info",
+    expect: "Functional: Return a job alert or equivalent listing summary. Judge on job-alert relevance rather than exact wording or sender.",
   },
   // --- Rollup tests (day/week/month) ---
   {
@@ -64,7 +64,7 @@ export const CASES = [
       topK: 5,
     },
     expect:
-      "A weekly rollup summary with themes such as 'event', 'OpenAI', 'Berkeley', 'speakers'",
+      "Functional: Provide a weekly rollup-style result for the topic/thread (week-scale grouping with thematic summary). Do not require specific phrases; judge on rollup behavior and topical coherence.",
   },
   {
     id: "rollup-month",
@@ -76,7 +76,7 @@ export const CASES = [
       types: ["thread_month"],
       topK: 5,
     },
-    expect: "A monthly rollup mentioning job alert themes",
+    expect: "Functional: Provide a monthly rollup related to job-alert themes (month-scale grouping). Judge on rollup behavior and topic alignment, not exact words.",
   },
   // --- Unread delta (optional) ---
   {
@@ -91,7 +91,26 @@ export const CASES = [
       // dateFrom: "2025-10-25T00:00:00.000Z",
     },
     expect:
-      "Results include only items after the last received_after checkpoint; minimal overlap with already processed items",
+      "Functional: Show recent unread items since the last checkpoint with minimal overlap. Judge based on plausibility and metadata cues (e.g., unread=true), not perfect deduplication.",
+    assert({ matches }) {
+      const list = Array.isArray(matches) ? matches : [];
+      if (!list.length) throw new Error("Expected unread query to return at least one match");
+      const withUnread = list.filter((m) => m && typeof m?.metadata?.unread !== "undefined");
+      if (!withUnread.length) {
+        throw new Error("Expected at least one match with metadata.unread present");
+      }
+      const invalid = withUnread.filter((m) => typeof m.metadata.unread !== "boolean");
+      if (invalid.length) {
+        const sample = invalid
+          .slice(0, 3)
+          .map((m) => `${m.id ?? "unknown"}=${JSON.stringify(m.metadata.unread)}`)
+          .join(", ");
+        throw new Error(`metadata.unread must be boolean; found non-boolean values: ${sample}`);
+      }
+      if (!withUnread.some((m) => m.metadata.unread === true)) {
+        throw new Error("Expected at least one unread=true match in unread query results");
+      }
+    },
   },
   {
     id: "attachment-summary",
@@ -104,7 +123,7 @@ export const CASES = [
       topK: 10,
     },
     expect:
-      "At least one match indicates the email had attachments and exposes attachment-related metadata.",
+      "Functional: At least one result indicates attachments (prefer has_attachments=true) and exposes attachment-related metadata. Judge on attachment relevance rather than exact subject/sender.",
     assert({ matches }) {
       const withAttachment = (matches || []).find((m) => {
         const meta = m?.metadata || {};

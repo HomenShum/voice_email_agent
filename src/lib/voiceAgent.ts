@@ -17,8 +17,13 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:87
 let activeRouterBundle: RouterBundle | null = null;
 
 let onTranscript: undefined | ((history: unknown[]) => void);
+let onRouterProgress: undefined | ((message: string) => void);
 export function setTranscriptHandler(fn: (history: unknown[]) => void) {
   onTranscript = fn;
+}
+
+export function setRouterProgressHandler(fn: (message: string) => void) {
+  onRouterProgress = fn;
 }
 
 function truncate(value: string, length = 80) {
@@ -38,8 +43,27 @@ function summarizeToolCall(record: ToolCallRecord): string {
         return `groups=${Array.isArray(data?.groups) ? data.groups.length : 0}`;
       case 'analyze_emails':
         return data?.summary ? `summary=${truncate(String(data.summary), 80)}` : '';
+      case 'triage_recent_emails': {
+        const urgent =
+          typeof data?.triage_summary?.metrics?.urgent_count === 'number'
+            ? data.triage_summary.metrics.urgent_count
+            : Array.isArray(data?.map_reduce?.top_emails)
+              ? data.map_reduce.top_emails.length
+              : 0;
+        const status = data?.triage_summary?.status || data?.map_reduce?.status;
+        const model = data?.triage_summary?.model;
+        const pieces = [`urgent=${urgent}`];
+        if (status) pieces.push(`status=${status}`);
+        if (model) pieces.push(`model=${model}`);
+        return pieces.join(', ');
+      }
+      case 'list_recent_emails': {
+        const top = Array.isArray(data?.map_reduce?.top_emails) ? data.map_reduce.top_emails.length : 0;
+        const status = data?.map_reduce?.status || 'unknown';
+        return `status=${status}, top=${top}`;
+      }
       case 'list_unread_messages':
-        return `unread=${Array.isArray(data?.messages) ? data.messages.length : 0}`;
+        return `unread=${typeof data?.total === 'number' ? data.total : (Array.isArray(data?.messages) ? data.messages.length : 0)}`;
       case 'list_contacts':
         return `contacts=${Array.isArray(data?.data) ? data.data.length : 0}`;
       case 'list_events':
@@ -82,14 +106,21 @@ export async function createVoiceSession() {
       calendar: Array.from(calendarToolset),
       sync: Array.from(syncToolset),
     },
-    onProgress: (message) => console.debug('[router]', message),
+    onProgress: (message) => {
+      console.debug('[router]', message);
+      try {
+        onRouterProgress?.(message);
+      } catch (error) {
+        console.warn('[voice] router progress handler failed', error);
+      }
+    },
   });
 
   activeRouterBundle = routerBundle;
   wireScratchpads(routerBundle);
 
   const session = new RealtimeSession(routerBundle.router, {
-    model: 'gpt-realtime',
+    model: 'gpt-realtime-mini',
     config: {
       inputAudioTranscription: { model: 'gpt-4o-mini-transcribe' },
     },
@@ -115,7 +146,7 @@ export async function createVoiceSession() {
     }
   });
 
-  const REALTIME_MODEL = 'gpt-realtime';
+  const REALTIME_MODEL = 'gpt-realtime-mini';
   const r = await fetch(`${API_BASE}/api/realtime/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

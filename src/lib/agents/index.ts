@@ -1,4 +1,4 @@
-export { createRouterBundle, determineIntent, type RouterBundle, type RouterDependencies } from './routerAgent';
+export { createRouterBundle, type RouterBundle, type RouterDependencies } from './routerAgent';
 export {
   ROUTER_AGENT_ID,
   EMAIL_AGENT_ID,

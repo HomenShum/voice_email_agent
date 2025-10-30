@@ -38,7 +38,7 @@ This project implements a production-ready voice agent that allows users to sear
 - Email metrics dashboard (total count + top 10 results)
 - Metadata issue fixed (`type: 'message'` field added)
 - `/email/count` endpoint implemented
-- Backfill limit increased to 100,000 emails
+- Delta sync window constrained to the latest 10,000 emails (dense + sparse vectors)
 
 ### ⏳ Pending
 - Azure deployment (subscription access issue)
@@ -327,10 +327,20 @@ node test-endpoints.js
 The voice agent supports the following tools:
 
 - **search_emails**: Semantic search over emails
+- **list_recent_emails**: Fetch the latest messages (default 50) and run an LLM MapReduce prioritization pass
 - **list_contacts**: List Nylas contacts
 - **list_events**: List calendar events
 - **list_unread_messages**: List unread emails
 - **backfill_start**: Trigger manual backfill
+
+### MapReduce Prioritization
+
+`list_recent_emails` retrieves the most recent inbox messages (up to 200) and then invokes a two-stage LLM pipeline:
+
+1. **Map**: The email set is divided into small chunks (default 8). Each chunk is evaluated by an OpenAI model (`PRIORITY_MODEL`, default `gpt-5-mini`) that returns the most urgent candidates in strict JSON form. Optional hints supplied via `PRIORITY_HINT_*` env vars help the model weight specific senders, domains, or keywords without enforcing heuristics.
+2. **Reduce**: The aggregated candidates are passed to a second LLM prompt that produces the final ranked `top_emails`, backup options, and a validation summary describing coverage and any gaps (e.g., failed chunks).
+
+The tool response includes the original normalized messages plus the full MapReduce audit trail so downstream agents can cite the reasoning transparently.
 
 ## 📊 Vector Database Schema
 
@@ -685,7 +695,9 @@ PINECONE_INDEX_NAME        # emails
 PINECONE_INDEX_HOST        # From .env
 NYLAS_WEBHOOK_SECRET       # dev (change for production)
 DELTA_DEFAULT_MONTHS       # 1
-DELTA_MAX                  # 100000
+DELTA_MAX                  # 10000
+DELTA_TIMER_SCHEDULE       # 0 0 * * * *
+DELTA_TIMER_RUN_ON_STARTUP # 0 (set 1 locally to force immediate timer fire)
 ```
 
 ### Troubleshooting Deployment

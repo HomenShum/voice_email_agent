@@ -1,0 +1,57 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:America/Los_Angeles
+X-LIC-LOCATION:America/Los_Angeles
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0800
+TZOFFSETTO:-0700
+TZNAME:PDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0800
+TZNAME:PST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Los_Angeles:20251029T143000
+DTEND;TZID=America/Los_Angeles:20251029T150000
+DTSTAMP:20251028T175823Z
+ORGANIZER;CN=Julio Fuentes:mailto:julio@testsassured.com
+UID:2g0ms2kqgnb0q8f4f330ntj1h5@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Julio Fuentes;X-NUM-GUESTS=0:mailto:julio@testsassured.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=hshum2018@gmail.com;X-NUM-GUESTS=0:mailto:hshum2018@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Dustin Marek;X-NUM-GUESTS=0:mailto:dustin@testsassured.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Guiller Gamata;X-NUM-GUESTS=0:mailto:guiller@testsassured.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Kevin Nguyen;X-NUM-GUESTS=0:mailto:kevin@testsassured.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/cvz-tnyi-zks
+X-MICROSOFT-CDO-OWNERAPPTID:637087059
+CREATED:20251028T175817Z
+DESCRIPTION:-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/cv
+ z-tnyi-zks\nOr dial: (US) +1 252-563-4442 PIN: 973896476#\nMore phone numbe
+ rs: https://tel.meet/cvz-tnyi-zks?pin=4644211811148&hs=7\n\nLearn more abou
+ t Meet at: https://support.google.com/a/users/answer/9282720\n\nPlease do n
+ ot edit this section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20251028T175822Z
+LOCATION:https://meet.google.com/cvz-tnyi-zks
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:AI Engineer Candidate Chat - Homen Shum
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

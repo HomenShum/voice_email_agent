@@ -1,29 +1,22 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
-  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(realDir);
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
-  }
-}
-
-const { app } = loadAzureFunctionsRuntime();
+import { app } from "@azure/functions";
 import { registerGrant } from "../shared/nylasConfig";
 import { enqueueBackfill, BackfillJob } from "../shared/bus";
 import { getCheckpoint, createJob, setGrantSecret } from "../shared/storage";
 
 const NYLAS_BASE = process.env.NYLAS_BASE || "https://api.us.nylas.com/v3";
+const MAX_DELTA_WINDOW = 10000;
 
 function monthsAgoToEpochSeconds(months: number): number {
   const d = new Date();
   d.setMonth(d.getMonth() - Math.max(0, Math.floor(months)));
   return Math.floor(d.getTime() / 1000);
+}
+
+function clampDeltaMax(value: unknown): number {
+  const raw = typeof value === "string" ? Number(value) : typeof value === "number" ? value : NaN;
+  if (!Number.isFinite(raw) || raw <= 0) return MAX_DELTA_WINDOW;
+  return Math.min(Math.floor(raw), MAX_DELTA_WINDOW);
 }
 
 app.http("updateContext", {
@@ -59,8 +52,9 @@ app.http("updateContext", {
       const sinceEpoch = cp > 0 ? cp : monthsAgoToEpochSeconds(months);
       const initial = cp <= 0;
       const initialMaxDefault = Number(process.env.BACKFILL_MAX || 10000);
-      const deltaMaxDefault = Number(process.env.DELTA_MAX || 100000);
-      const max = initial ? (body?.initialMax ?? initialMaxDefault) : deltaMaxDefault;
+      const max = initial
+        ? clampDeltaMax(body?.initialMax ?? initialMaxDefault)
+        : clampDeltaMax(process.env.DELTA_MAX);
 
       // 4) Create job record for UI progress
       const jobId = await createJob({ grantId, type: initial ? "backfill" : "delta", total: max, processed: 0 });
@@ -89,4 +83,3 @@ app.http("updateContext", {
     }
   },
 });
-

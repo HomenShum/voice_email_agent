@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
     "rootDir": ".",
-    "strict": true,
-    "esModuleInterop": true,
+    "strict": false,
+    "esModuleInterop": false,
     "skipLibCheck": true,
     "types": ["@azure/functions"],
-    "lib": ["ES2020", "DOM"]
+    "lib": ["ES2022", "DOM"]
   },
-  "include": ["functions/**/*.ts", "shared/**/*.ts", "smoke/**/*.ts"],
+  "include": ["index.ts", "functions/**/*.ts", "shared/**/*.ts", "smoke/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
 

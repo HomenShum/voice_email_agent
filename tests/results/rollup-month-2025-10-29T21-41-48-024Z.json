@@ -1,0 +1,36 @@
+{
+  "case": {
+    "id": "rollup-month",
+    "scenario": "User asks for a monthly rollup",
+    "user_query": "Summarize the monthly highlights related to job alerts",
+    "namespace": "22dd5c25-157e-4377-af23-e06602fdfcec",
+    "search": {
+      "query": "monthly summary job alert",
+      "types": [
+        "thread_month"
+      ],
+      "topK": 5
+    },
+    "expect": "A monthly rollup mentioning job alert themes"
+  },
+  "search_matches": [
+    {
+      "id": "summary:month:2025-10",
+      "score": 0.457212448,
+      "metadata": {
+        "grant_id": "22dd5c25-157e-4377-af23-e06602fdfcec",
+        "month_key": "2025-10",
+        "type": "summary_month",
+        "summary_kind": "month",
+        "summary_key": "2025-10",
+        "summary_source": "metadata"
+      },
+      "source": "dense",
+      "denseScore": 0.457212448
+    }
+  ],
+  "aggregation": {
+    "groupBy": "from_domain",
+    "counts": []
+  }
+}

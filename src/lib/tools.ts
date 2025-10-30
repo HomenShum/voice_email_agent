@@ -61,6 +61,66 @@ function summarizeFilters(parameters: any): string | undefined {
   }
 }
 
+function normalizeUnreadMessage(rawMessage: any) {
+  if (rawMessage && typeof rawMessage === 'object' && 'raw' in rawMessage) {
+    return rawMessage;
+  }
+
+  const rawFrom = Array.isArray(rawMessage?.from) ? rawMessage.from : (rawMessage?.from ? [rawMessage.from] : []);
+  const primary = rawFrom?.[0] || {};
+  const fromEmail = String(primary?.email || primary?.address || '').trim();
+  const fromName = String(primary?.name || primary?.display_name || '').trim();
+  const fromDisplay = fromEmail && fromName ? `${fromName} <${fromEmail}>` : (fromName || fromEmail || '');
+  const receivedRaw = Number(rawMessage?.received_at ?? rawMessage?.date ?? 0);
+  const receivedMs = Number.isFinite(receivedRaw) && receivedRaw > 0
+    ? (receivedRaw > 1e12 ? receivedRaw : receivedRaw * 1000)
+    : null;
+  const receivedIso = receivedMs ? new Date(receivedMs).toISOString() : null;
+  const receivedEpoch = receivedMs ? Math.floor(receivedMs / 1000) : null;
+
+  return {
+    id: rawMessage?.id ? String(rawMessage.id) : undefined,
+    thread_id: rawMessage?.thread_id ? String(rawMessage.thread_id) : undefined,
+    subject: rawMessage?.subject || '',
+    snippet: rawMessage?.snippet || '',
+    unread: rawMessage?.unread ?? true,
+    received_at: receivedEpoch,
+    received_at_iso: receivedIso,
+    from: {
+      email: fromEmail || undefined,
+      name: fromName || undefined,
+      display: fromDisplay || undefined,
+    },
+    raw: rawMessage,
+  };
+}
+
+function normalizeUnreadPayload(raw: any) {
+  if (!raw || typeof raw !== 'object') {
+    return { total: 0, has_more: false, next_cursor: null, messages: [], data: [] };
+  }
+
+  const baseMessages = Array.isArray(raw.messages) ? raw.messages : (Array.isArray(raw.data) ? raw.data : []);
+  const hasNormalized = baseMessages.some((m: any) => m && typeof m === 'object' && 'raw' in m);
+  const messages = hasNormalized ? baseMessages : baseMessages.map((m: any) => normalizeUnreadMessage(m));
+  const total = typeof raw.total === 'number'
+    ? raw.total
+    : typeof raw.count === 'number'
+      ? raw.count
+      : messages.length;
+  const nextCursor = raw.next_cursor ?? raw.next_page_token ?? raw.nextPageToken ?? null;
+  const hasMore = typeof raw.has_more === 'boolean' ? raw.has_more : Boolean(nextCursor);
+
+  return {
+    ...raw,
+    total,
+    next_cursor: nextCursor,
+    has_more: hasMore,
+    messages,
+    data: messages,
+  };
+}
+
 // Tool call tracking
 export function setToolCallHandler(fn: (toolCall: ToolCallRecord) => void) { onToolCall = fn; }
 export function addToolCallListener(fn: (toolCall: ToolCallRecord) => void) { extraToolCallListeners.add(fn); }
@@ -95,7 +155,7 @@ function logToolCall(options: LogToolCallOptions) {
 // Deterministic ISO-UTC week utilities and relative range resolution
 let lastResolvedWeek: { start: Date; end: Date; label: string } | null = null;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const safeTrunc = (s: string, n = 80) => (typeof s === 'string' && s.length > n ? s.slice(0, n - 1) + '…' : s || '');
+const safeTrunc = (s: string, n = 80) => (typeof s === 'string' && s.length > n ? s.slice(0, n - 1) + '...' : s || '');
 
 function startOfISOWeekUTC(dIn: Date): Date {
   const d = new Date(Date.UTC(dIn.getUTCFullYear(), dIn.getUTCMonth(), dIn.getUTCDate()));
@@ -261,7 +321,7 @@ const searchEmails = tool({
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
     const params = { text, top_k, filters };
-    progress(`search_emails starting — q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
+    progress(`search_emails starting - q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
     if (_range) {
       filters = mergeDateFilter(filters, _range.start, _range.end);
@@ -278,7 +338,7 @@ const searchEmails = tool({
       const _count = Array.isArray((data as any)?.results) ? (data as any).results.length : 0;
       const _total = (data as any)?.total ?? _count;
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      progress(`search_emails finished — ${_count} item(s) of ${_total} total in ${duration}ms`);
+      progress(`search_emails finished - ${_count} item(s) of ${_total} total in ${duration}ms`);
 
       onResults?.(data);
       onEmailMetrics?.(data);
@@ -360,7 +420,8 @@ const listUnreadMessages = tool({
       url.searchParams.set('limit', String(limit || 5));
       if (sinceEpoch) url.searchParams.set('sinceEpoch', String(sinceEpoch));
       const res = await fetch(url);
-      const data = await res.json();
+      const raw = await res.json();
+      const data = normalizeUnreadPayload(raw);
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       onUnread?.(data);
       logToolCall({ name: 'list_unread_messages', callId, parameters: params, result: data, duration });
@@ -368,6 +429,132 @@ const listUnreadMessages = tool({
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       logToolCall({ name: 'list_unread_messages', callId, parameters: params, duration, error: String(error) });
+      throw error;
+    }
+  },
+});
+
+const triageRecentEmails = tool({
+  name: 'triage_recent_emails',
+  description: 'Run prioritized email triage (gpt-5-mini) to surface urgent messages, actions, and validation details.',
+  needsApproval: true,
+  parameters: z.object({
+    limit: z.number().optional().default(50),
+    includeBodies: z.boolean().optional().default(true),
+    grantId: z.string().trim().default(''),
+  }),
+  async execute({ limit, includeBodies, grantId }, details?: any) {
+    const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
+    const effectiveGrant = typeof grantId === 'string' ? grantId.trim() : '';
+    const params = { limit, includeBodies, grantId: effectiveGrant || undefined };
+    const safeLimit =
+      typeof limit === 'number' && Number.isFinite(limit) ? Math.max(Math.min(limit, 200), 1) : 50;
+    const payload: Record<string, unknown> = { limit: safeLimit };
+    if (typeof includeBodies === 'boolean') payload.includeBodies = includeBodies;
+    if (effectiveGrant) payload.grantId = effectiveGrant;
+    progress(
+      `triage_recent_emails starting - limit=${safeLimit}${
+        includeBodies === false ? ', bodies=disabled' : ''
+      }`,
+    );
+    try {
+      const res = await fetch(`${API_BASE}/email/triage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '');
+        throw new Error(
+          `[triage_recent_emails] ${res.status} ${res.statusText || 'error'}${bodyText ? ` - ${bodyText}` : ''}`,
+        );
+      }
+      const data = await res.json();
+      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+      const status = data?.triage_summary?.status || data?.map_reduce?.status || 'unknown';
+      const urgentCount =
+        typeof data?.triage_summary?.metrics?.urgent_count === 'number'
+          ? data.triage_summary.metrics.urgent_count
+          : Array.isArray(data?.map_reduce?.top_emails)
+            ? data.map_reduce.top_emails.length
+            : 0;
+      progress(`triage_recent_emails finished - status=${status}, urgent=${urgentCount} in ${duration}ms`);
+      logToolCall({ name: 'triage_recent_emails', callId, parameters: params, result: data, duration });
+      return data;
+    } catch (error) {
+      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+      logToolCall({ name: 'triage_recent_emails', callId, parameters: params, duration, error: String(error) });
+      throw error;
+    }
+  },
+});
+
+const listRecentEmails = tool({
+  name: 'list_recent_emails',
+  description: 'Fetch the most recent emails (up to 200) and run LLM MapReduce prioritization',
+  needsApproval: true,
+  parameters: z.object({
+    limit: z.number().optional().default(50),
+    includeBodies: z.boolean().optional().default(true),
+  }),
+  async execute({ limit, includeBodies }, details?: any) {
+    const _t0 = (globalThis.performance?.now?.() ?? Date.now());
+    const callId = details?.toolCall?.id;
+    const params = { limit, includeBodies };
+    const safeLimit = typeof limit === 'number' && Number.isFinite(limit) ? Math.max(Math.min(limit, 200), 1) : 50;
+    progress(`list_recent_emails starting - limit=${safeLimit}${includeBodies === false ? ', bodies=disabled' : ''}`);
+    try {
+      const url = new URL(`${API_BASE}/nylas/messages/recent`);
+      url.searchParams.set('limit', String(safeLimit));
+      if (includeBodies === false) url.searchParams.set('includeBodies', 'false');
+      if (includeBodies === true) url.searchParams.set('includeBodies', 'true');
+      const res = await fetch(url);
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '');
+        const message = `[list_recent_emails] ${res.status} ${res.statusText || 'error'}${bodyText ? ` — ${bodyText}` : ''}`;
+        progress(`${message}. Falling back to list_unread_messages.`);
+
+        const fallbackUrl = new URL(`${API_BASE}/nylas/unread`);
+        fallbackUrl.searchParams.set('limit', String(Math.min(safeLimit, 50)));
+        const fallbackRes = await fetch(fallbackUrl);
+        if (!fallbackRes.ok) {
+          const fallbackText = await fallbackRes.text().catch(() => '');
+          throw new Error(`${message}; fallback unread fetch failed ${fallbackRes.status} ${fallbackRes.statusText || ''}${fallbackText ? ` — ${fallbackText}` : ''}`.trim());
+        }
+
+        const fallbackData = await fallbackRes.json();
+        const messages = Array.isArray(fallbackData?.messages)
+          ? fallbackData.messages
+          : (Array.isArray(fallbackData?.data) ? fallbackData.data : []);
+
+        const normalizedFallback = {
+          source: 'fallback-unread',
+          messages,
+          map_reduce: {
+            status: 'unavailable',
+            error: 'RECENT_ENDPOINT_UNAVAILABLE',
+            note: `Primary endpoint returned ${res.status}. Provided unread list instead.`,
+          },
+        };
+
+        const durationFallback = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+        logToolCall({ name: 'list_recent_emails', callId, parameters: params, result: normalizedFallback, duration: durationFallback });
+        return normalizedFallback;
+      }
+
+      const data = await res.json();
+      const returned = Array.isArray((data as any)?.messages) ? (data as any).messages.length : 0;
+      const topCount = Array.isArray((data as any)?.map_reduce?.top_emails) ? (data as any).map_reduce.top_emails.length : 0;
+      const status = (data as any)?.map_reduce?.status || 'unknown';
+      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+      const summaryTail = topCount ? `, ${topCount} high-priority candidate(s)` : '';
+      progress(`list_recent_emails finished - ${returned} message(s) in ${duration}ms (MapReduce: ${status}${summaryTail})`);
+      logToolCall({ name: 'list_recent_emails', callId, parameters: params, result: data, duration });
+      return data;
+    } catch (error) {
+      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+      logToolCall({ name: 'list_recent_emails', callId, parameters: params, duration, error: String(error) });
       throw error;
     }
   },
@@ -448,7 +635,7 @@ const aggregateEmails = tool({
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
     const params = { metric, group_by, filters, top_k };
-    progress(`aggregate_emails starting — metric=${metric}${group_by ? `, group_by=${group_by.join(',')}` : ''}`);
+    progress(`aggregate_emails starting - metric=${metric}${group_by ? `, group_by=${group_by.join(',')}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
     if (_range) {
       filters = mergeDateFilter(filters, _range.start, _range.end);
@@ -463,7 +650,7 @@ const aggregateEmails = tool({
       const data = await res.json();
       const _count = Array.isArray((data as any)?.groups) ? (data as any).groups.length : (typeof (data as any)?.count === 'number' ? (data as any).count : 0);
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      progress(`aggregate_emails finished — ${_count} group(s) in ${duration}ms`);
+      progress(`aggregate_emails finished - ${_count} group(s) in ${duration}ms`);
       logToolCall({ name: 'aggregate_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
@@ -483,7 +670,7 @@ const analyzeEmails = tool({
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
     const params = { text, filters, top_k };
-    progress(`analyze_emails starting — q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
+    progress(`analyze_emails starting - q="${safeTrunc(text)}"${top_k ? `, top_k=${top_k}` : ''}`);
     let _range = maybeResolveRelativeWeek(details) || maybeResolveRelativeDays(details);
     if (_range) {
       filters = mergeDateFilter(filters, _range.start, _range.end);
@@ -497,7 +684,7 @@ const analyzeEmails = tool({
       });
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      progress(`analyze_emails finished — ${duration}ms`);
+      progress(`analyze_emails finished - ${duration}ms`);
       logToolCall({ name: 'analyze_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
@@ -533,7 +720,7 @@ const countEmails = tool({
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       const total = (data as any)?.total ?? 0;
-      progress(`count_emails finished — ${total} total emails in ${duration}ms`);
+      progress(`count_emails finished - ${total} total emails in ${duration}ms`);
       logToolCall({ name: 'count_emails', callId, parameters: params, result: data, duration });
       return data;
     } catch (error) {
@@ -545,7 +732,7 @@ const countEmails = tool({
 });
 
 
-export const emailOpsToolset = [searchEmails, listUnreadMessages, countEmails] as const;
+export const emailOpsToolset = [triageRecentEmails, searchEmails, listUnreadMessages, listRecentEmails, countEmails] as const;
 export const insightToolset = [aggregateEmails, analyzeEmails, countEmails] as const;
 export const contactsToolset = [listContacts] as const;
 export const calendarToolset = [listEvents] as const;

@@ -11,14 +11,12 @@ process.env.PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'emails';
 process.env.OPENAI_TEXT_MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5-mini';
 process.env.OPENAI_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || 'text-embedding-3-small';
 
-// Load the stubbed azure functions app (captures handlers on registration)
-const af = require(path.resolve('apps/functions/dist/node_modules/@azure/functions/index.js'));
-
-// Load compiled function modules, which will register their handlers with the stub
+// Load compiled function modules first; they will import the stub and register handlers
 require(path.resolve('apps/functions/dist/functions/search.js'));
 require(path.resolve('apps/functions/dist/functions/aggregate.js'));
 
-const handlers = af.__handlers;
+// Handlers were captured by the stub on globalThis
+const handlers = (globalThis.__handlers) || {};
 console.log('Handlers registered:', Object.keys(handlers));
 
 function readBody(req) {

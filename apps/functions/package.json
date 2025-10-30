@@ -2,8 +2,9 @@
   "name": "@rtvea/functions",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Azure Functions for Real-time Voice Email Agent backfill",
-  "main": "dist/functions/*.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",

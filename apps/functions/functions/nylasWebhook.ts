@@ -1,20 +1,6 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
-  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(realDir);
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
-  }
-}
-
-const { app } = loadAzureFunctionsRuntime();
-import crypto from "node:crypto";
+import { app } from "@azure/functions";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { enqueueBackfill } from "../shared/bus";
 
 function ok(body: any): HttpResponseInit { return { status: 200, jsonBody: body }; }
@@ -46,10 +32,10 @@ app.http("nylasWebhook", {
 
       if (secret) {
         try {
-          const digestHex = crypto.createHmac("sha256", secret).update(raw, "utf8").digest("hex");
+          const digestHex = createHmac("sha256", secret).update(raw, "utf8").digest("hex");
           const a = Buffer.from(digestHex, "hex");
           const b = Buffer.from((sigHeader || ""), "hex");
-          if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+          if (a.length !== b.length || !timingSafeEqual(a, b)) {
             ctx.warn?.("nylasWebhook: signature verification failed");
             return { status: 401, jsonBody: { ok: false, error: "invalid signature" } };
           }

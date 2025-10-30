@@ -1,0 +1,126 @@
+{
+  "at": "2025-10-29T18-59-09-600Z",
+  "totals": {
+    "cases": 9,
+    "pass": 0,
+    "fail": 9
+  },
+  "details": [
+    {
+      "id": "security-alert",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\security-alert-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "uc-berkeley-event",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\uc-berkeley-event-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "yelp-prompt",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\yelp-prompt-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": false
+    },
+    {
+      "id": "bandsintown",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\bandsintown-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "upwork-job",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\upwork-job-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-week",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-week-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "rollup-month",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\rollup-month-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "unread-delta",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\unread-delta-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": true
+    },
+    {
+      "id": "attachment-summary",
+      "judge": {
+        "usefulness": false,
+        "correctness": false,
+        "pass": false,
+        "rationale": "JUDGE_DISABLE_LLM=1 (LLM judging disabled)"
+      },
+      "snapshot": "D:\\VSCode Projects\\Real_time_voice_email_agent\\my-project\\tests\\results\\attachment-summary-2025-10-29T18-59-09-600Z.json",
+      "regression_changed": false
+    }
+  ],
+  "boolean_metrics": {
+    "has_attachments": {
+      "true": 2,
+      "false": 6,
+      "invalid": 0
+    },
+    "unread": {
+      "true": 9,
+      "false": 4,
+      "invalid": 0
+    },
+    "starred": {
+      "true": 0,
+      "false": 0,
+      "invalid": 0
+    }
+  }
+}

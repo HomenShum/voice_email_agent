@@ -1,26 +1,26 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
-  const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require(realDir);
-  } catch {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
-  }
-}
-
-const { app } = loadAzureFunctionsRuntime();
+import { app } from "@azure/functions";
 import { enqueueBackfill, BackfillJob } from "../shared/bus";
 import { getCheckpoint } from "../shared/storage";
+
+const MAX_EMAIL_WINDOW = 10000;
 
 function monthsAgoToEpochSeconds(months: number): number {
   const d = new Date();
   d.setMonth(d.getMonth() - Math.max(0, Math.floor(months)));
   return Math.floor(d.getTime() / 1000);
+}
+
+function parsePositiveNumber(value: unknown, fallback: number): number {
+  const raw = typeof value === "string" ? Number(value) : typeof value === "number" ? value : NaN;
+  if (!Number.isFinite(raw) || raw <= 0) return fallback;
+  return Math.floor(raw);
+}
+
+function resolveMaxEmails(requested: unknown): number {
+  const configured = parsePositiveNumber(process.env.DELTA_MAX, MAX_EMAIL_WINDOW);
+  const candidate = parsePositiveNumber(requested, configured);
+  return Math.min(candidate, MAX_EMAIL_WINDOW);
 }
 
 app.http("deltaStart", {
@@ -37,7 +37,7 @@ app.http("deltaStart", {
 
       const defaultMonths = Number(process.env.DELTA_DEFAULT_MONTHS || 1);
       const months = body?.months ?? defaultMonths;
-      const max = body?.max ?? Number(process.env.DELTA_MAX || 100000);
+      const max = resolveMaxEmails(body?.max);
 
       const cp = await getCheckpoint(grantId);
       const sinceEpoch = cp > 0 ? cp : monthsAgoToEpochSeconds(months);
@@ -45,7 +45,7 @@ app.http("deltaStart", {
       const job: BackfillJob = { grantId, sinceEpoch, max, processed: 0, attempt: 0 };
       await enqueueBackfill(job);
 
-      ctx.log(`Enqueued delta for grantId=${grantId} since=${sinceEpoch} max=${max} (cp=${cp})`);
+      ctx.log(`Enqueued delta for grantId=${grantId} since=${sinceEpoch} max=${max} (cp=${cp}) window_limit=${MAX_EMAIL_WINDOW}`);
       return {
         status: 202,
         jsonBody: { ok: true, grantId, sinceEpoch, max, message: "Delta sync enqueued" },
@@ -56,4 +56,3 @@ app.http("deltaStart", {
     }
   },
 });
-
