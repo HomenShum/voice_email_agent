@@ -41,17 +41,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Remove incompatible app settings for Flex Consumption
-        run: |
-          # Remove settings that are not supported by Flex Consumption SKU
-          echo "Removing incompatible app settings..."
-          az functionapp config appsettings delete \
-            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD || true
-
-          echo "Incompatible settings removed (if they existed)"
-
       - name: Ensure Function App settings (Flex Consumption compatible)
         run: |
           # Flex Consumption plans manage most settings automatically
@@ -82,49 +71,46 @@ jobs:
           zip -r ../functions.zip dist node_modules package.json host.json
           ls -lah ../functions.zip
 
-      - name: Deploy Functions (config-zip primary, OneDeploy fallback)
+      - name: Deploy Functions (OneDeploy - Flex Consumption compatible)
         run: |
           set -e
           APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
           RG="${{ env.AZURE_RESOURCE_GROUP }}"
           ZIP_PATH="apps/functions.zip"
 
-          echo "Primary: az functionapp deployment source config-zip"
+          echo "Using az webapp deploy (OneDeploy) - compatible with Flex Consumption"
           DEPLOY_OK=0
           for attempt in 1 2 3; do
-            echo "config-zip attempt #$attempt..."
-            if az functionapp deployment source config-zip \
+            echo "OneDeploy attempt #$attempt..."
+            if az webapp deploy \
               --resource-group "$RG" \
               --name "$APP_NAME" \
-              --src "$ZIP_PATH"; then
+              --src-path "$ZIP_PATH" \
+              --type zip \
+              --async false; then
               DEPLOY_OK=1
               break
             fi
-            echo "config-zip failed on attempt #$attempt. Retrying in 20s..."
+            echo "OneDeploy failed on attempt #$attempt. Retrying in 20s..."
             sleep 20
           done
 
           if [ "$DEPLOY_OK" -ne 1 ]; then
-            echo "Fallback: az webapp deploy (OneDeploy)"
-            for attempt in 1 2; do
-              echo "OneDeploy attempt #$attempt..."
-              if az webapp deploy \
-                --resource-group "$RG" \
-                --name "$APP_NAME" \
-                --src-path "$ZIP_PATH" \
-                --type zip; then
-                DEPLOY_OK=1
-                break
-              fi
-              echo "OneDeploy failed on attempt #$attempt. Retrying in 20s..."
-              sleep 20
-            done
-          fi
-
-          if [ "$DEPLOY_OK" -ne 1 ]; then
-            echo "ERROR: Deploy failed after primary and fallback attempts"
+            echo "ERROR: OneDeploy failed after 3 attempts"
             exit 1
           fi
+
+      - name: Remove incompatible settings added by deployment
+        run: |
+          # Deployment methods may auto-add WEBSITE_RUN_FROM_PACKAGE
+          # Remove it after deployment for Flex Consumption compatibility
+          echo "Removing incompatible app settings that may have been added during deployment..."
+          az functionapp config appsettings delete \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD || true
+
+          echo "Post-deployment cleanup complete"
 
       - name: Verify Functions discovered
         run: |
