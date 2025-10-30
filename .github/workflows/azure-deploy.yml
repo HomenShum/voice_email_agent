@@ -41,18 +41,28 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Ensure Function App settings (worker indexing)
+      - name: Ensure Function App settings (worker indexing + runtime)
         run: |
           az functionapp config appsettings set \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --settings AzureWebJobsFeatureFlags=EnableWorkerIndexing
+            --settings \
+              AzureWebJobsFeatureFlags=EnableWorkerIndexing \
+              FUNCTIONS_WORKER_RUNTIME=node \
+              WEBSITE_NODE_DEFAULT_VERSION=~22 \
+              FUNCTIONS_EXTENSION_VERSION=~4 \
+              WEBSITE_RUN_FROM_PACKAGE=1 \
+              SCM_DO_BUILD_DURING_DEPLOYMENT=false
 
       - name: Restart Function App to apply settings
         run: |
           az functionapp restart \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+          # Wait for restart to complete
+          echo "Waiting 30 seconds for function app to restart..."
+          sleep 30
 
       - name: Package Functions app (zip)
         run: |
@@ -110,17 +120,45 @@ jobs:
 
       - name: Verify Functions discovered
         run: |
+          echo "Waiting for functions to be indexed..."
+          sleep 15
+
           echo "Listing discovered functions..."
           az functionapp function list \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} -o table
+
           CNT=$(az functionapp function list \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "length(@)")
+
+          echo "Found $CNT functions"
+
           if [ "$CNT" -eq 0 ]; then
             echo "ERROR: 0 functions discovered after deployment"
+            echo "Checking function app logs..."
+            az functionapp log tail \
+              --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --timeout 30 || true
             exit 1
           fi
+
+          echo "✓ Successfully discovered $CNT functions"
+
+      - name: Warm up function app
+        run: |
+          echo "Warming up function app by calling root URL..."
+          FUNCTION_APP_URL="${{ secrets.AZURE_FUNCTION_APP_URL != '' && secrets.AZURE_FUNCTION_APP_URL || format('https://{0}.azurewebsites.net', secrets.AZURE_FUNCTION_APP_NAME) }}"
+
+          # Try to call the root URL to warm up the app
+          for i in 1 2 3; do
+            echo "Warm-up attempt #$i..."
+            curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" "$FUNCTION_APP_URL" || true
+            sleep 5
+          done
+
+          echo "✓ Function app warm-up complete"
 
   deploy-frontend:
     runs-on: ubuntu-latest

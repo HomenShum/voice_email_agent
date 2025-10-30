@@ -5,6 +5,9 @@
     "version": "[4.0.0, 5.0.0)"
   },
   "extensions": {
+    "http": {
+      "routePrefix": "api"
+    },
     "serviceBus": {
       "prefetchCount": 40,
       "maxConcurrentCalls": 4
@@ -16,7 +19,21 @@
         "isEnabled": true,
         "maxTelemetryItemsPerSecond": 20
       }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Host.Results": "Information",
+      "Function": "Information",
+      "Host.Aggregator": "Information"
     }
+  },
+  "functionTimeout": "00:10:00",
+  "healthMonitor": {
+    "enabled": true,
+    "healthCheckInterval": "00:00:10",
+    "healthCheckWindow": "00:02:00",
+    "healthCheckThreshold": 6,
+    "counterThreshold": 0.80
   }
 }
 
