@@ -71,32 +71,72 @@ jobs:
           zip -r ../functions.zip dist node_modules package.json host.json
           ls -lah ../functions.zip
 
-      - name: Deploy Functions (OneDeploy - Flex Consumption compatible)
+      - name: Deploy Functions (Kudu ZipDeploy API - Flex Consumption compatible)
         run: |
           set -e
           APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
           RG="${{ env.AZURE_RESOURCE_GROUP }}"
           ZIP_PATH="apps/functions.zip"
 
-          echo "Using az webapp deploy (OneDeploy) - compatible with Flex Consumption"
+          echo "Getting publishing credentials..."
+          CREDS=$(az functionapp deployment list-publishing-credentials \
+            --name "$APP_NAME" \
+            --resource-group "$RG" \
+            --query "{username:publishingUserName, password:publishingPassword}" -o json)
+
+          USERNAME=$(echo $CREDS | jq -r '.username')
+          PASSWORD=$(echo $CREDS | jq -r '.password')
+
+          echo "Deploying via Kudu ZipDeploy API (Flex Consumption compatible)..."
           DEPLOY_OK=0
           for attempt in 1 2 3; do
-            echo "OneDeploy attempt #$attempt..."
-            if az webapp deploy \
-              --resource-group "$RG" \
-              --name "$APP_NAME" \
-              --src-path "$ZIP_PATH" \
-              --type zip \
-              --async false; then
+            echo "ZipDeploy attempt #$attempt..."
+
+            # Use Kudu API directly with proper content-type
+            HTTP_STATUS=$(curl -X POST \
+              -u "$USERNAME:$PASSWORD" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$ZIP_PATH" \
+              -w "%{http_code}" \
+              -o /tmp/deploy-response.json \
+              "https://$APP_NAME.scm.azurewebsites.net/api/zipdeploy")
+
+            echo "HTTP Status: $HTTP_STATUS"
+
+            if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "202" ]; then
+              echo "Deployment initiated successfully"
               DEPLOY_OK=1
-              break
+
+              # Wait for deployment to complete
+              echo "Waiting for deployment to complete..."
+              sleep 30
+
+              # Check deployment status
+              DEPLOY_STATUS=$(curl -s -u "$USERNAME:$PASSWORD" \
+                "https://$APP_NAME.scm.azurewebsites.net/api/deployments/latest" | jq -r '.status')
+
+              echo "Deployment status: $DEPLOY_STATUS"
+
+              if [ "$DEPLOY_STATUS" = "4" ] || [ "$DEPLOY_STATUS" = "Success" ]; then
+                echo "✓ Deployment completed successfully"
+                break
+              else
+                echo "Deployment status not successful, retrying..."
+                DEPLOY_OK=0
+              fi
+            else
+              echo "Deployment failed with HTTP $HTTP_STATUS"
+              cat /tmp/deploy-response.json || true
             fi
-            echo "OneDeploy failed on attempt #$attempt. Retrying in 20s..."
-            sleep 20
+
+            if [ "$DEPLOY_OK" -ne 1 ]; then
+              echo "ZipDeploy failed on attempt #$attempt. Retrying in 20s..."
+              sleep 20
+            fi
           done
 
           if [ "$DEPLOY_OK" -ne 1 ]; then
-            echo "ERROR: OneDeploy failed after 3 attempts"
+            echo "ERROR: ZipDeploy failed after 3 attempts"
             exit 1
           fi
 
