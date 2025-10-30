@@ -57,31 +57,54 @@ jobs:
       - name: Package Functions app (zip)
         run: |
           cd apps/functions
-          zip -r ../functions.zip . -x "node_modules/*" ".git/*"
+          # Reduce node_modules to production only to keep the artifact lean
+          npm prune --omit=dev || npm prune --production
+          rm -f ../functions.zip
+          # Zip only what the v4 worker needs: dist, node_modules, package.json, host.json
+          zip -r ../functions.zip dist node_modules package.json host.json
           ls -lah ../functions.zip
 
-      - name: Deploy Functions via OneDeploy (az webapp deploy with retry)
+      - name: Deploy Functions (config-zip primary, OneDeploy fallback)
         run: |
           set -e
           APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
           RG="${{ env.AZURE_RESOURCE_GROUP }}"
           ZIP_PATH="apps/functions.zip"
+
+          echo "Primary: az functionapp deployment source config-zip"
           DEPLOY_OK=0
           for attempt in 1 2 3; do
-            echo "Deploy attempt #$attempt..."
-            if az webapp deploy \
+            echo "config-zip attempt #$attempt..."
+            if az functionapp deployment source config-zip \
               --resource-group "$RG" \
               --name "$APP_NAME" \
-              --src-path "$ZIP_PATH" \
-              --type zip; then
+              --src "$ZIP_PATH"; then
               DEPLOY_OK=1
               break
             fi
-            echo "Deploy failed on attempt #$attempt. Retrying in 20s..."
+            echo "config-zip failed on attempt #$attempt. Retrying in 20s..."
             sleep 20
           done
+
           if [ "$DEPLOY_OK" -ne 1 ]; then
-            echo "ERROR: Deploy failed after 3 attempts"
+            echo "Fallback: az webapp deploy (OneDeploy)"
+            for attempt in 1 2; do
+              echo "OneDeploy attempt #$attempt..."
+              if az webapp deploy \
+                --resource-group "$RG" \
+                --name "$APP_NAME" \
+                --src-path "$ZIP_PATH" \
+                --type zip; then
+                DEPLOY_OK=1
+                break
+              fi
+              echo "OneDeploy failed on attempt #$attempt. Retrying in 20s..."
+              sleep 20
+            done
+          fi
+
+          if [ "$DEPLOY_OK" -ne 1 ]; then
+            echo "ERROR: Deploy failed after primary and fallback attempts"
             exit 1
           fi
 
