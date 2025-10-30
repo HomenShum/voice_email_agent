@@ -3,13 +3,30 @@ import { app } from "@azure/functions";
 import { embedText } from "../shared/openai.js";
 import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone.js";
 
+// Helper to add CORS headers to responses
+function withCors(response: HttpResponseInit): HttpResponseInit {
+  return {
+    ...response,
+    headers: {
+      ...response.headers,
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS,PUT,DELETE",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    },
+  };
+}
+
 // POST /api/aggregate
 // Body: { grantId, query, topK=50, types?, threadId?, dateFrom?, dateTo?, bucket?, groupBy="from_domain" }
 app.http("aggregate", {
   route: "aggregate",
-  methods: ["POST"],
+  methods: ["POST", "OPTIONS"],
   authLevel: "function",
   handler: async (req: HttpRequest): Promise<HttpResponseInit> => {
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      return withCors({ status: 204 });
+    }
     try {
       const body = (await req.json()) as any;
       const {
@@ -112,15 +129,15 @@ app.http("aggregate", {
         }
       }
 
-      return {
+      return withCors({
         status: 200,
         jsonBody: {
           groupBy,
           counts: Array.from(counts.entries()).map(([key, count]) => ({ key, count })),
         },
-      };
+      });
     } catch (e: any) {
-      return { status: 500, body: String(e?.message || e) };
+      return withCors({ status: 500, body: String(e?.message || e) });
     }
   },
 });

@@ -1,6 +1,19 @@
 import type { HttpRequest, HttpResponseInit } from "@azure/functions";
 import { app } from "@azure/functions";
 
+// Helper to add CORS headers to responses
+function withCors(response: HttpResponseInit): HttpResponseInit {
+  return {
+    ...response,
+    headers: {
+      ...response.headers,
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS,PUT,DELETE",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    },
+  };
+}
+
 // Compute ISO 8601 week start/end (UTC) from a key like "2025-W43".
 function computeIsoWeekRange(weekKey: string): { startIso: string; endIso: string } | null {
   if (!/^\d{4}-W\d{2}$/.test(weekKey)) return null;
@@ -95,9 +108,14 @@ function coerceBooleanFields(metadata: Record<string, unknown> | undefined): Rec
 // Body: { grantId, query, topK=10, types?, threadId?, dateFrom?, dateTo?, bucket? }
 app.http("search", {
   route: "search",
-  methods: ["POST"],
+  methods: ["POST", "OPTIONS"],
   authLevel: "function",
   handler: async (req: HttpRequest): Promise<HttpResponseInit> => {
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      return withCors({ status: 204 });
+    }
+
     try {
       const body = (await req.json()) as any;
       const {
@@ -111,10 +129,10 @@ app.http("search", {
         bucket,
       } = body || {};
 
-      if (!grantId || !query) return { status: 400, body: "grantId and query required" };
-      if (!process.env.PINECONE_API_KEY) return { status: 500, body: "Missing PINECONE_API_KEY" };
+      if (!grantId || !query) return withCors({ status: 400, body: "grantId and query required" });
+      if (!process.env.PINECONE_API_KEY) return withCors({ status: 500, body: "Missing PINECONE_API_KEY" });
       if (!process.env.PINECONE_DENSE_INDEX_NAME && !process.env.PINECONE_INDEX_NAME) {
-        return { status: 500, body: "Missing PINECONE_DENSE_INDEX_NAME (or legacy PINECONE_INDEX_NAME)" };
+        return withCors({ status: 500, body: "Missing PINECONE_DENSE_INDEX_NAME (or legacy PINECONE_INDEX_NAME)" });
       }
 
       const vec = await embedText(String(query));
@@ -272,9 +290,9 @@ app.http("search", {
       });
 
 
-      return { status: 200, jsonBody: { matches: augmented } };
+      return withCors({ status: 200, jsonBody: { matches: augmented } });
     } catch (e: any) {
-      return { status: 500, body: String(e?.message || e) };
+      return withCors({ status: 500, body: String(e?.message || e) });
     }
   },
 });
