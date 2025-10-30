@@ -41,6 +41,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure Function App settings (worker indexing)
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --settings \
+              AzureWebJobsFeatureFlags=EnableWorkerIndexing \
+              FUNCTIONS_WORKER_RUNTIME=node \
+              FUNCTIONS_EXTENSION_VERSION=~4
+
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
