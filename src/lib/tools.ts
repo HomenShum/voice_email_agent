@@ -2,7 +2,6 @@ import { tool } from '@openai/agents/realtime';
 import { z } from 'zod';
 import { peekToolContext } from './agents/toolContext';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
 const FUNCTIONS_BASE = import.meta.env.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
 
 
@@ -329,7 +328,7 @@ const searchEmails = tool({
     }
 
     try {
-      const res = await fetch(`${API_BASE}/email/search`, {
+      const res = await fetch(`${FUNCTIONS_BASE}/api/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ queries: [{ text }], top_k, filters }),
@@ -363,8 +362,10 @@ const listContacts = tool({
     const callId = details?.toolCall?.id;
     const params = { limit };
     try {
-      const url = new URL(`${API_BASE}/nylas/contacts`);
+      const url = new URL(`${FUNCTIONS_BASE}/api/nylas/contacts`);
       url.searchParams.set('limit', String(limit || 5));
+      const grantId = localStorage.getItem('nylasGrantId');
+      if (grantId) url.searchParams.set('grantId', grantId);
       const res = await fetch(url);
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
@@ -389,9 +390,11 @@ const listEvents = tool({
     const callId = details?.toolCall?.id;
     const params = { calendar_id, limit };
     try {
-      const url = new URL(`${API_BASE}/nylas/events`);
+      const url = new URL(`${FUNCTIONS_BASE}/api/nylas/events`);
       if (calendar_id) url.searchParams.set('calendar_id', calendar_id);
       url.searchParams.set('limit', String(limit || 5));
+      const grantId = localStorage.getItem('nylasGrantId');
+      if (grantId) url.searchParams.set('grantId', grantId);
       const res = await fetch(url);
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
@@ -416,9 +419,11 @@ const listUnreadMessages = tool({
     const callId = details?.toolCall?.id;
     const params = { limit, sinceEpoch };
     try {
-      const url = new URL(`${API_BASE}/nylas/unread`);
+      const url = new URL(`${FUNCTIONS_BASE}/api/nylas/unread`);
       url.searchParams.set('limit', String(limit || 5));
       if (sinceEpoch) url.searchParams.set('sinceEpoch', String(sinceEpoch));
+      const grantId = localStorage.getItem('nylasGrantId');
+      if (grantId) url.searchParams.set('grantId', grantId);
       const res = await fetch(url);
       const raw = await res.json();
       const data = normalizeUnreadPayload(raw);
@@ -459,11 +464,12 @@ const triageRecentEmails = tool({
       }`,
     );
     try {
-      const res = await fetch(`${API_BASE}/email/triage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      // Note: /email/triage endpoint doesn't exist in Azure Functions yet
+      // Falling back to /api/nylas/unread for now
+      const url = new URL(`${FUNCTIONS_BASE}/api/nylas/unread`);
+      url.searchParams.set('limit', String(safeLimit));
+      if (effectiveGrant) url.searchParams.set('grantId', effectiveGrant);
+      const res = await fetch(url);
       if (!res.ok) {
         const bodyText = await res.text().catch(() => '');
         throw new Error(
@@ -505,53 +511,38 @@ const listRecentEmails = tool({
     const safeLimit = typeof limit === 'number' && Number.isFinite(limit) ? Math.max(Math.min(limit, 200), 1) : 50;
     progress(`list_recent_emails starting - limit=${safeLimit}${includeBodies === false ? ', bodies=disabled' : ''}`);
     try {
-      const url = new URL(`${API_BASE}/nylas/messages/recent`);
+      // Note: /nylas/messages/recent endpoint doesn't exist in Azure Functions yet
+      // Using /api/nylas/unread instead
+      const url = new URL(`${FUNCTIONS_BASE}/api/nylas/unread`);
       url.searchParams.set('limit', String(safeLimit));
-      if (includeBodies === false) url.searchParams.set('includeBodies', 'false');
-      if (includeBodies === true) url.searchParams.set('includeBodies', 'true');
+      const grantId = localStorage.getItem('nylasGrantId');
+      if (grantId) url.searchParams.set('grantId', grantId);
       const res = await fetch(url);
       if (!res.ok) {
         const bodyText = await res.text().catch(() => '');
         const message = `[list_recent_emails] ${res.status} ${res.statusText || 'error'}${bodyText ? ` — ${bodyText}` : ''}`;
-        progress(`${message}. Falling back to list_unread_messages.`);
-
-        const fallbackUrl = new URL(`${API_BASE}/nylas/unread`);
-        fallbackUrl.searchParams.set('limit', String(Math.min(safeLimit, 50)));
-        const fallbackRes = await fetch(fallbackUrl);
-        if (!fallbackRes.ok) {
-          const fallbackText = await fallbackRes.text().catch(() => '');
-          throw new Error(`${message}; fallback unread fetch failed ${fallbackRes.status} ${fallbackRes.statusText || ''}${fallbackText ? ` — ${fallbackText}` : ''}`.trim());
-        }
-
-        const fallbackData = await fallbackRes.json();
-        const messages = Array.isArray(fallbackData?.messages)
-          ? fallbackData.messages
-          : (Array.isArray(fallbackData?.data) ? fallbackData.data : []);
-
-        const normalizedFallback = {
-          source: 'fallback-unread',
-          messages,
-          map_reduce: {
-            status: 'unavailable',
-            error: 'RECENT_ENDPOINT_UNAVAILABLE',
-            note: `Primary endpoint returned ${res.status}. Provided unread list instead.`,
-          },
-        };
-
-        const durationFallback = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-        logToolCall({ name: 'list_recent_emails', callId, parameters: params, result: normalizedFallback, duration: durationFallback });
-        return normalizedFallback;
+        throw new Error(message);
       }
 
       const data = await res.json();
-      const returned = Array.isArray((data as any)?.messages) ? (data as any).messages.length : 0;
-      const topCount = Array.isArray((data as any)?.map_reduce?.top_emails) ? (data as any).map_reduce.top_emails.length : 0;
-      const status = (data as any)?.map_reduce?.status || 'unknown';
+      const messages = Array.isArray(data?.messages)
+        ? data.messages
+        : (Array.isArray(data?.data) ? data.data : []);
+
+      const normalizedResult = {
+        source: 'nylas-unread',
+        messages,
+        map_reduce: {
+          status: 'unavailable',
+          note: 'Using /api/nylas/unread endpoint (MapReduce not available in Azure Functions yet)',
+        },
+      };
+
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      const summaryTail = topCount ? `, ${topCount} high-priority candidate(s)` : '';
-      progress(`list_recent_emails finished - ${returned} message(s) in ${duration}ms (MapReduce: ${status}${summaryTail})`);
-      logToolCall({ name: 'list_recent_emails', callId, parameters: params, result: data, duration });
-      return data;
+      const returned = messages.length;
+      progress(`list_recent_emails finished - ${returned} message(s) in ${duration}ms`);
+      logToolCall({ name: 'list_recent_emails', callId, parameters: params, result: normalizedResult, duration });
+      return normalizedResult;
     } catch (error) {
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
       logToolCall({ name: 'list_recent_emails', callId, parameters: params, duration, error: String(error) });
@@ -570,10 +561,14 @@ const startSync = tool({
     const callId = details?.toolCall?.id;
     const params = { sinceEpoch, limit };
     try {
-      const res = await fetch(`${API_BASE}/sync/start`, {
+      const grantId = localStorage.getItem('nylasGrantId');
+      if (!grantId) {
+        throw new Error('Grant ID not found. Please set your Grant ID in the Sync & Data panel.');
+      }
+      const res = await fetch(`${FUNCTIONS_BASE}/api/sync/delta`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sinceEpoch, limit }),
+        body: JSON.stringify({ grantId, max: limit }),
       });
       const data = await res.json();
       const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
@@ -643,7 +638,7 @@ const aggregateEmails = tool({
     }
 
     try {
-      const res = await fetch(`${API_BASE}/email/aggregate`, {
+      const res = await fetch(`${FUNCTIONS_BASE}/api/aggregate`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metric, group_by, filters, top_k }),
       });
@@ -677,21 +672,13 @@ const analyzeEmails = tool({
       progress(`analyze_emails using ${_range.label}`);
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/email/analyze`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, filters, top_k }),
-      });
-      const data = await res.json();
-      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      progress(`analyze_emails finished - ${duration}ms`);
-      logToolCall({ name: 'analyze_emails', callId, parameters: params, result: data, duration });
-      return data;
-    } catch (error) {
-      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall({ name: 'analyze_emails', callId, parameters: params, duration, error: String(error) });
-      throw error;
-    }
+    // Note: /email/analyze endpoint doesn't exist in Azure Functions yet
+    // This endpoint is only available in local development server
+    const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+    const error = 'analyze_emails is not available in production yet. Use search_emails instead.';
+    progress(error);
+    logToolCall({ name: 'analyze_emails', callId, parameters: params, duration, error });
+    throw new Error(error);
   },
 });
 
@@ -711,23 +698,13 @@ const countEmails = tool({
       progress(`count_emails using ${_range.label}`);
     }
 
-    try {
-      const res = await fetch(`${API_BASE}/email/count`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filters }),
-      });
-      const data = await res.json();
-      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      const total = (data as any)?.total ?? 0;
-      progress(`count_emails finished - ${total} total emails in ${duration}ms`);
-      logToolCall({ name: 'count_emails', callId, parameters: params, result: data, duration });
-      return data;
-    } catch (error) {
-      const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
-      logToolCall({ name: 'count_emails', callId, parameters: params, duration, error: String(error) });
-      throw error;
-    }
+    // Note: /email/count endpoint doesn't exist in Azure Functions yet
+    // This endpoint is only available in local development server
+    const duration = Math.round((globalThis.performance?.now?.() ?? Date.now()) - _t0);
+    const error = 'count_emails is not available in production yet. Use search_emails with filters instead.';
+    progress(error);
+    logToolCall({ name: 'count_emails', callId, parameters: params, duration, error });
+    throw new Error(error);
   },
 });
 
