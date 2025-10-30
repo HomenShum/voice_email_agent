@@ -1,4 +1,6 @@
 import type { InvocationContext } from "@azure/functions";
+import * as path from "node:path";
+import { createRequire } from "node:module";
 import { BackfillJob, enqueueBackfill } from "../shared/bus.js";
 import { listMessages, NylasApiError, NylasMessage, downloadAttachment } from "../shared/nylas.js";
 import { cleanText, embedText, summarizeNotes, analyzeImageBuffer, analyzePdfBuffer, analyzeAttachmentBuffer, summarizeLongTextMapReduce } from "../shared/openai.js";
@@ -32,20 +34,18 @@ function toAllEmails(addrs?: { email: string }[]): string[] {
   return Array.from(seen);
 }
 
+const requireModule = createRequire(import.meta.url);
+
 // Load the real @azure/functions at runtime, avoiding any local test stub under dist/node_modules
 function loadAzureFunctionsRuntime(): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const path = require("path");
   const realDir = path.resolve(process.cwd(), "node_modules", "@azure", "functions");
   try {
     // Prefer the real installed package under apps/functions/node_modules
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const mod = require(realDir);
+    const mod = requireModule(realDir);
     return mod;
   } catch {
     // Fallback to default resolution (may hit stub if running tests)
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    return require("@azure/functions");
+    return requireModule("@azure/functions");
   }
 }
 
@@ -70,8 +70,6 @@ function registerServiceBusQueue(
 
 if (process.env.DEBUG_FUNC_REG) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const path = require("path");
     const mod = loadAzureFunctionsRuntime();
     // eslint-disable-next-line no-console
     console.log(

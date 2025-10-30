@@ -1,4 +1,4 @@
-import { enqueueBackfill, BackfillJob } from "../shared/bus";
+import { enqueueBackfill, BackfillJob } from "../shared/bus.js";
 
 async function main() {
   const grantId = process.env.NYLAS_GRANT_ID || process.env.GRANT_ID || "grant-smoke";
@@ -16,4 +16,3 @@ main().catch((e) => {
   console.error("[SMOKE] Error:", e);
   process.exitCode = 1;
 });
-
