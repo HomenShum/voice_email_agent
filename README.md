@@ -2,6 +2,16 @@
 
 A full-stack voice assistant for email management using OpenAI's Realtime API, Nylas email integration, and Pinecone vector search.
 
+## 🚀 Live Deployment
+
+- **Frontend UI**: https://orange-mud-087b3a60f.3.azurestaticapps.net
+- **Functions API**: https://func-email-agent-8127.azurewebsites.net
+- **API Endpoints**:
+  - `/api/index/stats` — Email index statistics
+  - `/api/user/jobs?grantId=<id>` — User job history
+  - `/api/search` — Semantic email search
+  - `/api/aggregate` — Email aggregation
+
 ## 🎯 Overview
 
 This project implements a production-ready voice agent that allows users to search, analyze, and manage emails through natural language voice commands. The system processes 10,000+ emails with semantic search, hierarchical summarization, and real-time updates.
