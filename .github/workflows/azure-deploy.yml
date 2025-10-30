@@ -43,15 +43,13 @@ jobs:
 
       - name: Ensure Function App settings (Flex Consumption compatible)
         run: |
-          # Flex Consumption plans don't allow FUNCTIONS_WORKER_RUNTIME and WEBSITE_NODE_DEFAULT_VERSION
-          # These are managed by the platform
+          # Flex Consumption plans manage most settings automatically
+          # Only set EnableWorkerIndexing for function discovery
           az functionapp config appsettings set \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --settings \
-              AzureWebJobsFeatureFlags=EnableWorkerIndexing \
-              WEBSITE_RUN_FROM_PACKAGE=1 \
-              SCM_DO_BUILD_DURING_DEPLOYMENT=false
+              AzureWebJobsFeatureFlags=EnableWorkerIndexing
 
       - name: Restart Function App to apply settings
         run: |
