@@ -7,7 +7,7 @@ export type SearchResult = {
   thread_id?: string;
 };
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
 
 const post = async <T>(path: string, body: unknown) => {
   const res = await fetch(`${API_BASE}${path}`, {
