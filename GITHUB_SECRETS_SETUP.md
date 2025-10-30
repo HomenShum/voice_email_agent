@@ -15,31 +15,21 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 ## Secrets to Add
 
-### 1. AZURE_CLIENT_ID
+### 1. AZURE_CREDENTIALS
 
-**Name:** `AZURE_CLIENT_ID`
+**Name:** `AZURE_CREDENTIALS`
 
-**Value:** `813b9273-87e9-495f-a643-f696c54280f1`
+**Value:** See the terminal output from the service principal creation command. It should be a JSON object with:
+- `clientId`
+- `clientSecret`
+- `subscriptionId`
+- `tenantId`
 
----
-
-### 2. AZURE_TENANT_ID
-
-**Name:** `AZURE_TENANT_ID`
-
-**Value:** `19683f98-b1bc-402c-a9d1-0166ef1607f9`
+**Note:** The client secret was displayed when we created the service principal earlier in the deployment process.
 
 ---
 
-### 3. AZURE_SUBSCRIPTION_ID
-
-**Name:** `AZURE_SUBSCRIPTION_ID`
-
-**Value:** `d33edd77-3a20-49e3-8dbd-93f0344b235e`
-
----
-
-### 4. AZURE_FUNCTION_APP_NAME
+### 2. AZURE_FUNCTION_APP_NAME
 
 **Name:** `AZURE_FUNCTION_APP_NAME`
 
@@ -47,7 +37,7 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 ---
 
-### 5. AZURE_FUNCTION_APP_URL
+### 3. AZURE_FUNCTION_APP_URL
 
 **Name:** `AZURE_FUNCTION_APP_URL`
 
@@ -55,7 +45,7 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 ---
 
-### 6. AZURE_STATIC_WEB_APP_NAME
+### 4. AZURE_STATIC_WEB_APP_NAME
 
 **Name:** `AZURE_STATIC_WEB_APP_NAME`
 
@@ -63,7 +53,7 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 ---
 
-### 7. AZURE_STATIC_WEB_APPS_API_TOKEN
+### 5. AZURE_STATIC_WEB_APPS_API_TOKEN
 
 **Name:** `AZURE_STATIC_WEB_APPS_API_TOKEN`
 
