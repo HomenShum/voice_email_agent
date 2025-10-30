@@ -41,10 +41,9 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Ensure Function App settings (Flex Consumption compatible)
+      - name: Configure Function App settings
         run: |
-          # Flex Consumption plans manage most settings automatically
-          # Only set EnableWorkerIndexing for function discovery
+          # Standard settings for Windows Consumption plan
           az functionapp config appsettings set \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
@@ -71,86 +70,33 @@ jobs:
           zip -r ../functions.zip dist node_modules package.json host.json
           ls -lah ../functions.zip
 
-      - name: Deploy Functions (Kudu ZipDeploy API - Flex Consumption compatible)
+      - name: Deploy Functions (config-zip)
         run: |
           set -e
           APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
           RG="${{ env.AZURE_RESOURCE_GROUP }}"
           ZIP_PATH="apps/functions.zip"
 
-          echo "Getting publishing credentials..."
-          CREDS=$(az functionapp deployment list-publishing-credentials \
-            --name "$APP_NAME" \
-            --resource-group "$RG" \
-            --query "{username:publishingUserName, password:publishingPassword}" -o json)
-
-          USERNAME=$(echo $CREDS | jq -r '.username')
-          PASSWORD=$(echo $CREDS | jq -r '.password')
-
-          echo "Deploying via Kudu ZipDeploy API (Flex Consumption compatible)..."
+          echo "Deploying using config-zip (standard method for Windows Consumption)"
           DEPLOY_OK=0
           for attempt in 1 2 3; do
-            echo "ZipDeploy attempt #$attempt..."
-
-            # Use Kudu API directly with proper content-type
-            HTTP_STATUS=$(curl -X POST \
-              -u "$USERNAME:$PASSWORD" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$ZIP_PATH" \
-              -w "%{http_code}" \
-              -o /tmp/deploy-response.json \
-              "https://$APP_NAME.scm.azurewebsites.net/api/zipdeploy")
-
-            echo "HTTP Status: $HTTP_STATUS"
-
-            if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "202" ]; then
-              echo "Deployment initiated successfully"
+            echo "config-zip attempt #$attempt..."
+            if az functionapp deployment source config-zip \
+              --resource-group "$RG" \
+              --name "$APP_NAME" \
+              --src "$ZIP_PATH"; then
               DEPLOY_OK=1
-
-              # Wait for deployment to complete
-              echo "Waiting for deployment to complete..."
-              sleep 30
-
-              # Check deployment status
-              DEPLOY_STATUS=$(curl -s -u "$USERNAME:$PASSWORD" \
-                "https://$APP_NAME.scm.azurewebsites.net/api/deployments/latest" | jq -r '.status')
-
-              echo "Deployment status: $DEPLOY_STATUS"
-
-              if [ "$DEPLOY_STATUS" = "4" ] || [ "$DEPLOY_STATUS" = "Success" ]; then
-                echo "✓ Deployment completed successfully"
-                break
-              else
-                echo "Deployment status not successful, retrying..."
-                DEPLOY_OK=0
-              fi
-            else
-              echo "Deployment failed with HTTP $HTTP_STATUS"
-              cat /tmp/deploy-response.json || true
+              echo "✓ Deployment completed successfully"
+              break
             fi
-
-            if [ "$DEPLOY_OK" -ne 1 ]; then
-              echo "ZipDeploy failed on attempt #$attempt. Retrying in 20s..."
-              sleep 20
-            fi
+            echo "config-zip failed on attempt #$attempt. Retrying in 20s..."
+            sleep 20
           done
 
           if [ "$DEPLOY_OK" -ne 1 ]; then
-            echo "ERROR: ZipDeploy failed after 3 attempts"
+            echo "ERROR: config-zip deployment failed after 3 attempts"
             exit 1
           fi
-
-      - name: Remove incompatible settings added by deployment
-        run: |
-          # Deployment methods may auto-add WEBSITE_RUN_FROM_PACKAGE
-          # Remove it after deployment for Flex Consumption compatibility
-          echo "Removing incompatible app settings that may have been added during deployment..."
-          az functionapp config appsettings delete \
-            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD || true
-
-          echo "Post-deployment cleanup complete"
 
       - name: Verify Functions discovered
         run: |
