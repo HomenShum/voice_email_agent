@@ -146,6 +146,72 @@ h1 {
   letter-spacing: 0.5px;
 }
 
+/* ========== Dashboard Widgets ========== */
+
+.dashboard-widget {
+  margin-bottom: 16px;
+}
+
+.dashboard-widget h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.dashboard-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dashboard-item {
+  padding: 8px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #4caf50;
+  border-radius: 4px;
+  font-size: 0.85em;
+  transition: background 0.2s;
+}
+
+.dashboard-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dashboard-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dashboard-item-header strong {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-item-date {
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dashboard-item-body {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-state {
+  padding: 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  font-size: 0.85em;
+}
+
 @media (max-width: 1200px) {
   .sidebar {
     width: 320px;
@@ -1056,6 +1122,31 @@ button:focus-visible {
   }
   
   .tool-info {
+    color: #777;
+  }
+
+  .dashboard-item {
+    background: #2a2a2a;
+    border-left-color: #4caf50;
+  }
+
+  .dashboard-item:hover {
+    background: #333;
+  }
+
+  .dashboard-item-header strong {
+    color: #eee;
+  }
+
+  .dashboard-item-date {
+    color: #999;
+  }
+
+  .dashboard-item-body {
+    color: #aaa;
+  }
+
+  .empty-state {
     color: #777;
   }
 }

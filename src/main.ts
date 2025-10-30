@@ -47,6 +47,29 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
       </div>
 
+      <!-- Dashboard Widgets Panel -->
+      <div id="dashboard-widgets-panel" class="sidebar-panel">
+        <h3>Dashboard</h3>
+
+        <!-- Recent Messages -->
+        <div class="dashboard-widget">
+          <h4>📧 Recent Messages</h4>
+          <ul id="recent-messages-list" class="list-reset scrollable-list dashboard-list"></ul>
+        </div>
+
+        <!-- Recent Contacts -->
+        <div class="dashboard-widget">
+          <h4>👥 Recent Contacts</h4>
+          <ul id="recent-contacts-list" class="list-reset scrollable-list dashboard-list"></ul>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="dashboard-widget">
+          <h4>📅 Upcoming Events</h4>
+          <ul id="upcoming-events-list" class="list-reset scrollable-list dashboard-list"></ul>
+        </div>
+      </div>
+
     </aside>
 
     <!-- Main Content -->
@@ -372,9 +395,131 @@ async function initializeNylasData() {
       apiKeyInput.value = storedApiKey;
       console.log(`[init] Loaded apiKey from localStorage`);
     }
+
+    // Load dashboard data if grant ID is available
+    if (storedGrantId) {
+      await loadDashboardData(storedGrantId);
+    }
   } catch (e) {
     console.error('[init] Failed to initialize Nylas:', e);
   }
+}
+
+// Load dashboard data (recent messages, contacts, events)
+async function loadDashboardData(grantId: string) {
+  try {
+    // Fetch recent messages
+    const messagesRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/unread?limit=5&grantId=${grantId}`);
+    if (messagesRes.ok) {
+      const messagesData = await messagesRes.json();
+      displayRecentMessages(messagesData?.data || []);
+    }
+  } catch (e) {
+    console.error('[dashboard] Failed to load recent messages:', e);
+  }
+
+  try {
+    // Fetch recent contacts
+    const contactsRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/contacts?limit=5&grantId=${grantId}`);
+    if (contactsRes.ok) {
+      const contactsData = await contactsRes.json();
+      displayRecentContacts(contactsData?.data || []);
+    }
+  } catch (e) {
+    console.error('[dashboard] Failed to load recent contacts:', e);
+  }
+
+  try {
+    // Fetch upcoming events
+    const eventsRes = await fetch(`${FUNCTIONS_BASE}/api/nylas/events?limit=5&grantId=${grantId}`);
+    if (eventsRes.ok) {
+      const eventsData = await eventsRes.json();
+      displayUpcomingEvents(eventsData?.data || []);
+    }
+  } catch (e) {
+    console.error('[dashboard] Failed to load upcoming events:', e);
+  }
+}
+
+// Display recent messages
+function displayRecentMessages(messages: any[]) {
+  const messagesList = document.querySelector<HTMLUListElement>('#recent-messages-list')!;
+  messagesList.innerHTML = '';
+
+  if (messages.length === 0) {
+    messagesList.innerHTML = '<li class="empty-state">No recent messages</li>';
+    return;
+  }
+
+  messages.forEach((msg: any) => {
+    const li = document.createElement('li');
+    li.className = 'dashboard-item';
+    const from = msg.from?.[0]?.name || msg.from?.[0]?.email || 'Unknown';
+    const subject = msg.subject || '(no subject)';
+    const date = msg.date ? new Date(msg.date * 1000).toLocaleDateString() : '';
+    li.innerHTML = `
+      <div class="dashboard-item-header">
+        <strong>${from}</strong>
+        <span class="dashboard-item-date">${date}</span>
+      </div>
+      <div class="dashboard-item-body">${subject}</div>
+    `;
+    messagesList.appendChild(li);
+  });
+}
+
+// Display recent contacts
+function displayRecentContacts(contacts: any[]) {
+  const contactsList = document.querySelector<HTMLUListElement>('#recent-contacts-list')!;
+  contactsList.innerHTML = '';
+
+  if (contacts.length === 0) {
+    contactsList.innerHTML = '<li class="empty-state">No recent contacts</li>';
+    return;
+  }
+
+  contacts.forEach((contact: any) => {
+    const li = document.createElement('li');
+    li.className = 'dashboard-item';
+    const name = contact.given_name || contact.surname
+      ? `${contact.given_name || ''} ${contact.surname || ''}`.trim()
+      : 'Unknown';
+    const email = contact.emails?.[0]?.email || '';
+    li.innerHTML = `
+      <div class="dashboard-item-header">
+        <strong>${name}</strong>
+      </div>
+      <div class="dashboard-item-body">${email}</div>
+    `;
+    contactsList.appendChild(li);
+  });
+}
+
+// Display upcoming events
+function displayUpcomingEvents(events: any[]) {
+  const eventsList = document.querySelector<HTMLUListElement>('#upcoming-events-list')!;
+  eventsList.innerHTML = '';
+
+  if (events.length === 0) {
+    eventsList.innerHTML = '<li class="empty-state">No upcoming events</li>';
+    return;
+  }
+
+  events.forEach((event: any) => {
+    const li = document.createElement('li');
+    li.className = 'dashboard-item';
+    const title = event.title || '(no title)';
+    const when = event.when?.start_time
+      ? new Date(event.when.start_time * 1000).toLocaleString()
+      : '';
+    li.innerHTML = `
+      <div class="dashboard-item-header">
+        <strong>${title}</strong>
+      </div>
+      <div class="dashboard-item-body">${when}</div>
+    `;
+    eventsList.appendChild(li);
+  });
 }
 
 // Load saved grant ID from localStorage
@@ -603,3 +748,14 @@ document.querySelector<HTMLButtonElement>('#connect')!.addEventListener('click',
     isConversationActive = false;
   }
 });
+
+// Initialize Nylas data on page load
+initializeNylasData();
+
+// Auto-refresh dashboard data every 5 minutes
+setInterval(() => {
+  const grantId = localStorage.getItem('nylasGrantId');
+  if (grantId) {
+    loadDashboardData(grantId);
+  }
+}, 5 * 60 * 1000);

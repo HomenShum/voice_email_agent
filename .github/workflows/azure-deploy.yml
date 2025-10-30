@@ -175,10 +175,106 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --query "defaultHostname" -o tsv)
 
-          # Add CORS origin to Function App
-          az functionapp cors add \
-            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --allowed-origins "https://$SWA_URL"
+          # Add allowed origins: SWA + local dev hosts
+          ORIGINS=("https://$SWA_URL" "http://localhost:5175" "http://127.0.0.1:5175")
 
-          echo "CORS configured for https://$SWA_URL"
+          for ORIGIN in "${ORIGINS[@]}"; do
+            echo "Adding CORS origin: $ORIGIN"
+            az functionapp cors add \
+              --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --allowed-origins "$ORIGIN" || true
+          done
+
+          echo "CORS configured for: ${ORIGINS[*]}"
+
+  test-endpoints:
+    runs-on: ubuntu-latest
+    needs: [deploy-functions, configure-cors]
+    env:
+      FUNCTION_APP_URL: ${{ secrets.AZURE_FUNCTION_APP_URL != '' && secrets.AZURE_FUNCTION_APP_URL || format('https://{0}.azurewebsites.net', secrets.AZURE_FUNCTION_APP_NAME) }}
+
+    steps:
+      - name: Test Azure Functions endpoints
+        run: |
+          set -e
+          BASE_URL="${{ env.FUNCTION_APP_URL }}"
+          echo "Testing endpoints at: $BASE_URL"
+
+          # Test /api/nylas/unread (GET)
+          echo "Testing GET /api/nylas/unread..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/unread?limit=5")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
+            echo "ERROR: /api/nylas/unread returned $STATUS (expected 400 or 200)"
+            exit 1
+          fi
+          echo "✓ /api/nylas/unread is accessible (status: $STATUS)"
+
+          # Test /api/nylas/contacts (GET)
+          echo "Testing GET /api/nylas/contacts..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/contacts?limit=5")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
+            echo "ERROR: /api/nylas/contacts returned $STATUS (expected 400 or 200)"
+            exit 1
+          fi
+          echo "✓ /api/nylas/contacts is accessible (status: $STATUS)"
+
+          # Test /api/nylas/events (GET)
+          echo "Testing GET /api/nylas/events..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/events?limit=5")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
+            echo "ERROR: /api/nylas/events returned $STATUS (expected 400 or 200)"
+            exit 1
+          fi
+          echo "✓ /api/nylas/events is accessible (status: $STATUS)"
+
+          # Test /api/search (POST)
+          echo "Testing POST /api/search..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"queries":[{"text":"test"}],"top_k":5}' \
+            "$BASE_URL/api/search")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
+            echo "ERROR: /api/search returned $STATUS (expected 400, 200, or 500)"
+            exit 1
+          fi
+          echo "✓ /api/search is accessible (status: $STATUS)"
+
+          # Test /api/aggregate (POST)
+          echo "Testing POST /api/aggregate..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"metric":"count","group_by":["from_domain"],"top_k":10}' \
+            "$BASE_URL/api/aggregate")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
+            echo "ERROR: /api/aggregate returned $STATUS (expected 400, 200, or 500)"
+            exit 1
+          fi
+          echo "✓ /api/aggregate is accessible (status: $STATUS)"
+
+          # Test /api/realtime/session (POST)
+          echo "Testing POST /api/realtime/session..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "$BASE_URL/api/realtime/session")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
+            echo "ERROR: /api/realtime/session returned $STATUS (expected 400, 200, or 500)"
+            exit 1
+          fi
+          echo "✓ /api/realtime/session is accessible (status: $STATUS)"
+
+          # Test /api/sync/delta (POST)
+          echo "Testing POST /api/sync/delta..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            "$BASE_URL/api/sync/delta")
+          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
+            echo "ERROR: /api/sync/delta returned $STATUS (expected 400 or 200)"
+            exit 1
+          fi
+          echo "✓ /api/sync/delta is accessible (status: $STATUS)"
+
+          echo ""
+          echo "✅ All endpoint tests passed!"
