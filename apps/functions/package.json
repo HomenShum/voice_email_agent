@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Azure Functions for Real-time Voice Email Agent backfill",
-  "main": "dist/functions/*.js",
+  "main": "dist/{index.js,functions/*.js}",
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
