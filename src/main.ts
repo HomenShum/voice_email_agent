@@ -1,6 +1,4 @@
 import './style.css';
-import typescriptLogo from './typescript.svg';
-import viteLogo from '/vite.svg';
 import { createVoiceSession, setTranscriptHandler, setRouterProgressHandler } from './lib/voiceAgent';
 import {
   setSearchResultsHandler,
