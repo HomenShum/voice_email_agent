@@ -18,8 +18,8 @@ import {
 } from './lib/tools';
 import { SPECIALIST_MANIFEST } from './lib/agents/routerAgent';
 
-const FUNCTIONS_BASE = (import.meta as any).env?.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
+const FUNCTIONS_BASE = import.meta.env.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8787';
 
 let session: unknown;
 const toolCallHistory: ToolCallRecord[] = [];
