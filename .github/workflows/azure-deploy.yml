@@ -41,6 +41,17 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Remove incompatible app settings for Flex Consumption
+        run: |
+          # Remove settings that are not supported by Flex Consumption SKU
+          echo "Removing incompatible app settings..."
+          az functionapp config appsettings delete \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD || true
+
+          echo "Incompatible settings removed (if they existed)"
+
       - name: Ensure Function App settings (Flex Consumption compatible)
         run: |
           # Flex Consumption plans manage most settings automatically

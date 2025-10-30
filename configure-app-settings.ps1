@@ -150,7 +150,7 @@ try {
   az functionapp config appsettings delete `
     --name $FuncAppName `
     --resource-group $ResourceGroup `
-    --setting-names SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD | Out-Null
+    --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD | Out-Null
 } catch {}
 
 Write-Host "App settings configured" -ForegroundColor Green
