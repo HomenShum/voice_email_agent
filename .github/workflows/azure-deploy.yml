@@ -54,11 +54,34 @@ jobs:
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
 
-      - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ secrets.AZURE_FUNCTION_APP_NAME }}
-          package: apps/functions
+      - name: Package Functions app (zip)
+        run: |
+          cd apps/functions
+          zip -r ../functions.zip . -x "node_modules/*" ".git/*"
+          ls -lah ../functions.zip
+
+      - name: Deploy Functions via OneDeploy (az webapp deploy with retry)
+        run: |
+          set -e
+          APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
+          RG="${{ env.AZURE_RESOURCE_GROUP }}"
+          ZIP_PATH="apps/functions.zip"
+          for attempt in 1 2 3; do
+            echo "Deploy attempt #$attempt..."
+            az webapp deploy \
+              --resource-group "$RG" \
+              --name "$APP_NAME" \
+              --src-path "$ZIP_PATH" \
+              --type zip && break
+            echo "Deploy failed on attempt #$attempt. Retrying in 20s..."
+            sleep 20
+          done
+
+      - name: Verify Functions discovered
+        run: |
+          az functionapp function list \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} -o table
 
   deploy-frontend:
     runs-on: ubuntu-latest
