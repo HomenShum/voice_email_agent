@@ -1,7 +1,7 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
 import { Pinecone } from "@pinecone-database/pinecone";
-import { deleteGrantData, deleteGrantSecret } from "../shared/storage";
+import { deleteGrantData, deleteGrantSecret } from "../shared/storage.js";
 
 async function deleteNamespaceVectors(grantId: string, ctx: InvocationContext): Promise<{ ok: boolean; method: string; }> {
   const apiKey = process.env.PINECONE_API_KEY || "";
