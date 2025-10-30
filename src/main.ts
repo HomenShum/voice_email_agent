@@ -1035,7 +1035,7 @@ setSyncStatusHandler((payload: any) => {
 startSyncBtn.addEventListener('click', async () => {
   await withLoading(startSyncBtn, 'Starting...', async () => {
     try {
-      const res = await fetch('http://localhost:8787/sync/start', {
+      const res = await fetch(`${API_BASE}/sync/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sinceEpoch: Math.floor(Date.now() / 1000), limit: 25 }),
