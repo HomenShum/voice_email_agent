@@ -80,8 +80,8 @@ jobs:
         run: |
           npm run build
         env:
-          VITE_FUNCTIONS_BASE_URL: ${{ secrets.AZURE_FUNCTION_APP_URL }}
-          VITE_API_BASE: ${{ secrets.AZURE_FUNCTION_APP_URL }}
+          VITE_FUNCTIONS_BASE_URL: https://${{ secrets.AZURE_FUNCTION_APP_NAME }}.azurewebsites.net
+          VITE_API_BASE: https://${{ secrets.AZURE_FUNCTION_APP_NAME }}.azurewebsites.net
 
       - name: Deploy to Static Web App
         uses: Azure/static-web-apps-deploy@v1
