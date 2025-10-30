@@ -115,12 +115,80 @@ git commit --allow-empty -m "chore: trigger deployment after removing incompatib
 git push
 ```
 
+## Root Cause Analysis - CRITICAL DISCOVERY ⚠️
+
+After the initial fix, we discovered that **`az functionapp deployment source config-zip` automatically sets `WEBSITE_RUN_FROM_PACKAGE=1`** as part of its operation. This means:
+
+1. ❌ Pre-deployment cleanup was ineffective
+2. ❌ The deployment command itself was re-adding the incompatible setting
+3. ❌ Post-deployment, the Function App still had `WEBSITE_RUN_FROM_PACKAGE=1`
+
+**Verification:**
+```bash
+az functionapp config appsettings list --name func-email-agent-9956 --resource-group rg-email-agent \
+  --query "[?name=='WEBSITE_RUN_FROM_PACKAGE'].{Name:name, Value:value}" -o table
+
+# Result:
+# Name                      Value
+# ------------------------  -------
+# WEBSITE_RUN_FROM_PACKAGE  1
+```
+
+## Final Solution ✅
+
+### Changed Deployment Strategy
+
+1. **Switch from `config-zip` to `OneDeploy`**
+   - `az webapp deploy` does NOT auto-add `WEBSITE_RUN_FROM_PACKAGE`
+   - Compatible with Flex Consumption plan
+   - More reliable for this SKU
+
+2. **Move cleanup to POST-deployment**
+   - Remove incompatible settings AFTER deployment completes
+   - Ensures any auto-added settings are cleaned up
+   - Function App is in correct state before verification
+
+3. **Remove pre-deployment cleanup**
+   - No longer needed since we're using OneDeploy
+   - Simplifies workflow
+
+### Updated Workflow Changes
+
+```yaml
+# OLD (config-zip - incompatible):
+- name: Deploy Functions (config-zip primary, OneDeploy fallback)
+  run: |
+    az functionapp deployment source config-zip \
+      --resource-group "$RG" \
+      --name "$APP_NAME" \
+      --src "$ZIP_PATH"
+
+# NEW (OneDeploy - compatible):
+- name: Deploy Functions (OneDeploy - Flex Consumption compatible)
+  run: |
+    az webapp deploy \
+      --resource-group "$RG" \
+      --name "$APP_NAME" \
+      --src-path "$ZIP_PATH" \
+      --type zip \
+      --async false
+
+- name: Remove incompatible settings added by deployment
+  run: |
+    az functionapp config appsettings delete \
+      --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+      --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+      --setting-names WEBSITE_RUN_FROM_PACKAGE SCM_DO_BUILD_DURING_DEPLOYMENT ENABLE_ORYX_BUILD || true
+```
+
 ## Current Status
 
-- ✅ Incompatible settings removed from Azure Function App `func-email-agent-9956`
+- ✅ Incompatible settings manually removed from Azure Function App `func-email-agent-9956`
 - ✅ Function App restarted
-- ✅ New deployment triggered
-- 🔄 Deployment in progress: https://github.com/HomenShum/voice_email_agent/actions
+- ✅ Workflow updated to use OneDeploy instead of config-zip
+- ✅ Post-deployment cleanup added to workflow
+- ✅ Changes committed and pushed (commit: `b3dd122`)
+- 🔄 New deployment in progress: https://github.com/HomenShum/voice_email_agent/actions
 
 ## Next Steps
 
