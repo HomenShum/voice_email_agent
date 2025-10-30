@@ -66,22 +66,38 @@ jobs:
           APP_NAME="${{ secrets.AZURE_FUNCTION_APP_NAME }}"
           RG="${{ env.AZURE_RESOURCE_GROUP }}"
           ZIP_PATH="apps/functions.zip"
+          DEPLOY_OK=0
           for attempt in 1 2 3; do
             echo "Deploy attempt #$attempt..."
-            az webapp deploy \
+            if az webapp deploy \
               --resource-group "$RG" \
               --name "$APP_NAME" \
               --src-path "$ZIP_PATH" \
-              --type zip && break
+              --type zip; then
+              DEPLOY_OK=1
+              break
+            fi
             echo "Deploy failed on attempt #$attempt. Retrying in 20s..."
             sleep 20
           done
+          if [ "$DEPLOY_OK" -ne 1 ]; then
+            echo "ERROR: Deploy failed after 3 attempts"
+            exit 1
+          fi
 
       - name: Verify Functions discovered
         run: |
+          echo "Listing discovered functions..."
           az functionapp function list \
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} -o table
+          CNT=$(az functionapp function list \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "length(@)")
+          if [ "$CNT" -eq 0 ]; then
+            echo "ERROR: 0 functions discovered after deployment"
+            exit 1
+          fi
 
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -116,6 +132,7 @@ jobs:
           action: "upload"
           app_location: "/"
           output_location: "dist"
+          skip_app_build: true
 
   configure-cors:
     runs-on: ubuntu-latest
