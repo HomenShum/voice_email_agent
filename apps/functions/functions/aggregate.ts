@@ -68,7 +68,7 @@ app.http("aggregate", {
       const isUnreadQuery = /unread/i.test(String(query));
       if (involvesMessages && !filter.date && isUnreadQuery) {
         try {
-          const { getCheckpoint } = await import("../shared/storage");
+          const { getCheckpoint } = await import("../shared/storage.js");
           const checkpoint = await getCheckpoint(String(grantId));
           if (checkpoint > 0) {
             filter.date = { $gte: checkpoint } as any;

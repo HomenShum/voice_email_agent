@@ -1,6 +1,6 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
-import { enqueueBackfill, BackfillJob } from "../shared/bus";
+import { enqueueBackfill, BackfillJob } from "../shared/bus.js";
 
 function monthsAgoToEpochSeconds(months: number): number {
   const d = new Date();

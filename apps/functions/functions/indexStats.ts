@@ -8,7 +8,7 @@ import {
   getPersistedIndexSession,
   flushIndexSessionMetricsNow,
   getIndexMetricsPersistenceInfo,
-} from "../shared/pinecone";
+} from "../shared/pinecone.js";
 
 // GET /api/index/stats
 // Query params:

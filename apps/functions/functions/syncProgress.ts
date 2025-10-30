@@ -1,6 +1,6 @@
 import type { HttpRequest, HttpResponseInit } from "@azure/functions";
 import { app } from "@azure/functions";
-import { getJob } from "../shared/storage";
+import { getJob } from "../shared/storage.js";
 
 app.http("syncProgress", {
   route: "user/sync-progress/{jobId}",

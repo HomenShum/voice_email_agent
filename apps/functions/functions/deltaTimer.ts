@@ -1,8 +1,8 @@
 import type { InvocationContext, Timer } from "@azure/functions";
 import { app } from "@azure/functions";
-import { enqueueBackfill } from "../shared/bus";
-import { getCheckpoint, listKnownGrants, createJob } from "../shared/storage";
-import { listRegisteredGrants } from "../shared/nylasConfig";
+import { enqueueBackfill } from "../shared/bus.js";
+import { getCheckpoint, listKnownGrants, createJob } from "../shared/storage.js";
+import { listRegisteredGrants } from "../shared/nylasConfig.js";
 
 function monthsAgoToEpochSeconds(months: number): number {
   const d = new Date();

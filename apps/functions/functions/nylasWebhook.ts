@@ -1,7 +1,7 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { enqueueBackfill } from "../shared/bus";
+import { enqueueBackfill } from "../shared/bus.js";
 
 function ok(body: any): HttpResponseInit { return { status: 200, jsonBody: body }; }
 function accepted(body: any): HttpResponseInit { return { status: 202, jsonBody: body }; }

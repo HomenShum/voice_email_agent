@@ -1,12 +1,12 @@
 import type { InvocationContext } from "@azure/functions";
-import { BackfillJob, enqueueBackfill } from "../shared/bus";
-import { listMessages, NylasApiError, NylasMessage, downloadAttachment } from "../shared/nylas";
-import { cleanText, embedText, summarizeNotes, analyzeImageBuffer, analyzePdfBuffer, analyzeAttachmentBuffer, summarizeLongTextMapReduce } from "../shared/openai";
-import { upsertDenseVectors, upsertSparseRecords, generateSparseEmbedding, flushIndexSessionMetricsNow } from "../shared/pinecone";
-import { saveCleanText, saveAttachment, appendDayNote, loadDayNotes, saveSummary, setCheckpoint, updateJob, getJob, listDayKeysForWeek, listDayKeysForMonth } from "../shared/storage";
-import { dayKeyFromEpoch, weekKeyFromEpoch, monthKeyFromEpoch } from "../shared/shard";
+import { BackfillJob, enqueueBackfill } from "../shared/bus.js";
+import { listMessages, NylasApiError, NylasMessage, downloadAttachment } from "../shared/nylas.js";
+import { cleanText, embedText, summarizeNotes, analyzeImageBuffer, analyzePdfBuffer, analyzeAttachmentBuffer, summarizeLongTextMapReduce } from "../shared/openai.js";
+import { upsertDenseVectors, upsertSparseRecords, generateSparseEmbedding, flushIndexSessionMetricsNow } from "../shared/pinecone.js";
+import { saveCleanText, saveAttachment, appendDayNote, loadDayNotes, saveSummary, setCheckpoint, updateJob, getJob, listDayKeysForWeek, listDayKeysForMonth } from "../shared/storage.js";
+import { dayKeyFromEpoch, weekKeyFromEpoch, monthKeyFromEpoch } from "../shared/shard.js";
 import type { RecordMetadata } from "@pinecone-database/pinecone";
-import type { VectorRecord, SparseRecord } from "../shared/pinecone";
+import type { VectorRecord, SparseRecord } from "../shared/pinecone.js";
 
 
 const BACKOFF_SECONDS = [10, 20, 40, 80, 160, 300] as const; // max 6 attempts

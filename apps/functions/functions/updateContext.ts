@@ -1,8 +1,8 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
-import { registerGrant } from "../shared/nylasConfig";
-import { enqueueBackfill, BackfillJob } from "../shared/bus";
-import { getCheckpoint, createJob, setGrantSecret } from "../shared/storage";
+import { registerGrant } from "../shared/nylasConfig.js";
+import { enqueueBackfill, BackfillJob } from "../shared/bus.js";
+import { getCheckpoint, createJob, setGrantSecret } from "../shared/storage.js";
 
 const NYLAS_BASE = process.env.NYLAS_BASE || "https://api.us.nylas.com/v3";
 const MAX_DELTA_WINDOW = 10000;

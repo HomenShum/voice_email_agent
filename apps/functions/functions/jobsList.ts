@@ -1,6 +1,6 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
-import { listJobs } from "../shared/storage";
+import { listJobs } from "../shared/storage.js";
 
 app.http("jobsList", {
   route: "user/jobs",

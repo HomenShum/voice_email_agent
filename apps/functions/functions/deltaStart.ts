@@ -1,7 +1,7 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 import { app } from "@azure/functions";
-import { enqueueBackfill, BackfillJob } from "../shared/bus";
-import { getCheckpoint } from "../shared/storage";
+import { enqueueBackfill, BackfillJob } from "../shared/bus.js";
+import { getCheckpoint } from "../shared/storage.js";
 
 const MAX_EMAIL_WINDOW = 10000;
 
