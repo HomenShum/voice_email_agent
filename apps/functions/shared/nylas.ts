@@ -33,7 +33,7 @@ export class NylasApiError extends Error {
   }
 }
 
-import { getApiKeyForGrant } from "./nylasConfig";
+import { getApiKeyForGrant } from "./nylasConfig.js";
 
 const NYLAS_BASE = process.env.NYLAS_BASE || "https://api.us.nylas.com/v3";
 
