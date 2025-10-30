@@ -48,6 +48,12 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --settings AzureWebJobsFeatureFlags=EnableWorkerIndexing
 
+      - name: Restart Function App to apply settings
+        run: |
+          az functionapp restart \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
