@@ -18,4 +18,5 @@ import "./functions/updateContext.js";
 
 // Explicitly export app for Azure Functions runtime
 export { app };
+export default app;
 
