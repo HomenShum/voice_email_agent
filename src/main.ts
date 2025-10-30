@@ -39,12 +39,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <h4>Agents & Tools</h4>
           <div id="agents-list" class="agents-tools-list"></div>
         </div>
-
-        <!-- Recent Tool Activity -->
-        <div class="tool-activity-section">
-          <h4>Recent Activity</h4>
-          <ul id="tool-activity-list" class="list-reset scrollable-list"></ul>
-        </div>
       </div>
 
       <!-- Dashboard Widgets Panel -->
@@ -138,7 +132,6 @@ const totalEmailsSpan = document.querySelector<HTMLSpanElement>('#total-emails')
 const emailResultsList = document.querySelector<HTMLUListElement>('#email-results-list')!;
 
 const agentsList = document.querySelector<HTMLDivElement>('#agents-list')!;
-const toolActivityList = document.querySelector<HTMLUListElement>('#tool-activity-list')!;
 
 const FUNCTIONS_BASE = (import.meta as any).env?.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
 
@@ -649,7 +642,6 @@ function initializeToolsAndAgentsPanel() {
   // Set up tool activity listener - this fires during live conversations
   addToolCallListener((record) => {
     updateAgentActivity(record);
-    updateToolActivity(record);
     // Force immediate agent re-render during active conversation
     if (isConversationActive) {
       renderAgentsWithTools();
@@ -735,49 +727,7 @@ function updateAgentActivity(record: ToolCallRecord) {
   });
 }
 
-function updateToolActivity(record: ToolCallRecord) {
-  const li = document.createElement('li');
-  li.className = `tool-activity-item ${record.error ? 'error' : 'success'} ${isConversationActive ? 'live' : ''}`;
-
-  const timestamp = new Date(record.timestamp).toLocaleTimeString();
-  const statusIcon = record.error ? '❌' : '✅';
-  const agentName = record.agentId ? (AGENT_METADATA as any)[record.agentId]?.name || record.agentId : 'Unknown';
-
-  // Format parameters for display
-  const paramsKeys = Object.keys(record.parameters || {});
-  const paramsPreview = paramsKeys.length > 0
-    ? paramsKeys.slice(0, 2).map(k => {
-        const v = record.parameters[k];
-        if (v === null || v === undefined) return null;
-        if (typeof v === 'string' && v.length > 20) return `${k}: "${v.substring(0, 20)}..."`;
-        if (typeof v === 'object') return `${k}: {...}`;
-        return `${k}: ${JSON.stringify(v)}`;
-      }).filter(Boolean).join(', ')
-    : '';
-
-  li.innerHTML = `
-    <div class="activity-header">
-      <span class="activity-status">${statusIcon}</span>
-      <span class="activity-tool">${record.name}</span>
-      <span class="activity-time">${timestamp}</span>
-    </div>
-    <div class="activity-agent">Agent: ${agentName}</div>
-    ${paramsPreview ? `<div class="activity-params">${paramsPreview}</div>` : ''}
-    ${record.duration ? `<div class="activity-duration">${record.duration}ms</div>` : ''}
-    ${record.error ? `<div class="activity-error">${record.error}</div>` : ''}
-  `;
-
-  // Add to top of list with animation
-  toolActivityList.insertBefore(li, toolActivityList.firstChild);
-  li.classList.add('new-item');
-  setTimeout(() => li.classList.remove('new-item'), 300);
-
-  // Keep only last 15 items during conversation, 10 otherwise
-  const maxItems = isConversationActive ? 15 : 10;
-  while (toolActivityList.children.length > maxItems) {
-    toolActivityList.removeChild(toolActivityList.lastChild!);
-  }
-}
+// Removed updateToolActivity function - Recent Activity section has been removed
 
 // Initialize the panel
 initializeToolsAndAgentsPanel();
