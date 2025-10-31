@@ -5,12 +5,15 @@ A full-stack voice assistant for email management using OpenAI's Realtime API, N
 ## 🚀 Live Deployment
 
 - **Frontend UI**: https://orange-mud-087b3a60f.3.azurestaticapps.net
-- **Functions API**: https://func-email-agent-9956.azurewebsites.net
+- **Functions API**: https://func-email-agent-9956-lx.azurewebsites.net
 - **API Endpoints**:
-  - `/api/index/stats` — Email index statistics
-  - `/api/user/jobs?grantId=<id>` — User job history
+  - `/api/nylas/unread` — List unread emails
+  - `/api/nylas/contacts` — List contacts
+  - `/api/nylas/events` — List calendar events
   - `/api/search` — Semantic email search
   - `/api/aggregate` — Email aggregation
+  - `/api/realtime/session` — OpenAI Realtime session
+  - `/api/sync/delta` — Delta sync trigger
 
 ## 🎯 Overview
 
@@ -42,19 +45,22 @@ This project implements a production-ready voice agent that allows users to sear
 ## 📊 Current Status
 
 ### ✅ Completed
-- 10,000 emails indexed in Pinecone with correct metadata
-- Local server fully functional (http://localhost:8787)
-- Voice agent UI with real-time transcription
-- Email metrics dashboard (total count + top 10 results)
-- Metadata issue fixed (`type: 'message'` field added)
-- `/email/count` endpoint implemented
-- Delta sync window constrained to the latest 10,000 emails (dense + sparse vectors)
+- ✅ 10,000+ emails indexed in Pinecone with correct metadata
+- ✅ Local server fully functional (http://localhost:8787)
+- ✅ Voice agent UI with real-time transcription
+- ✅ Email metrics dashboard (total count + top 10 results)
+- ✅ Metadata issue fixed (`type: 'message'` field added)
+- ✅ Delta sync window constrained to the latest 10,000 emails (dense + sparse vectors)
+- ✅ **Azure Functions deployed** (`func-email-agent-9956-lx`)
+- ✅ **Static Web App deployed** (orange-mud-087b3a60f.3.azurestaticapps.net)
+- ✅ **Service Bus configured** (sb-email-agent-9085 with nylas-backfill queue)
+- ✅ **All endpoints tested and working** (200/400 status codes as expected)
+- ✅ **GitHub Actions CI/CD pipeline** (automated deployment on push)
+- ✅ **CORS configured** between Static Web App and Functions
 
 ### ⏳ Pending
-- Azure deployment (subscription access issue)
-- Storage account and Function App creation
-- Service Bus queue configuration
-- Webhook registration with Nylas
+- Webhook registration with Nylas (optional - for real-time sync)
+- Production security hardening (CORS restrictions, API key rotation)
 
 ## 🏗️ Architecture
 
@@ -73,22 +79,26 @@ Backend Server (Node.js)
     └─ /nylas/* → Nylas API proxy
 ```
 
-### Azure Production (Planned)
+### Azure Production (✅ Live)
 ```
-Frontend (Static Web App)
+Frontend (Static Web App) ✅
     ↓
-Voice Agent (OpenAI Realtime API)
+Voice Agent (OpenAI Realtime API) ✅
     ↓
-Azure Functions
-    ├─ HTTP Triggers
+Azure Functions (func-email-agent-9956-lx) ✅
+    ├─ HTTP Triggers ✅
+    │  ├─ /api/nylas/unread (list unread emails)
+    │  ├─ /api/nylas/contacts (list contacts)
+    │  ├─ /api/nylas/events (list calendar events)
     │  ├─ /api/sync/delta (manual delta sync)
-    │  ├─ /api/webhooks/nylas (webhook handler)
-    │  └─ /api/search (email search)
+    │  ├─ /api/search (semantic email search)
+    │  ├─ /api/aggregate (email aggregation)
+    │  └─ /api/realtime/session (OpenAI session)
     │
-    ├─ Timer Trigger (hourly)
+    ├─ Timer Trigger (hourly) ✅
     │  └─ Enqueue delta jobs to Service Bus
     │
-    └─ Service Bus Queue Worker
+    └─ Service Bus Queue Worker ✅
        ├─ Processes backfill/delta jobs
        ├─ Updates Pinecone vectors
        └─ Updates checkpoint per grant
@@ -540,12 +550,34 @@ References: Azure Functions Timer trigger docs (Node v4 model, six-field schedul
 
 ## 🚢 Azure Deployment
 
-### Prerequisites
+### ✅ Current Deployment Status
+
+**All resources are deployed and live!** The application is running on:
+- **Function App**: `func-email-agent-9956-lx` (Linux Consumption plan)
+- **Service Bus**: `sb-email-agent-9085` with queue `nylas-backfill`
+- **Static Web App**: `orange-mud-087b3a60f.3.azurestaticapps.net`
+
+### Prerequisites (for re-deployment or updates)
 - Azure CLI installed and authenticated (`az login`)
 - Active Azure subscription
 - `.env` file configured with all API keys (see `.env.example`)
+- GitHub repository with secrets configured
 
-### Step 1: Create Azure Resources
+### Current Azure Resources
+
+| Resource | Name | Type | Status |
+|----------|------|------|--------|
+| **Function App** | `func-email-agent-9956-lx` | Linux Consumption | ✅ Running |
+| **Service Bus** | `sb-email-agent-9085` | Standard | ✅ Active |
+| **Queue** | `nylas-backfill` | Service Bus Queue | ✅ Active |
+| **Storage Account** | `stemail155743` | Standard LRS | ✅ Active |
+| **Key Vault** | `kv-email-agent-1396` | Standard | ✅ Active |
+| **Static Web App** | `swa-email-agent` | Free | ✅ Active |
+| **Application Insights** | `appinsights-email-agent` | Standard | ✅ Active |
+
+**Note**: Unused resources have been cleaned up (6 old Function Apps and 7 old Service Bus namespaces deleted).
+
+### Step 1: Create Azure Resources (if needed)
 
 ```bash
 # Set variables
@@ -553,7 +585,7 @@ $RESOURCE_GROUP = "rg-email-agent"
 $LOCATION = "eastus"
 $STORAGE_ACCOUNT = "stemailagent$(Get-Random -Minimum 1000 -Maximum 9999)"
 $SERVICEBUS_NAMESPACE = "sb-email-agent-$(Get-Random -Minimum 1000 -Maximum 9999)"
-$FUNCTION_APP = "func-email-agent-$(Get-Random -Minimum 1000 -Maximum 9999)"
+$FUNCTION_APP = "func-email-agent-$(Get-Random -Minimum 1000 -Maximum 9999)-lx"
 $QUEUE_NAME = "nylas-backfill"
 
 # Create resource group
@@ -581,15 +613,16 @@ az servicebus queue create `
   --enable-session true `
   --max-delivery-count 10
 
-# Create Function App
+# Create Function App (Linux Consumption)
 az functionapp create `
   --name $FUNCTION_APP `
   --resource-group $RESOURCE_GROUP `
   --storage-account $STORAGE_ACCOUNT `
   --consumption-plan-location $LOCATION `
   --runtime node `
-  --runtime-version 20 `
-  --functions-version 4
+  --runtime-version 22 `
+  --functions-version 4 `
+  --os-type Linux
 
 # (Optional) Create Application Insights
 az monitor app-insights component create `
