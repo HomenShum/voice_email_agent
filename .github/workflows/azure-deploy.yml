@@ -48,7 +48,8 @@ jobs:
             --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --settings \
-              AzureWebJobsFeatureFlags=EnableWorkerIndexing
+              AzureWebJobsFeatureFlags=EnableWorkerIndexing \
+              WEBSITE_NODE_DEFAULT_VERSION=~22
 
       - name: Restart Function App to apply settings
         run: |
