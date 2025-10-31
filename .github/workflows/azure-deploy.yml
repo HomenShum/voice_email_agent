@@ -80,17 +80,17 @@ jobs:
           cd apps/functions
           # Reduce node_modules to production only to keep the artifact lean
           npm prune --omit=dev || npm prune --production
-          rm -f ../functions.zip
+          rm -f ../../functions.zip
           # Zip only what the v4 worker needs: dist, node_modules, package.json, host.json
-          zip -r ../functions.zip dist node_modules package.json host.json
-          ls -lah ../functions.zip
+          zip -r ../../functions.zip dist node_modules package.json host.json
+          ls -lah ../../functions.zip
 
       - name: Deploy Functions (zip deploy)
         run: |
           az functionapp deployment source config-zip \
             --name ${{ env.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --src functions.zip \
+            --src ./functions.zip \
             --build-remote false \
             --timeout 600
 
