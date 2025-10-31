@@ -5,7 +5,7 @@ A full-stack voice assistant for email management using OpenAI's Realtime API, N
 ## 🚀 Live Deployment
 
 - **Frontend UI**: https://orange-mud-087b3a60f.3.azurestaticapps.net
-- **Functions API**: https://func-email-agent-8127.azurewebsites.net
+- **Functions API**: https://func-email-agent-9956.azurewebsites.net
 - **API Endpoints**:
   - `/api/index/stats` — Email index statistics
   - `/api/user/jobs?grantId=<id>` — User job history

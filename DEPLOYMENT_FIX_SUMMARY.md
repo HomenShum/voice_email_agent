@@ -1,4 +1,8 @@
-# Deployment Fix Summary - RESOLVED ✅
+# Deployment Fix Summary
+
+> **⚠️ HISTORICAL TROUBLESHOOTING REFERENCE**
+> This document describes historical troubleshooting steps for Flex Consumption issues.
+> The project now uses **Windows Consumption** plan (`func-email-agent-9956`). - RESOLVED ✅
 
 ## Problem Identified
 

@@ -1,5 +1,9 @@
 # CRITICAL DISCOVERY: Wrong Hosting Plan! ⚠️
 
+> **✅ RESOLVED - HISTORICAL REFERENCE**
+> This issue has been resolved. The project now correctly uses **Windows Consumption** plan (`func-email-agent-9956`).
+> This document is kept for historical reference.
+
 ## The Real Problem
 
 After extensive troubleshooting, we discovered that **`func-email-agent-9956` is NOT a Flex Consumption plan**. It's a **Windows Consumption plan**.
@@ -24,7 +28,7 @@ az functionapp show --name func-email-agent-9956 --resource-group rg-email-agent
 
 | Name | Kind | Reserved | Plan Type |
 |------|------|----------|-----------|
-| func-email-agent-8127 | functionapp,linux | True | Linux Consumption |
+| func-email-agent-9956 | functionapp,linux | True | Linux Consumption |
 | func-email-agent-4707 | functionapp,linux | True | Linux Consumption |
 | **func-email-agent-9956** | **functionapp** | **False** | **Windows Consumption** |
 | func-email-agent-3624 | functionapp,linux | True | Linux Consumption |

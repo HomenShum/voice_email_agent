@@ -30,8 +30,8 @@ Created and configured:
 - ✅ Storage Account: `stemail343069`
 - ✅ Service Bus Namespace: `sb-email-agent-4003`
 - ✅ Service Bus Queue: `nylas-backfill` (session-enabled)
-- ✅ Function App: `func-email-agent-8127` (Flex Consumption, Node 22)
-- ✅ Application Insights: `func-email-agent-8127`
+- ✅ Function App: `func-email-agent-9956` (Flex Consumption, Node 22)
+- ✅ Application Insights: `func-email-agent-9956`
 - ✅ Key Vault: `kv-email-agent-5962`
 - ✅ Static Web App: `swa-email-agent`
 
@@ -116,7 +116,7 @@ No job functions found. Try making your job classes and methods public...
 
 4. **Register Nylas Webhook** (1 minute)
    ```powershell
-   .\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-8127"
+   .\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-9956"
    ```
 
 5. **Test End-to-End** (5 minutes)
@@ -132,7 +132,7 @@ No job functions found. Try making your job classes and methods public...
 
 | Service | URL |
 |---------|-----|
-| Function App | https://func-email-agent-8127.azurewebsites.net |
+| Function App | https://func-email-agent-9956.azurewebsites.net |
 | Static Web App | https://orange-mud-087b3a60f.3.azurestaticapps.net |
 | Azure Portal | https://portal.azure.com/#@/resource/subscriptions/d33edd77-3a20-49e3-8dbd-93f0344b235e/resourceGroups/rg-email-agent |
 | GitHub Actions | https://github.com/HomenShum/voice_email_agent/actions |
@@ -154,8 +154,8 @@ No job functions found. Try making your job classes and methods public...
 1. `AZURE_CLIENT_ID` = `813b9273-87e9-495f-a643-f696c54280f1`
 2. `AZURE_TENANT_ID` = `19683f98-b1bc-402c-a9d1-0166ef1607f9`
 3. `AZURE_SUBSCRIPTION_ID` = `d33edd77-3a20-49e3-8dbd-93f0344b235e`
-4. `AZURE_FUNCTION_APP_NAME` = `func-email-agent-8127`
-5. `AZURE_FUNCTION_APP_URL` = `https://func-email-agent-8127.azurewebsites.net`
+4. `AZURE_FUNCTION_APP_NAME` = `func-email-agent-9956`
+5. `AZURE_FUNCTION_APP_URL` = `https://func-email-agent-9956.azurewebsites.net`
 6. `AZURE_STATIC_WEB_APP_NAME` = `swa-email-agent`
 7. `AZURE_STATIC_WEB_APPS_API_TOKEN` = `dc3f12ee59032ac71685638091329f98ba17b1bfc95cae2d1d3983993be9356703-437bf6a9-79e4-49cc-8225-d3b6f51610ec00f0832087b3a60f`
 
@@ -242,7 +242,7 @@ No job functions found. Try making your job classes and methods public...
 **Check Application Insights:**
 ```bash
 az monitor app-insights query \
-  --app func-email-agent-8127 \
+  --app func-email-agent-9956 \
   --resource-group rg-email-agent \
   --analytics-query "traces | where timestamp > ago(1h) | order by timestamp desc | take 50"
 ```
@@ -250,7 +250,7 @@ az monitor app-insights query \
 **List Functions:**
 ```bash
 az functionapp function list \
-  --name func-email-agent-8127 \
+  --name func-email-agent-9956 \
   --resource-group rg-email-agent \
   -o table
 ```
@@ -258,7 +258,7 @@ az functionapp function list \
 **Restart Function App:**
 ```bash
 az functionapp restart \
-  --name func-email-agent-8127 \
+  --name func-email-agent-9956 \
   --resource-group rg-email-agent
 ```
 
@@ -266,7 +266,7 @@ az functionapp restart \
 
 ```bash
 az functionapp cors add \
-  --name func-email-agent-8127 \
+  --name func-email-agent-9956 \
   --resource-group rg-email-agent \
   --allowed-origins "https://orange-mud-087b3a60f.3.azurestaticapps.net"
 ```

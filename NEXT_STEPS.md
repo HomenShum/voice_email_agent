@@ -13,8 +13,8 @@ Add these 7 secrets by clicking **"New repository secret"** for each:
 | `AZURE_CLIENT_ID` | `813b9273-87e9-495f-a643-f696c54280f1` |
 | `AZURE_TENANT_ID` | `19683f98-b1bc-402c-a9d1-0166ef1607f9` |
 | `AZURE_SUBSCRIPTION_ID` | `d33edd77-3a20-49e3-8dbd-93f0344b235e` |
-| `AZURE_FUNCTION_APP_NAME` | `func-email-agent-8127` |
-| `AZURE_FUNCTION_APP_URL` | `https://func-email-agent-8127.azurewebsites.net` |
+| `AZURE_FUNCTION_APP_NAME` | `func-email-agent-9956` |
+| `AZURE_FUNCTION_APP_URL` | `https://func-email-agent-9956.azurewebsites.net` |
 | `AZURE_STATIC_WEB_APP_NAME` | `swa-email-agent` |
 | `AZURE_STATIC_WEB_APPS_API_TOKEN` | `dc3f12ee59032ac71685638091329f98ba17b1bfc95cae2d1d3983993be9356703-437bf6a9-79e4-49cc-8225-d3b6f51610ec00f0832087b3a60f` |
 
@@ -56,7 +56,7 @@ After deployment completes, test the endpoints:
 
 ```bash
 # Test index stats
-curl https://func-email-agent-8127.azurewebsites.net/api/index-stats
+curl https://func-email-agent-9956.azurewebsites.net/api/index-stats
 
 # Expected response: JSON with Pinecone index statistics
 ```
@@ -64,7 +64,7 @@ curl https://func-email-agent-8127.azurewebsites.net/api/index-stats
 If you still get 404 errors, check Application Insights:
 ```bash
 az monitor app-insights query \
-  --app func-email-agent-8127 \
+  --app func-email-agent-9956 \
   --resource-group rg-email-agent \
   --analytics-query "traces | where timestamp > ago(30m) | order by timestamp desc | take 50"
 ```
@@ -76,11 +76,11 @@ az monitor app-insights query \
 Once functions are working, register the webhook:
 
 ```powershell
-.\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-8127"
+.\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-9956"
 ```
 
 This will configure Nylas to send email events to:
-`https://func-email-agent-8127.azurewebsites.net/api/nylas/webhook`
+`https://func-email-agent-9956.azurewebsites.net/api/nylas/webhook`
 
 ---
 
@@ -93,21 +93,21 @@ This will configure Nylas to send email events to:
 
 2. **Test Search:**
    ```bash
-   curl -X POST https://func-email-agent-8127.azurewebsites.net/api/search \
+   curl -X POST https://func-email-agent-9956.azurewebsites.net/api/search \
      -H "Content-Type: application/json" \
      -d '{"query": "test", "topK": 5}'
    ```
 
 3. **Test Aggregate:**
    ```bash
-   curl -X POST https://func-email-agent-8127.azurewebsites.net/api/aggregate \
+   curl -X POST https://func-email-agent-9956.azurewebsites.net/api/aggregate \
      -H "Content-Type: application/json" \
      -d '{"query": "summarize emails from this week"}'
    ```
 
 4. **Test Backfill:**
    ```bash
-   curl -X POST https://func-email-agent-8127.azurewebsites.net/api/sync/backfill/start \
+   curl -X POST https://func-email-agent-9956.azurewebsites.net/api/sync/backfill/start \
      -H "Content-Type: application/json" \
      -d '{}'
    ```
@@ -153,7 +153,7 @@ The GitHub Actions workflow automatically configures CORS, but if you see CORS e
 
 ```bash
 az functionapp cors add \
-  --name func-email-agent-8127 \
+  --name func-email-agent-9956 \
   --resource-group rg-email-agent \
   --allowed-origins "https://orange-mud-087b3a60f.3.azurestaticapps.net"
 ```
@@ -189,15 +189,15 @@ Check that:
 
 ### Azure Resources
 - **Resource Group:** `rg-email-agent`
-- **Function App:** `func-email-agent-8127` (Flex Consumption)
+- **Function App:** `func-email-agent-9956` (Windows Consumption)
 - **Static Web App:** `swa-email-agent` (Free tier)
 - **Service Bus:** `sb-email-agent-4003` (Standard)
 - **Storage:** `stemail343069` (Standard LRS)
-- **App Insights:** `func-email-agent-8127`
+- **App Insights:** `func-email-agent-9956`
 - **Key Vault:** `kv-email-agent-5962`
 
 ### URLs
-- **Function App:** https://func-email-agent-8127.azurewebsites.net
+- **Function App:** https://func-email-agent-9956.azurewebsites.net
 - **Static Web App:** https://orange-mud-087b3a60f.3.azurestaticapps.net
 - **Azure Portal:** https://portal.azure.com/#@/resource/subscriptions/d33edd77-3a20-49e3-8dbd-93f0344b235e/resourceGroups/rg-email-agent
 

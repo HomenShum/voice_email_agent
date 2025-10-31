@@ -57,9 +57,14 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 **Name:** `AZURE_STATIC_WEB_APPS_API_TOKEN`
 
-**Value:** `dc3f12ee59032ac71685638091329f98ba17b1bfc95cae2d1d3983993be9356703-437bf6a9-79e4-49cc-8225-d3b6f51610ec00f0832087b3a60f`
+**Value:** Get the deployment token by running:
+```powershell
+az staticwebapp secrets list --name swa-email-agent --resource-group rg-email-agent --query "properties.apiKey" -o tsv
+```
 
 **Static Web App URL:** `https://orange-mud-087b3a60f.3.azurestaticapps.net`
+
+**⚠️ SECURITY:** Never commit this token to the repository. Store it only in GitHub Secrets.
 
 ---
 
@@ -88,14 +93,14 @@ For production, you may want to add these as secrets instead of hardcoding in `.
 
 ---
 
-## Deployment Resources Created
+## Deployment Resources (current targets)
 
 - **Resource Group:** `rg-email-agent`
-- **Function App:** `func-email-agent-8127`
+- **Function App:** `func-email-agent-9956` (Windows Consumption)
 - **Service Bus Namespace:** `sb-email-agent-4003`
 - **Service Bus Queue:** `nylas-backfill`
 - **Storage Account:** `stemail343069`
-- **Application Insights:** `func-email-agent-8127`
+- **Application Insights:** `func-email-agent-9956`
 - **Key Vault:** `kv-email-agent-5962`
 
 ---
@@ -104,10 +109,10 @@ For production, you may want to add these as secrets instead of hardcoding in `.
 
 1. Push code to trigger the GitHub Actions workflow
 2. Monitor the deployment in the **Actions** tab
-3. Verify functions are working: `https://func-email-agent-8127.azurewebsites.net/api/index-stats`
+3. Verify functions are working: `https://func-email-agent-9956.azurewebsites.net/api/index-stats`
 4. Register Nylas webhook (run locally):
    ```powershell
-   .\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-8127"
+   .\scripts\register-nylas-webhook.ps1 -FuncAppName "func-email-agent-9956"
    ```
 
 ---
@@ -119,7 +124,7 @@ If functions still show "0 functions loaded" after deployment:
 1. Check Application Insights logs:
    ```bash
    az monitor app-insights query \
-     --app func-email-agent-8127 \
+     --app func-email-agent-9956 \
      --resource-group rg-email-agent \
      --analytics-query "traces | where timestamp > ago(1h) | order by timestamp desc | take 50"
    ```
@@ -137,5 +142,5 @@ If functions still show "0 functions loaded" after deployment:
 **Scope:** `/subscriptions/d33edd77-3a20-49e3-8dbd-93f0344b235e/resourceGroups/rg-email-agent`
 **Role:** `contributor`
 
-⚠️ **IMPORTANT:** Keep the `clientSecret` secure! Never commit it to your repository.
+**⚠️ IMPORTANT:** Keep the `clientSecret` secure! Never commit it to your repository.
 

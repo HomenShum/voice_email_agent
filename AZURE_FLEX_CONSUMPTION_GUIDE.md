@@ -1,5 +1,9 @@
 # Azure Functions Flex Consumption Plan - Quick Reference Guide
 
+> **⚠️ HISTORICAL REFERENCE ONLY**
+> This project now uses **Windows Consumption** plan (`func-email-agent-9956`), not Flex Consumption.
+> This document is kept for reference purposes only.
+
 ## Overview
 
 This guide documents the specific requirements and limitations of Azure Functions **Flex Consumption** hosting plan, based on real deployment experience with this project.
@@ -39,18 +43,45 @@ az functionapp deployment source config-zip \
   --src "$ZIP_PATH"
 ```
 
-### ✅ Use: `az webapp deploy` (OneDeploy)
+### ❌ Also Avoid: `az webapp deploy --type zip`
 
-**Solution:** Use OneDeploy method, which does NOT auto-add incompatible settings.
+**Problem:** This command returns HTTP 415 (Unsupported Media Type) for Flex Consumption plans.
 
 ```bash
-# USE THIS for Flex Consumption:
+# DON'T USE THIS for Flex Consumption:
 az webapp deploy \
   --resource-group "$RG" \
   --name "$APP_NAME" \
   --src-path "$ZIP_PATH" \
-  --type zip \
-  --async false
+  --type zip
+```
+
+### ✅ Use: Kudu ZipDeploy API
+
+**Solution:** Use Kudu ZipDeploy API directly with proper authentication and content-type.
+
+```bash
+# USE THIS for Flex Consumption:
+
+# 1. Get publishing credentials
+CREDS=$(az functionapp deployment list-publishing-credentials \
+  --name "$APP_NAME" \
+  --resource-group "$RG" \
+  --query "{username:publishingUserName, password:publishingPassword}" -o json)
+
+USERNAME=$(echo $CREDS | jq -r '.username')
+PASSWORD=$(echo $CREDS | jq -r '.password')
+
+# 2. Deploy via Kudu API
+curl -X POST \
+  -u "$USERNAME:$PASSWORD" \
+  -H "Content-Type: application/octet-stream" \
+  --data-binary @"$ZIP_PATH" \
+  "https://$APP_NAME.scm.azurewebsites.net/api/zipdeploy"
+
+# 3. Check deployment status
+curl -s -u "$USERNAME:$PASSWORD" \
+  "https://$APP_NAME.scm.azurewebsites.net/api/deployments/latest" | jq
 ```
 
 ## Required App Settings
@@ -73,7 +104,7 @@ All other settings (storage, runtime, etc.) are managed automatically by the Fle
 
 1. **Set required settings** (EnableWorkerIndexing)
 2. **Restart Function App** (apply settings)
-3. **Deploy using OneDeploy** (az webapp deploy)
+3. **Deploy using Kudu ZipDeploy API** (compatible method)
 4. **Remove incompatible settings** (cleanup any auto-added settings)
 5. **Verify functions discovered**
 6. **Test endpoints**
@@ -96,14 +127,23 @@ All other settings (storage, runtime, etc.) are managed automatically by the Fle
       --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
     sleep 30
 
-- name: Deploy Functions (OneDeploy - Flex Consumption compatible)
+- name: Deploy Functions (Kudu ZipDeploy API - Flex Consumption compatible)
   run: |
-    az webapp deploy \
-      --resource-group "$RG" \
+    # Get publishing credentials
+    CREDS=$(az functionapp deployment list-publishing-credentials \
       --name "$APP_NAME" \
-      --src-path "$ZIP_PATH" \
-      --type zip \
-      --async false
+      --resource-group "$RG" \
+      --query "{username:publishingUserName, password:publishingPassword}" -o json)
+
+    USERNAME=$(echo $CREDS | jq -r '.username')
+    PASSWORD=$(echo $CREDS | jq -r '.password')
+
+    # Deploy via Kudu ZipDeploy API
+    curl -X POST \
+      -u "$USERNAME:$PASSWORD" \
+      -H "Content-Type: application/octet-stream" \
+      --data-binary @"$ZIP_PATH" \
+      "https://$APP_NAME.scm.azurewebsites.net/api/zipdeploy"
 
 - name: Remove incompatible settings added by deployment
   run: |

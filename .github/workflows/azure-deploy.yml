@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '20'
   AZURE_RESOURCE_GROUP: rg-email-agent
   AZURE_LOCATION: eastus
 
@@ -49,7 +49,7 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --settings \
               AzureWebJobsFeatureFlags=EnableWorkerIndexing \
-              WEBSITE_NODE_DEFAULT_VERSION=~22
+              WEBSITE_NODE_DEFAULT_VERSION=~20
 
       - name: Restart Function App to apply settings
         run: |
