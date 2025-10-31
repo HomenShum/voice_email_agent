@@ -33,7 +33,7 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 **Name:** `AZURE_FUNCTION_APP_NAME`
 
-**Value:** `func-email-agent-8127`
+**Value:** `func-email-agent-9956` (Windows Consumption plan)
 
 ---
 
@@ -41,7 +41,7 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 **Name:** `AZURE_FUNCTION_APP_URL`
 
-**Value:** `https://func-email-agent-8127.azurewebsites.net`
+**Value:** `https://func-email-agent-9956.azurewebsites.net`
 
 ---
 
@@ -63,17 +63,20 @@ You need to add the following secrets to your GitHub repository for CI/CD to wor
 
 ---
 
-### 8. AZURE_FUNCTIONAPP_PUBLISH_PROFILE (Optional - Alternative to Service Principal)
+### 6. AZURE_FUNCTIONAPP_PUBLISH_PROFILE
 
 **Name:** `AZURE_FUNCTIONAPP_PUBLISH_PROFILE`
 
-**Value:** (Not available for Flex Consumption plan - use Service Principal instead)
+**Value:** Get the publish profile XML by running:
+```powershell
+az functionapp deployment list-publishing-profiles --name func-email-agent-9956 --resource-group rg-email-agent --xml
+```
 
-**Note:** The existing workflow uses Service Principal authentication (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID) which is the recommended approach for Flex Consumption plans.
+**Note:** This is required for Windows Consumption plan deployment via GitHub Actions.
 
 ---
 
-### 9. Additional Environment Secrets (Optional - for enhanced security)
+### 7. Additional Environment Secrets (Optional - for enhanced security)
 
 For production, you may want to add these as secrets instead of hardcoding in `.env`:
 

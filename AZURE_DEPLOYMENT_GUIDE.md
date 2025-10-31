@@ -429,14 +429,12 @@ az monitor app-insights query `
 The `.github/workflows/azure-deploy.yml` file provides automated deployment:
 
 **Required GitHub Secrets:**
-- `AZURE_CLIENT_ID`
-- `AZURE_TENANT_ID`
-- `AZURE_SUBSCRIPTION_ID`
-- `AZURE_FUNCTION_APP_NAME`
-- `AZURE_FUNCTIONAPP_PUBLISH_PROFILE`
+- `AZURE_CREDENTIALS` (JSON with clientId, clientSecret, subscriptionId, tenantId)
+- `AZURE_FUNCTION_APP_NAME` (e.g., `func-email-agent-9956`)
+- `AZURE_FUNCTIONAPP_PUBLISH_PROFILE` (XML publish profile for Windows Consumption)
 - `AZURE_STATIC_WEB_APP_NAME`
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`
-- `AZURE_FUNCTION_APP_URL`
+- `AZURE_FUNCTION_APP_URL` (e.g., `https://func-email-agent-9956.azurewebsites.net`)
 
 **Pipeline Features:**
 - ✅ Automatic Functions deployment on push to main
