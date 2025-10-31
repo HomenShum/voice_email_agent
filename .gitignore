@@ -28,3 +28,14 @@ apps/functions/local.settings.json
 *.njsproj
 *.sln
 *.sw?
+
+
+# Local/dev artifacts
+AZURE_CREDENTIALS_SECRET.txt
+FINAL_STEPS.md
+temp.txt
+func-logs.zip
+func-logs/
+apps/functions/mcp-handler/
+
+tests/results/

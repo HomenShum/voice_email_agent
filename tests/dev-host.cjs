@@ -14,6 +14,8 @@ process.env.OPENAI_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || 'text-embeddi
 // Load compiled function modules first; they will import the stub and register handlers
 require(path.resolve('apps/functions/dist/functions/search.js'));
 require(path.resolve('apps/functions/dist/functions/aggregate.js'));
+require(path.resolve('apps/functions/dist/functions/mcp.js'));
+
 
 // Handlers were captured by the stub on globalThis
 const handlers = (globalThis.__handlers) || {};
@@ -51,6 +53,16 @@ const server = http.createServer(async (req, res) => {
       if (!handlers.aggregate) throw new Error('aggregate handler not registered');
       const { json } = await readBody(req);
       const result = await handlers.aggregate({ json: async () => json });
+      const status = result?.status || 200;
+      const body = result?.jsonBody ?? result?.body ?? {};
+      res.writeHead(status, { 'content-type': 'application/json' });
+      res.end(typeof body === 'string' ? body : JSON.stringify(body));
+      return;
+    }
+    if (req.method === 'POST' && req.url === '/api/mcp') {
+      if (!handlers.mcp) throw new Error('mcp handler not registered');
+      const { json } = await readBody(req);
+      const result = await handlers.mcp({ json: async () => json });
       const status = result?.status || 200;
       const body = result?.jsonBody ?? result?.body ?? {};
       res.writeHead(status, { 'content-type': 'application/json' });

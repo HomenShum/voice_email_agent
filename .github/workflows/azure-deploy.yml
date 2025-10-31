@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   AZURE_RESOURCE_GROUP: rg-email-agent
   AZURE_LOCATION: eastus
   AZURE_SUBSCRIPTION_ID: d33edd77-3a20-49e3-8dbd-93f0344b235e
@@ -55,13 +55,15 @@ jobs:
 
       - name: Configure Function App settings
         run: |
-          # Standard settings for Windows Consumption plan
+          # Standard settings for Linux Consumption plan
           az functionapp config appsettings set \
             --name ${{ env.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --settings \
               AzureWebJobsFeatureFlags=EnableWorkerIndexing \
-              WEBSITE_NODE_DEFAULT_VERSION=~20
+              FUNCTIONS_EXTENSION_VERSION=~4 \
+              FUNCTIONS_WORKER_RUNTIME=node \
+              WEBSITE_NODE_DEFAULT_VERSION=~22
 
       - name: Restart Function App to apply settings
         run: |
@@ -88,7 +90,7 @@ jobs:
           az functionapp deployment source config-zip \
             --name ${{ env.AZURE_FUNCTION_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --src apps/functions.zip \
+            --src functions.zip \
             --build-remote false \
             --timeout 600
 
@@ -110,11 +112,8 @@ jobs:
 
           if [ "$CNT" -eq 0 ]; then
             echo "ERROR: 0 functions discovered after deployment"
-            echo "Checking function app logs..."
-            az functionapp log tail \
-              --name ${{ env.AZURE_FUNCTION_APP_NAME }} \
-              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-              --timeout 30 || true
+            echo "No functions discovered. Skipping live log streaming in CI to avoid blocking."
+            echo "Tip: To inspect logs locally, run: az functionapp log stream --name ${{ env.AZURE_FUNCTION_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}"
             exit 1
           fi
 

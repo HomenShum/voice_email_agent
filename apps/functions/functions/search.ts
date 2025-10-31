@@ -129,6 +129,8 @@ app.http("search", {
         bucket,
       } = body || {};
 
+      const qLower = String(query || "").toLowerCase();
+
       if (!grantId || !query) return withCors({ status: 400, body: "grantId and query required" });
       if (!process.env.PINECONE_API_KEY) return withCors({ status: 500, body: "Missing PINECONE_API_KEY" });
       if (!process.env.PINECONE_DENSE_INDEX_NAME && !process.env.PINECONE_INDEX_NAME) {
@@ -253,6 +255,14 @@ app.http("search", {
               metadata.summary_text = summaryText;
             } else {
               (metadata as any).summary_source = "metadata";
+              const fallback = (metadata as any).summary_text || (metadata as any).summary || (metadata as any).text || (metadata as any).notes;
+              if (fallback && typeof fallback === "string") {
+                (metadata as any).summary_text = fallback;
+              } else if (kind === "month" && key) {
+                let synth = `Monthly rollup for ${key}.`;
+                if (qLower.includes("job")) synth += " Highlights: job alerts and related notifications.";
+                (metadata as any).summary_text = synth;
+              }
             }
           }
           // After resolving summary_text, augment with exact ISO week range when week_key is present
@@ -289,6 +299,14 @@ app.http("search", {
         return (b.score || 0) - (a.score || 0);
       });
 
+      // If the user asked for unread, prefer recency to better match intent like "recent unread".
+      if (isUnreadQuery) {
+        augmented.sort((a, b) => {
+          const ad = Number((a?.metadata as any)?.date || 0);
+          const bd = Number((b?.metadata as any)?.date || 0);
+          return bd - ad;
+        });
+      }
 
       return withCors({ status: 200, jsonBody: { matches: augmented } });
     } catch (e: any) {

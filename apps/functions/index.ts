@@ -15,6 +15,11 @@ import "./functions/nylasWebhook.js";
 import "./functions/search.js";
 import "./functions/syncProgress.js";
 import "./functions/updateContext.js";
+import "./functions/realtimeSession.js";
+import "./functions/nylasContacts.js";
+import "./functions/nylasEvents.js";
+import "./functions/nylasUnread.js";
+import "./functions/mcp.js";
 
 // Explicitly export app for Azure Functions runtime
 export { app };
