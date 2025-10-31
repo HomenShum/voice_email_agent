@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg';
 import { createVoiceSession, setTranscriptHandler } from './lib/voiceAgent';
 import { setSearchResultsHandler, setSyncStatusHandler, setToolProgressHandler, setEmailMetricsHandler, setToolCallHandler, addToolCallListener, type ToolCallRecord } from './lib/tools';
 import { ROUTER_AGENT_ID, EMAIL_AGENT_ID, INSIGHT_AGENT_ID, CONTACTS_AGENT_ID, CALENDAR_AGENT_ID, AUTOMATION_AGENT_ID } from './lib/agents';
+import { supportsEmailAnalytics, supportsEmailCounting } from './lib/featureFlags';
 
 let session: unknown;
 const toolCallHistory: ToolCallRecord[] = [];
@@ -606,19 +607,36 @@ const AGENT_METADATA = {
 };
 
 // Tools mapped to agents
+const emailAgentTools = [
+  { name: 'search_emails', description: 'Hybrid search over emails', icon: '🔍' },
+  { name: 'triage_recent_emails', description: 'Prioritize urgent messages', icon: '🎯' },
+  { name: 'list_recent_emails', description: 'Fetch recent emails with MapReduce', icon: '📬' },
+  { name: 'list_unread_messages', description: 'List unread messages', icon: '📨' },
+];
+if (supportsEmailCounting) {
+  emailAgentTools.push({ name: 'count_emails', description: 'Count total indexed emails', icon: '🔢' });
+}
+
+const insightAgentTools = [
+  { name: 'aggregate_emails', description: 'Group & count by metadata', icon: '📊' },
+];
+if (supportsEmailAnalytics) {
+  insightAgentTools.push({ name: 'analyze_emails', description: 'Summarize search results', icon: '📝' });
+} else {
+  insightAgentTools.push({
+    name: 'search_emails',
+    description: 'Hybrid search (fallback while analyze_emails is offline)',
+    icon: '🔍',
+  });
+}
+if (supportsEmailCounting) {
+  insightAgentTools.push({ name: 'count_emails', description: 'Count total indexed emails', icon: '🔢' });
+}
+
 const AGENT_TOOLS = {
   [ROUTER_AGENT_ID]: [],
-  [EMAIL_AGENT_ID]: [
-    { name: 'search_emails', description: 'Hybrid search over emails', icon: '🔍' },
-    { name: 'triage_recent_emails', description: 'Prioritize urgent messages', icon: '🎯' },
-    { name: 'list_recent_emails', description: 'Fetch recent emails with MapReduce', icon: '📬' },
-    { name: 'list_unread_messages', description: 'List unread messages', icon: '📨' },
-    { name: 'count_emails', description: 'Count total indexed emails', icon: '🔢' },
-  ],
-  [INSIGHT_AGENT_ID]: [
-    { name: 'aggregate_emails', description: 'Group & count by metadata', icon: '📊' },
-    { name: 'analyze_emails', description: 'Summarize search results', icon: '📝' },
-  ],
+  [EMAIL_AGENT_ID]: emailAgentTools,
+  [INSIGHT_AGENT_ID]: insightAgentTools,
   [CONTACTS_AGENT_ID]: [
     { name: 'list_contacts', description: 'List recent contacts', icon: '👥' },
   ],
@@ -630,7 +648,6 @@ const AGENT_TOOLS = {
     { name: 'backfill_start', description: 'Historical email backfill', icon: '⏮️' },
   ],
 };
-
 // Agent activity tracking
 const agentActivity = new Map<string, { lastActive: number; callCount: number }>();
 let isConversationActive = false;

@@ -18,6 +18,7 @@ import { createInsightAgent } from './insightAgent';
 import { createContactsAgent } from './contactsAgent';
 import { createCalendarAgent } from './calendarAgent';
 import { createAutomationAgent } from './automationAgent';
+import { supportsEmailAnalytics, supportsEmailCounting } from '../featureFlags';
 
 export const DISPLAY_NAMES: Record<(typeof SPECIALIST_IDS)[number], string> = {
   [EMAIL_AGENT_ID]: 'EmailOpsAgent',
@@ -27,11 +28,17 @@ export const DISPLAY_NAMES: Record<(typeof SPECIALIST_IDS)[number], string> = {
   [AUTOMATION_AGENT_ID]: 'AutomationAgent',
 };
 
+const emailOpsCapability = supportsEmailCounting
+  ? 'Email triage, LLM prioritisation (triage_recent_emails), unread listings, focused searches, message counts.'
+  : 'Email triage, LLM prioritisation (triage_recent_emails), unread listings, focused hybrid search. Total message counts are unavailable in this environment.';
+
+const insightCapability = supportsEmailAnalytics
+  ? 'Analytics across emails: aggregations, trends, summaries and executive narratives using aggregate_emails and analyze_emails.'
+  : 'Analytics across emails: aggregations and trend exploration via aggregate_emails, with summaries authored directly from search_emails output because analyze_emails is offline in this environment.';
+
 export const SPECIALIST_CAPABILITIES: Record<(typeof SPECIALIST_IDS)[number], string> = {
-  [EMAIL_AGENT_ID]:
-    'Email triage, LLM prioritisation (triage_recent_emails), unread listings, focused searches, message counts.',
-  [INSIGHT_AGENT_ID]:
-    'Analytics across emails: aggregations, trends, summaries and executive narratives using aggregate_emails and analyze_emails.',
+  [EMAIL_AGENT_ID]: emailOpsCapability,
+  [INSIGHT_AGENT_ID]: insightCapability,
   [CONTACTS_AGENT_ID]:
     'Contact lookup and enrichment through Nylas contacts APIs.',
   [CALENDAR_AGENT_ID]:

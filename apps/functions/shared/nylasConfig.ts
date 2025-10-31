@@ -3,29 +3,41 @@
 
 /**
  * Grant ID -> API Key mapping
- * 
+ *
  * In production, load from:
  * - Azure Key Vault (recommended)
  * - Azure Table Storage / Cosmos DB
  * - Environment variables with naming convention
- * 
+ *
  * Format: NYLAS_KEY_<GRANT_ID>=<api_key>
  */
 
 const grantApiKeyMap = new Map<string, string>();
 
+// Treat unresolved Azure Key Vault references as unset
+function isKeyVaultRef(v?: string): boolean {
+  return typeof v === "string" && v.startsWith("@Microsoft.KeyVault(");
+}
+
+
 // Load from environment variables
 // Pattern: NYLAS_KEY_grant123=key_abc...
 for (const [key, value] of Object.entries(process.env)) {
-  if (key.startsWith('NYLAS_KEY_') && value) {
+  if (key.startsWith('NYLAS_KEY_') && value && !isKeyVaultRef(String(value))) {
     const grantId = key.replace('NYLAS_KEY_', '');
-    grantApiKeyMap.set(grantId, value);
+    grantApiKeyMap.set(grantId, String(value));
   }
 }
 
 // Fallback to default key for backward compatibility
-const DEFAULT_API_KEY = process.env.NYLAS_API_KEY;
-const DEFAULT_GRANT_ID = process.env.NYLAS_GRANT_ID;
+const DEFAULT_API_KEY = (() => {
+  const v = process.env.NYLAS_API_KEY;
+  return v && !isKeyVaultRef(v) ? v : undefined;
+})();
+const DEFAULT_GRANT_ID = (() => {
+  const v = process.env.NYLAS_GRANT_ID;
+  return v && !isKeyVaultRef(v) ? v : undefined;
+})();
 
 if (DEFAULT_API_KEY && DEFAULT_GRANT_ID) {
   grantApiKeyMap.set(DEFAULT_GRANT_ID, DEFAULT_API_KEY);
@@ -39,9 +51,9 @@ if (DEFAULT_API_KEY && DEFAULT_GRANT_ID) {
  */
 export function getApiKeyForGrant(grantId: string): string {
   if (!grantId) throw new Error('Grant ID is required');
-  
+
   const apiKey = grantApiKeyMap.get(grantId);
-  
+
   if (!apiKey) {
     // Try default as fallback
     if (DEFAULT_API_KEY) {
@@ -50,7 +62,7 @@ export function getApiKeyForGrant(grantId: string): string {
     }
     throw new Error(`No API key configured for grant: ${grantId}`);
   }
-  
+
   return apiKey;
 }
 

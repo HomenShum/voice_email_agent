@@ -1,5 +1,4 @@
 import { defineConfig, loadEnv } from 'vite'
-import { resolve } from 'path'
 
 // Use Vite's env loader so .env/.env.local work in dev and CI-provided envs work in build
 export default defineConfig(({ mode }) => {
@@ -14,11 +13,6 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: true,
-      rollupOptions: {
-        input: {
-          main: resolve(__dirname, 'index.html'),
-        },
-      },
     },
     server: { port: 5175, host: true },
     preview: { port: 5175, host: true },

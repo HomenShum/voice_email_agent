@@ -1,8 +1,8 @@
 import { tool } from '@openai/agents/realtime';
+import type { Tool } from '@openai/agents-core';
 import { z } from 'zod';
 import { peekToolContext } from './agents/toolContext';
-
-const FUNCTIONS_BASE = import.meta.env.VITE_FUNCTIONS_BASE_URL || 'http://localhost:7071';
+import { FUNCTIONS_BASE, supportsEmailAnalytics, supportsEmailCounting } from './featureFlags';
 
 
 // UI callbacks
@@ -709,8 +709,23 @@ const countEmails = tool({
 });
 
 
-export const emailOpsToolset = [triageRecentEmails, searchEmails, listUnreadMessages, listRecentEmails, countEmails] as const;
-export const insightToolset = [aggregateEmails, analyzeEmails, countEmails] as const;
+const emailOpsTools: Tool[] = [triageRecentEmails, searchEmails, listUnreadMessages, listRecentEmails];
+if (supportsEmailCounting) {
+  emailOpsTools.push(countEmails);
+}
+
+const insightTools: Tool[] = [aggregateEmails];
+if (supportsEmailAnalytics) {
+  insightTools.push(analyzeEmails);
+} else {
+  insightTools.push(searchEmails);
+}
+if (supportsEmailCounting) {
+  insightTools.push(countEmails);
+}
+
+export const emailOpsToolset = emailOpsTools;
+export const insightToolset = insightTools;
 export const contactsToolset = [listContacts] as const;
 export const calendarToolset = [listEvents] as const;
 export const syncToolset = [startSync, startBackfill] as const;
