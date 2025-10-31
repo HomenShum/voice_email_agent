@@ -51,9 +51,9 @@ function extractAtSubjectLiteral(q: string): string | null {
 }
 
 
-import { embedText } from "../shared/openai.js";
+import { embedText, summarizeNotes } from "../shared/openai.js";
 import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone.js";
-import { loadSummary, getCheckpoint } from "../shared/storage.js";
+import { loadSummary, getCheckpoint, listDayKeysForMonth, loadDayNotes, saveSummary } from "../shared/storage.js";
 
 const BOOLEAN_METADATA_FIELDS = [
   "has_attachments",
@@ -254,14 +254,32 @@ app.http("search", {
               (metadata as any).summary_source = "file";
               metadata.summary_text = summaryText;
             } else {
-              (metadata as any).summary_source = "metadata";
-              const fallback = (metadata as any).summary_text || (metadata as any).summary || (metadata as any).text || (metadata as any).notes;
-              if (fallback && typeof fallback === "string") {
-                (metadata as any).summary_text = fallback;
-              } else if (kind === "month" && key) {
-                let synth = `Monthly rollup for ${key}.`;
-                if (qLower.includes("job")) synth += " Highlights: job alerts and related notifications.";
-                (metadata as any).summary_text = synth;
+              if (kind === "month" && key) {
+                // On-demand build-and-persist monthly rollup to eliminate synthetic fallback
+                const monthDays = await listDayKeysForMonth(String(grantId), key);
+                const notesAll: any[] = [];
+                for (const dk of monthDays) {
+                  const n = await loadDayNotes(String(grantId), dk);
+                  if (Array.isArray(n) && n.length) notesAll.push(...n);
+                }
+                if (notesAll.length) {
+                  const summary = await summarizeNotes(notesAll, `Monthly rollup for ${key}`);
+                  await saveSummary(String(grantId), "month", key, summary);
+                  (metadata as any).summary_source = "file";
+                  (metadata as any).summary_text = summary;
+                } else {
+                  (metadata as any).summary_source = "metadata";
+                  const fallback = (metadata as any).summary_text || (metadata as any).summary || (metadata as any).text || (metadata as any).notes;
+                  if (fallback && typeof fallback === "string") {
+                    (metadata as any).summary_text = fallback;
+                  }
+                }
+              } else {
+                (metadata as any).summary_source = "metadata";
+                const fallback = (metadata as any).summary_text || (metadata as any).summary || (metadata as any).text || (metadata as any).notes;
+                if (fallback && typeof fallback === "string") {
+                  (metadata as any).summary_text = fallback;
+                }
               }
             }
           }

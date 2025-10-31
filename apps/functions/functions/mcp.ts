@@ -1,5 +1,6 @@
 import type { HttpRequest, HttpResponseInit } from "@azure/functions";
 import { app } from "@azure/functions";
+import { z } from "zod";
 
 function withCors(response: HttpResponseInit): HttpResponseInit {
   return {
@@ -21,6 +22,22 @@ function baseUrl(): string {
 }
 
 type Json = Record<string, unknown> | unknown[] | string | number | boolean | null;
+
+// Zod schemas for MCP tool inputs
+const SearchArgsSchema = z.object({
+  grantId: z.string().describe("Grant/namespace id"),
+  query: z.string(),
+  topK: z.number().int().min(1).max(100).optional(),
+  types: z.array(z.string()).optional(),
+  threadId: z.string().optional(),
+  bucket: z.string().optional(),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+});
+
+const AggregateArgsSchema = SearchArgsSchema.extend({
+  groupBy: z.string(),
+});
 
 app.http("mcp", {
   route: "mcp",
@@ -97,31 +114,41 @@ app.http("mcp", {
 
         try {
           if (name === "search_emails") {
+            const parsed = SearchArgsSchema.safeParse(args);
+            if (!parsed.success) {
+              return withCors({ status: 200, jsonBody: { jsonrpc, id, error: { code: -32602, message: "Invalid params for search_emails", data: parsed.error.flatten() } } });
+            }
+            const a = parsed.data;
             const res = await call("/api/search", {
-              grantId: args.grantId,
-              query: args.query,
-              topK: args.topK,
-              types: args.types,
-              threadId: args.threadId,
-              bucket: args.bucket,
-              dateFrom: args.dateFrom,
-              dateTo: args.dateTo,
+              grantId: a.grantId,
+              query: a.query,
+              topK: a.topK,
+              types: a.types,
+              threadId: a.threadId,
+              bucket: a.bucket,
+              dateFrom: a.dateFrom,
+              dateTo: a.dateTo,
             });
             const text = typeof res === "string" ? res : JSON.stringify(res);
             return withCors({ status: 200, jsonBody: { jsonrpc, id, result: { content: [{ type: "text", text }], structuredContent: res } } });
           }
 
           if (name === "aggregate_emails") {
+            const parsed = AggregateArgsSchema.safeParse(args);
+            if (!parsed.success) {
+              return withCors({ status: 200, jsonBody: { jsonrpc, id, error: { code: -32602, message: "Invalid params for aggregate_emails", data: parsed.error.flatten() } } });
+            }
+            const a = parsed.data;
             const res = await call("/api/aggregate", {
-              grantId: args.grantId,
-              query: args.query,
-              topK: args.topK,
-              types: args.types,
-              groupBy: args.groupBy,
-              threadId: args.threadId,
-              bucket: args.bucket,
-              dateFrom: args.dateFrom,
-              dateTo: args.dateTo,
+              grantId: a.grantId,
+              query: a.query,
+              topK: a.topK,
+              types: a.types,
+              groupBy: a.groupBy,
+              threadId: a.threadId,
+              bucket: a.bucket,
+              dateFrom: a.dateFrom,
+              dateTo: a.dateTo,
             });
             const text = typeof res === "string" ? res : JSON.stringify(res);
             return withCors({ status: 200, jsonBody: { jsonrpc, id, result: { content: [{ type: "text", text }], structuredContent: res } } });
