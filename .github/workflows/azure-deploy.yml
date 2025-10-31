@@ -62,8 +62,15 @@ jobs:
             --settings \
               AzureWebJobsFeatureFlags=EnableWorkerIndexing \
               FUNCTIONS_EXTENSION_VERSION=~4 \
-              FUNCTIONS_WORKER_RUNTIME=node \
-              WEBSITE_NODE_DEFAULT_VERSION=~22
+              FUNCTIONS_WORKER_RUNTIME=node
+
+      - name: Set Node.js version for Linux Consumption
+        run: |
+          # For Linux Consumption plans, set linuxFxVersion via REST API
+          echo "Setting linuxFxVersion to Node|22..."
+          az rest --method PATCH \
+            --uri "/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.AZURE_RESOURCE_GROUP }}/providers/Microsoft.Web/sites/${{ env.AZURE_FUNCTION_APP_NAME }}/config/web?api-version=2023-01-01" \
+            --body '{"properties":{"linuxFxVersion":"Node|22"}}'
 
       - name: Restart Function App to apply settings
         run: |
