@@ -53,7 +53,7 @@ function extractAtSubjectLiteral(q: string): string | null {
 
 import { embedText, summarizeNotes } from "../shared/openai.js";
 import { generateSparseEmbedding, hybridQuery } from "../shared/pinecone.js";
-import { loadSummary, getCheckpoint, listDayKeysForMonth, loadDayNotes, saveSummary } from "../shared/storage.js";
+import { loadSummary, getCheckpoint, listDayKeysForMonth, loadDayNotes, saveSummary, listDayKeys } from "../shared/storage.js";
 
 const BOOLEAN_METADATA_FIELDS = [
   "has_attachments",
@@ -309,6 +309,110 @@ app.http("search", {
           augmented = filtered;
         }
       }
+      // On-demand MONTH materialization: if caller asked for thread_month but none were returned,
+      // build a monthly summary from day notes for the most recent month and persist it.
+      if (Array.isArray(types) && types.includes("thread_month")) {
+        const hasMonth = augmented.some((m) => {
+          const t = String(m?.metadata?.type || "");
+          const scope = String(m?.metadata?.summary_scope || "").toLowerCase();
+          return t === "thread_month" || t === "summary_month" || scope === "month" || Boolean((m?.metadata as any)?.month_key);
+        });
+        if (!hasMonth) {
+          try {
+            const allDayKeys = await listDayKeys(String(grantId));
+            if (allDayKeys.length > 0) {
+              const latestDay = allDayKeys[allDayKeys.length - 1]; // YYYY-MM-DD
+              const monthKey = latestDay.slice(0, 7); // YYYY-MM
+              const monthDays = await listDayKeysForMonth(String(grantId), monthKey);
+              const notesAll: any[] = [];
+              for (const dk of monthDays) {
+                const n = await loadDayNotes(String(grantId), dk);
+                if (Array.isArray(n) && n.length) notesAll.push(...n);
+              }
+              if (notesAll.length) {
+                const summary = await summarizeNotes(notesAll, `Monthly rollup for ${monthKey}`);
+                await saveSummary(String(grantId), "month", monthKey, summary);
+                const synthetic = {
+                  id: `thread_month@${monthKey}`,
+                  score: 0.11,
+                  metadata: {
+                    type: "thread_month",
+                    summary_scope: "month",
+                    month_key: monthKey,
+                    summary_kind: "month",
+                    summary_key: monthKey,
+                    summary_text: summary,
+                    summary_source: "file",
+                  },
+                };
+                augmented.unshift(synthetic);
+              }
+            } else {
+              // No day notes available: fall back to summarizing relevant messages directly
+              const msgFilter: any = { ...(Object.keys(filter).length ? filter : {}) };
+              msgFilter.type = { "$in": ["message", "email"] };
+              const msgQuery = await hybridQuery({
+                namespace: String(grantId),
+                vector: vec,
+                sparseEmbedding,
+                filter: msgFilter,
+                topK: Math.min(Math.max(requestedTopK * 3, 10), 100),
+                denseTopK: Math.min(requestedTopK * 6, 200),
+                sparseTopK: Math.min(requestedTopK * 6, 200),
+                includeMetadata: true,
+              });
+              const msgs = msgQuery.matches || [];
+              if (msgs.length) {
+                const toIso = (epoch?: any) => {
+                  const n = Number(epoch || 0);
+                  try { return new Date(n * 1000).toISOString(); } catch { return undefined; }
+                };
+                const mostRecent = msgs.reduce((acc, m) => {
+                  const d = Number((m?.metadata as any)?.date || 0);
+                  return d > acc ? d : acc;
+                }, 0);
+                const monthKey = (() => {
+                  try {
+                    const d = new Date(mostRecent * 1000);
+                    const yyyy = d.getUTCFullYear();
+                    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+                    return `${yyyy}-${mm}`;
+                  } catch { return new Date().toISOString().slice(0,7); }
+                })();
+                const notesAll = msgs.map((m) => {
+                  const meta: any = m?.metadata || {};
+                  return {
+                    messageId: String(meta.message_id || meta.email_id || m.id || "unknown"),
+                    date_iso: toIso(meta.date) || new Date().toISOString(),
+                    from: meta.from,
+                    to: Array.isArray(meta.to) ? meta.to : [],
+                    subject: meta.subject || meta.title || "",
+                    excerpt: String(meta.summary_text || meta.summary || meta.text || meta.snippet || meta.notes || meta.subject || "").slice(0, 300),
+                    thread_id: meta.thread_id,
+                  };
+                });
+                const summary = await summarizeNotes(notesAll, `Monthly rollup for ${monthKey} (messages)`);
+                await saveSummary(String(grantId), "month", monthKey, summary);
+                const synthetic = {
+                  id: `thread_month@${monthKey}`,
+                  score: 0.1,
+                  metadata: {
+                    type: "thread_month",
+                    summary_scope: "month",
+                    month_key: monthKey,
+                    summary_kind: "month",
+                    summary_key: monthKey,
+                    summary_text: summary,
+                    summary_source: "file",
+                  },
+                };
+                augmented.unshift(synthetic);
+              }
+            }
+          } catch {}
+        }
+      }
+
       // Prefer persisted summaries when available, then fallback to score ordering.
       augmented.sort((a, b) => {
         const af = String(a?.metadata?.summary_source || "") === "file" ? 1 : 0;
