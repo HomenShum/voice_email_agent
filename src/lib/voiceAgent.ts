@@ -120,7 +120,7 @@ export async function createVoiceSession() {
   wireScratchpads(routerBundle);
 
   const session = new RealtimeSession(routerBundle.router, {
-    model: 'gpt-realtime-mini',
+    model: 'gpt-5-mini',
     config: {
       inputAudioTranscription: { model: 'gpt-4o-mini-transcribe' },
     },
@@ -132,6 +132,36 @@ export async function createVoiceSession() {
       onTranscript?.(history);
     } catch {}
   });
+
+  // Listen for all events to capture response streaming
+  const sessionAny = session as any;
+  if (sessionAny.addEventListener) {
+    sessionAny.addEventListener('response.text.delta', (event: any) => {
+      try {
+        console.debug('[voice] response.text.delta', event?.delta);
+        // This captures the agent's response as it streams
+      } catch {}
+    });
+
+    sessionAny.addEventListener('response.done', (event: any) => {
+      try {
+        console.debug('[voice] response.done', event);
+        // Agent has finished responding
+      } catch {}
+    });
+
+    sessionAny.addEventListener('response.audio.delta', (_event: any) => {
+      try {
+        console.debug('[voice] response.audio.delta - agent audio streaming');
+      } catch {}
+    });
+
+    sessionAny.addEventListener('response.audio.done', (_event: any) => {
+      try {
+        console.debug('[voice] response.audio.done - agent finished speaking');
+      } catch {}
+    });
+  }
 
   session.on?.('tool_approval_requested', (_context: any, _agent: any, request: any) => {
     try {
@@ -146,7 +176,7 @@ export async function createVoiceSession() {
     }
   });
 
-  const REALTIME_MODEL = 'gpt-realtime-mini';
+  const REALTIME_MODEL = 'gpt-5-mini';
   const r = await fetch(`${API_BASE}/api/realtime/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
