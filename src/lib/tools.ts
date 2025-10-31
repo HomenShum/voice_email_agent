@@ -314,7 +314,6 @@ export type { ToolCallRecord };
 const searchEmails = tool({
   name: 'search_emails',
   description: 'Hybrid search over emails',
-  needsApproval: true,
   parameters: z.object({ text: z.string(), top_k: z.number().nullable().optional(), filters: z.record(z.any()).nullable().optional() }),
   async execute({ text, top_k, filters }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -355,7 +354,6 @@ const searchEmails = tool({
 const listContacts = tool({
   name: 'list_contacts',
   description: 'List recent contacts from Nylas',
-  needsApproval: true,
   parameters: z.object({ limit: z.number().nullable().optional().default(5) }),
   async execute({ limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -383,7 +381,6 @@ const listContacts = tool({
 const listEvents = tool({
   name: 'list_events',
   description: 'List recent calendar events from Nylas',
-  needsApproval: true,
   parameters: z.object({ calendar_id: z.string().nullable().default('primary').optional(), limit: z.number().optional().default(5) }),
   async execute({ calendar_id, limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -412,7 +409,6 @@ const listEvents = tool({
 const listUnreadMessages = tool({
   name: 'list_unread_messages',
   description: 'List unread messages (summary) from Nylas',
-  needsApproval: true,
   parameters: z.object({ limit: z.number().optional().default(5), sinceEpoch: z.number().nullable().optional() }),
   async execute({ limit, sinceEpoch }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -442,7 +438,6 @@ const listUnreadMessages = tool({
 const triageRecentEmails = tool({
   name: 'triage_recent_emails',
   description: 'Run prioritized email triage (gpt-5-mini) to surface urgent messages, actions, and validation details.',
-  needsApproval: true,
   parameters: z.object({
     limit: z.number().optional().default(50),
     includeBodies: z.boolean().optional().default(true),
@@ -499,7 +494,6 @@ const triageRecentEmails = tool({
 const listRecentEmails = tool({
   name: 'list_recent_emails',
   description: 'Fetch the most recent emails (up to 200) and run LLM MapReduce prioritization',
-  needsApproval: true,
   parameters: z.object({
     limit: z.number().optional().default(50),
     includeBodies: z.boolean().optional().default(true),
@@ -554,7 +548,6 @@ const listRecentEmails = tool({
 const startSync = tool({
   name: 'sync_start',
   description: 'Kick off on-login unread sync for the signed-in user',
-  needsApproval: true,
   parameters: z.object({ sinceEpoch: z.number().nullable().optional(), limit: z.number().nullable().optional().default(25) }),
   async execute({ sinceEpoch, limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -587,7 +580,6 @@ const startSync = tool({
 const startBackfill = tool({
   name: 'backfill_start',
   description: 'Kick off historical backfill of emails (Azure Functions)',
-  needsApproval: true,
   parameters: z.object({
     grantId: z.string(),
     months: z.number().nullable().optional().default(12),
@@ -619,7 +611,6 @@ const startBackfill = tool({
 const aggregateEmails = tool({
   name: 'aggregate_emails',
   description: 'Aggregate counts grouped by metadata fields over filtered results',
-  needsApproval: true,
   parameters: z.object({
     metric: z.enum(['count']).default('count'),
     group_by: z.array(z.string()).nullable().optional(),
@@ -659,7 +650,6 @@ const aggregateEmails = tool({
 const analyzeEmails = tool({
   name: 'analyze_emails',
   description: 'Summarize top results (bullets, paragraph, tags) given a query and optional filters',
-  needsApproval: true,
   parameters: z.object({ text: z.string(), filters: z.record(z.any()).nullable().optional(), top_k: z.number().nullable().optional() }),
   async execute({ text, filters, top_k }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
@@ -685,7 +675,6 @@ const analyzeEmails = tool({
 const countEmails = tool({
   name: 'count_emails',
   description: 'Get the total count of all emails indexed in the system (Pinecone vector store)',
-  needsApproval: true,
   parameters: z.object({ filters: z.record(z.any()).nullable().optional() }),
   async execute({ filters }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
