@@ -120,7 +120,7 @@ export async function createVoiceSession() {
   wireScratchpads(routerBundle);
 
   const session = new RealtimeSession(routerBundle.router, {
-    model: 'gpt-5-mini',
+    model: 'gpt-realtime-mini',
     config: {
       inputAudioTranscription: { model: 'gpt-4o-mini-transcribe' },
     },
@@ -176,7 +176,7 @@ export async function createVoiceSession() {
     }
   });
 
-  const REALTIME_MODEL = 'gpt-5-mini';
+  const REALTIME_MODEL = 'gpt-realtime-mini';
   const r = await fetch(`${API_BASE}/api/realtime/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

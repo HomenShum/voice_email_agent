@@ -58,4 +58,3 @@ app.http("realtimeSession", {
     }
   },
 });
-
