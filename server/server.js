@@ -856,7 +856,7 @@ const server = http.createServer(async (req, res) => {
       // ignore bad JSON; use defaults
     }
 
-    const requestedModel = body?.model || 'gpt-realtime';
+    const requestedModel = body?.model || 'gpt-5-mini';
 
     try {
       // GA endpoint (/v1/realtime/client_secrets) - only accepts type and model

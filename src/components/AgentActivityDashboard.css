@@ -1,0 +1,380 @@
+/**
+ * Agent Activity Dashboard Styles
+ */
+
+.agent-activity-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   Dashboard Header
+   ============================================================================ */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.dashboard-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.clear-button {
+  padding: 6px 12px;
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.clear-button:hover {
+  background: #4a4a4a;
+  border-color: #5a5a5a;
+}
+
+/* ============================================================================
+   Dashboard Content
+   ============================================================================ */
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #888;
+  font-size: 14px;
+}
+
+.empty-state p {
+  margin: 0;
+  text-align: center;
+  max-width: 300px;
+}
+
+/* ============================================================================
+   Agent Tree
+   ============================================================================ */
+
+.agent-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-node {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid #3a3a3a;
+  transition: all 0.2s;
+}
+
+.agent-node.depth-0 {
+  border-left-color: #4a9eff;
+  margin-left: 0;
+}
+
+.agent-node.depth-1 {
+  border-left-color: #ff9a4a;
+  margin-left: 20px;
+}
+
+.agent-node.depth-2 {
+  border-left-color: #4aff9a;
+  margin-left: 40px;
+}
+
+.agent-node.depth-3 {
+  border-left-color: #ff4a9a;
+  margin-left: 60px;
+}
+
+/* ============================================================================
+   Node Header
+   ============================================================================ */
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+}
+
+.node-header:hover {
+  background: #3a3a3a;
+}
+
+.node-header.selected {
+  background: #3a4a5a;
+  border: 1px solid #4a9eff;
+}
+
+.node-header.status-pending {
+  border-left: 3px solid #ffa500;
+}
+
+.node-header.status-in-progress {
+  border-left: 3px solid #4a9eff;
+  animation: pulse 2s infinite;
+}
+
+.node-header.status-completed {
+  border-left: 3px solid #4aff9a;
+}
+
+.node-header.status-error {
+  border-left: 3px solid #ff4a4a;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ============================================================================
+   Node Elements
+   ============================================================================ */
+
+.expand-button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: color 0.2s;
+}
+
+.expand-button:hover {
+  color: #e0e0e0;
+}
+
+.type-icon,
+.status-icon {
+  font-size: 16px;
+}
+
+.node-name {
+  flex: 1;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.node-timestamp {
+  font-size: 11px;
+  color: #888;
+}
+
+.node-duration {
+  font-size: 11px;
+  color: #4aff9a;
+  font-weight: 600;
+}
+
+/* ============================================================================
+   Node Children
+   ============================================================================ */
+
+.node-children {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+/* ============================================================================
+   Node Details Panel
+   ============================================================================ */
+
+.node-details-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 400px;
+  background: #2a2a2a;
+  border-left: 1px solid #3a3a3a;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #333;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #ffffff;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ============================================================================
+   Detail Rows
+   ============================================================================ */
+
+.detail-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #888;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #e0e0e0;
+  flex: 1;
+}
+
+.detail-value.status-pending {
+  color: #ffa500;
+}
+
+.detail-value.status-in-progress {
+  color: #4a9eff;
+}
+
+.detail-value.status-completed {
+  color: #4aff9a;
+}
+
+.detail-value.status-error {
+  color: #ff4a4a;
+}
+
+/* ============================================================================
+   Detail Sections
+   ============================================================================ */
+
+.detail-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #3a3a3a;
+}
+
+.detail-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.detail-code {
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #4aff9a;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.detail-message {
+  margin: 0;
+  font-size: 13px;
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+/* ============================================================================
+   Scrollbar Styling
+   ============================================================================ */
+
+.dashboard-content::-webkit-scrollbar,
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-content::-webkit-scrollbar-track,
+.panel-content::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb,
+.panel-content::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 4px;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb:hover,
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+

@@ -21,7 +21,7 @@ This project implements a production-ready voice agent that allows users to sear
 
 ### Key Features
 
-- **Voice Interaction**: Real-time voice chat using OpenAI's gpt-realtime model
+- **Voice Interaction**: Real-time voice chat using OpenAI's gpt-5-mini model
 - **Email Search**: Semantic vector search over 10,000+ emails with Pinecone
 - **Smart Summarization**: Hierarchical rollups (message → thread → day → week → month)
 - **Live Updates**: Azure Service Bus + Functions for real-time email processing
@@ -201,7 +201,7 @@ Local server mirrors similar endpoints via Pinecone REST.
 ```
 UI -> POST /api/realtime/session (Local Server)
       -> obtains ephemeral client_secret for OpenAI Realtime
-UI <-> OpenAI Realtime (gpt-realtime):
+UI <-> OpenAI Realtime (gpt-5-mini):
       - Uses tools to call:
           • /email/search | /email/aggregate | /nylas/* (Local)
           • /api/search   | /api/aggregate    (Functions)

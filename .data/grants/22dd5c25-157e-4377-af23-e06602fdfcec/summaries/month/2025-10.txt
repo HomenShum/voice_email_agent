@@ -1,12 +1,12 @@
-Actionable bullets
-- Prioritize and apply to the highest-value SaaS/engineering roles (review and submit tailored proposals): Full-Stack Engineer: data, marketplace, AI agents, SaaS, APIs (10/06/2025); Full Stack Engineer for AI SaaS in the Amazon Seller Space (10/08/2025); Subscription and AI-Powered Platform — Full SaaS Build (10/15/2025).
-- Batch and target n8n-specific opportunities (create a reusable n8n proposal/template): n8n workflow: HeyGen news bulletin (10/07/2025); n8n Workflow Developer – Talent Screening (10/10/2025); n8n Workflow Automation Specialist (10/13/2025); N8N Error Resolution Specialist (10/21/2025); Build n8n Workflows (AI & E‑commerce) (10/24/2025); N8N & Eleven Labs Integration (10/09/2025); NEW — AI + Automation Engineer (n8n, Supabase, RAG) (10/17/2025).
-- Update portfolio and one‑page tech summary to highlight integrations and tools requested: HeyGen, Eleven Labs, Fathom→ChatGPT workflows, Supabase, RAG agents, ClickUp automation, e‑commerce/Amazon integrations (refer to Automation clickup 10/06/2025; Fathom→ChatGPT 10/17/2025; AI Website Dev 10/15/2025).
-- Prepare 1–2 brief case studies (n8n workflows, AI automation, full‑stack SaaS) plus a standard rates/pricing sheet so Homen can submit proposals fast; aim to apply to the top 5 roles within 7 days of this rollup.
-- Set calendar reminders to follow up on submitted proposals and keep Upwork alerts enabled (donotreply@upwork.com → Homen); monitor new postings after 2025-10-24 for similar leads.
+1) Actionable bullet points
+- Review and prioritize 7 n8n-related job alerts (received 2025-10-07 → 2025-10-24): n8n workflow (HeyGen news bulletin, 2025-10-07), n8n Workflow Developer (talent screening, 2025-10-10), n8n Workflow Automation Specialist (2025-10-13), N8N Error Resolution Specialist (2025-10-21), Build n8n Workflows (AI & e‑commerce, 2025-10-24), N8N & Eleven Labs Integration (2025-10-09), NEW–AI + Automation Engineer (n8n, 2025-10-17). Submit tailored proposals to the top 2–3 fits.
+- Prepare a high-priority proposal for the Subscription and AI‑Powered Platform — Full SaaS Build (Upwork alert 2025-10-15); highlight SaaS architecture, AI agents, APIs and marketplace experience.
+- Apply to Full-Stack / AI SaaS roles (Full-Stack Engineer: data/marketplace/AI agents, 2025-10-06; Full Stack Engineer for AI SaaS in Amazon Seller space, 2025-10-08) with examples of API work, agent integration and data pipelines.
+- Update proposal templates and portfolio to call out integrations and tools repeatedly requested: HeyGen, Eleven Labs, Fathom → ChatGPT workflows, Supabase, web scraping, RAG agents, ClickUp automation.
+- Track and act on all Upwork alerts (16 messages between 2025-10-06 and 2025-10-24 from donotreply@upwork.com → Homen): set a short backlog, estimate hours/rates per job, and schedule follow-ups within 48 hours of posting.
 
-Executive paragraph
-Between 2025-10-06 and 2025-10-24 Homen received ~15 Upwork job alerts (from donotreply@upwork.com) heavily focused on n8n workflows and AI/automation/full‑stack SaaS roles — notable postings include Full‑Stack Engineer (10/06), AI SaaS for Amazon sellers (10/08), Subscription & AI‑Powered Full SaaS Build (10/15), multiple n8n gigs (10/07–10/24), and integrations with HeyGen, Eleven Labs, Fathom→ChatGPT, Supabase and ClickUp. Recommended next steps: prioritize the top SaaS/engineering roles, reuse a tailored n8n proposal to quickly apply to multiple automation gigs, update portfolio with specific integrations and short case studies, and schedule follow‑ups.
+2) Executive paragraph
+Between 2025-10-06 and 2025-10-24 Homen received 16 Upwork job alerts (from donotreply@upwork.com) heavily concentrated on n8n automation and AI/SaaS work — seven n8n-specific listings (including HeyGen news bulletin, error resolution, Eleven Labs integration and e‑commerce workflows) plus several full‑stack and platform builds (notably a Subscription + AI‑Powered Full SaaS Build on 2025-10-15 and multiple AI SaaS engineer roles). Recommended next steps: prioritize the top n8n gigs and the full‑SaaS build, update proposals/portfolio to emphasize relevant integrations (HeyGen, Eleven Labs, Fathom, Supabase, RAG), and schedule applications/follow-ups with clear estimates.
 
-Searchable tags (up to 8)
-Upwork, n8n, AI‑automation, SaaS, HeyGen, Eleven Labs, ClickUp, E‑commerce/Amazon
+3) Searchable tags (up to 8)
+Upwork; n8n; AI; SaaS; HeyGen; Eleven Labs; Fathom; Supabase

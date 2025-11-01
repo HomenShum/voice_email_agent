@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "server": "node server/server.js",
-    "test:e2e": "node tests/run.mjs"
+    "test:unit": "node tests/unit/run-all.mjs",
+    "test:e2e": "node tests/run.mjs",
+    "test": "npm run test:unit && npm run test:e2e"
   },
   "devDependencies": {
     "azurite": "^3.35.0",
