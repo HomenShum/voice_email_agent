@@ -38,14 +38,28 @@ function readBody(req) {
   });
 }
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+};
+
 const server = http.createServer(async (req, res) => {
   try {
+    // Handle CORS preflight for all API routes
+    if (req.method === 'OPTIONS' && req.url.startsWith('/api/')) {
+      res.writeHead(204, CORS_HEADERS);
+      res.end();
+      return;
+    }
+
     if (req.method === 'POST' && req.url === '/api/agent') {
       if (!handlers.agent) throw new Error('agent handler not registered');
       const { json } = await readBody(req);
-      const result = await handlers.agent({ json: async () => json, method: 'POST' });
+      const ctx = { log: console.log, error: console.error, warn: console.warn, info: console.log, invocationId: 'dev', functionName: 'agent' };
+      const result = await handlers.agent({ json: async () => json, method: 'POST' }, ctx);
       const status = result?.status || 200;
-      const headers = result?.headers || { 'content-type': 'text/event-stream' };
+      const headers = Object.assign({ 'content-type': 'text/event-stream' }, CORS_HEADERS, result?.headers || {});
       res.writeHead(status, headers);
       // For SSE streams, the body is a ReadableStream
       if (result?.body && typeof result.body.getReader === 'function') {
@@ -68,7 +82,7 @@ const server = http.createServer(async (req, res) => {
       const result = await handlers.search({ json: async () => json });
       const status = result?.status || 200;
       const body = result?.jsonBody ?? result?.body ?? {};
-      res.writeHead(status, { 'content-type': 'application/json' });
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
       res.end(typeof body === 'string' ? body : JSON.stringify(body));
       return;
     }
@@ -78,7 +92,7 @@ const server = http.createServer(async (req, res) => {
       const result = await handlers.aggregate({ json: async () => json });
       const status = result?.status || 200;
       const body = result?.jsonBody ?? result?.body ?? {};
-      res.writeHead(status, { 'content-type': 'application/json' });
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
       res.end(typeof body === 'string' ? body : JSON.stringify(body));
       return;
     }
@@ -88,15 +102,15 @@ const server = http.createServer(async (req, res) => {
       const result = await handlers.mcp({ json: async () => json });
       const status = result?.status || 200;
       const body = result?.jsonBody ?? result?.body ?? {};
-      res.writeHead(status, { 'content-type': 'application/json' });
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
       res.end(typeof body === 'string' ? body : JSON.stringify(body));
       return;
     }
 
-    res.writeHead(404, { 'content-type': 'text/plain' });
+    res.writeHead(404, Object.assign({ 'content-type': 'text/plain' }, CORS_HEADERS));
     res.end('Not Found');
   } catch (err) {
-    res.writeHead(500, { 'content-type': 'text/plain' });
+    res.writeHead(500, Object.assign({ 'content-type': 'text/plain' }, CORS_HEADERS));
     res.end(String(err?.message || err));
   }
 });

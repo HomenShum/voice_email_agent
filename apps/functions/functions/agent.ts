@@ -42,7 +42,7 @@ function createServerBackendAgent(grantId: string, onEvent?: BackendEventHandler
   const emitEvent = onEvent || (() => {});
 
   // Create tools for this grantId
-  const toolsets = createAgentTools(grantId);
+  const toolsets = createAgentTools(grantId, emitEvent);
   const allTools = [
     ...toolsets.email,
     ...toolsets.insights,
@@ -159,8 +159,15 @@ export async function agentHandler(
           context.log('[agent] Starting agent execution');
           const streamResult = await run(agent, userInput, { stream: true });
 
-          // Stream events
+          // Stream events to client as SSE frames
           for await (const event of streamResult) {
+            try {
+              const payload = { type: 'openai_event', event };
+              const data = `data: ${JSON.stringify(payload)}\n\n`;
+              controller.enqueue(encoder.encode(data));
+            } catch (e) {
+              // swallow
+            }
             context.log(`[agent] Stream event: ${event.type}`);
           }
 

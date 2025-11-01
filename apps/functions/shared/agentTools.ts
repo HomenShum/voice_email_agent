@@ -2,7 +2,7 @@ import { tool } from '@openai/agents';
 import { z } from 'zod';
 import { embedText } from './openai.js';
 import { generateSparseEmbedding, hybridQuery } from './pinecone.js';
-import { loadSummary, listDayKeys } from './storage.js';
+
 
 /**
  * Server-side tools for the backend agent
@@ -24,7 +24,7 @@ function getNylasApiKey(grantId: string): string {
 /**
  * Search emails using hybrid vector + sparse search
  */
-export function createSearchEmailsTool(grantId: string) {
+export function createSearchEmailsTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'search_emails',
     description: 'Search emails using hybrid vector + sparse search. Returns relevant emails matching the query.',
@@ -35,6 +35,8 @@ export function createSearchEmailsTool(grantId: string) {
       dateTo: z.string().optional().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ query, topK, dateFrom, dateTo }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'search_emails', grantId, parameters: { query, topK, dateFrom, dateTo }, timestamp: _t0 });
       // Generate embeddings
       const vec = await embedText(query);
       const sparseEmbedding = await generateSparseEmbedding(query, 'query');
@@ -56,7 +58,7 @@ export function createSearchEmailsTool(grantId: string) {
         filter,
       });
 
-      return {
+      const _result = {
         results: results.matches.map((r: any) => ({
           id: r.id,
           score: r.score,
@@ -68,6 +70,8 @@ export function createSearchEmailsTool(grantId: string) {
         })),
         count: results.matches.length,
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'search_emails', grantId, durationMs: Date.now() - _t0, result: { count: _result.count } , timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -75,7 +79,7 @@ export function createSearchEmailsTool(grantId: string) {
 /**
  * Aggregate emails by metadata fields
  */
-export function createAggregateEmailsTool(grantId: string) {
+export function createAggregateEmailsTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'aggregate_emails',
     description: 'Aggregate email counts grouped by metadata fields (e.g., from_domain, date). Useful for analytics and insights.',
@@ -85,6 +89,8 @@ export function createAggregateEmailsTool(grantId: string) {
       dateTo: z.string().optional().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ groupBy, dateFrom, dateTo }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'aggregate_emails', grantId, parameters: { groupBy, dateFrom, dateTo }, timestamp: _t0 });
       // This is a simplified implementation
       // In production, you'd query Pinecone with aggregations or use a separate analytics store
       const filter: Record<string, any> = { grant_id: grantId };
@@ -96,11 +102,13 @@ export function createAggregateEmailsTool(grantId: string) {
 
       // For now, return a placeholder response
       // TODO: Implement actual aggregation logic
-      return {
+      const _result = {
         groupBy,
         aggregations: [],
         message: 'Aggregation tool is a placeholder. Implement actual aggregation logic.',
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'aggregate_emails', grantId, durationMs: Date.now() - _t0, result: { groupBy: _result.groupBy, aggregations: _result.aggregations?.length || 0 }, timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -108,7 +116,7 @@ export function createAggregateEmailsTool(grantId: string) {
 /**
  * List unread messages from Nylas
  */
-export function createListUnreadTool(grantId: string) {
+export function createListUnreadTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'list_unread_messages',
     description: 'List unread messages from Nylas. Returns recent unread emails.',
@@ -116,6 +124,8 @@ export function createListUnreadTool(grantId: string) {
       limit: z.number().optional().default(10).describe('Maximum number of unread messages to return'),
     }),
     async execute({ limit }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'list_unread_messages', grantId, parameters: { limit }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/messages`);
       url.searchParams.set('limit', String(limit));
@@ -133,7 +143,7 @@ export function createListUnreadTool(grantId: string) {
       }
 
       const data = await response.json() as { data: any[] };
-      return {
+      const _result = {
         unread: data.data.map((msg: any) => ({
           id: msg.id,
           subject: msg.subject,
@@ -144,6 +154,8 @@ export function createListUnreadTool(grantId: string) {
         })),
         count: data.data.length,
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'list_unread_messages', grantId, durationMs: Date.now() - _t0, result: { count: _result.count }, timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -151,7 +163,7 @@ export function createListUnreadTool(grantId: string) {
 /**
  * List contacts from Nylas
  */
-export function createListContactsTool(grantId: string) {
+export function createListContactsTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'list_contacts',
     description: 'List contacts from Nylas. Returns recent contacts.',
@@ -159,6 +171,8 @@ export function createListContactsTool(grantId: string) {
       limit: z.number().optional().default(10).describe('Maximum number of contacts to return'),
     }),
     async execute({ limit }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'list_contacts', grantId, parameters: { limit }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/contacts`);
       url.searchParams.set('limit', String(limit));
@@ -175,7 +189,7 @@ export function createListContactsTool(grantId: string) {
       }
 
       const data = await response.json() as { data: any[] };
-      return {
+      const _result = {
         contacts: data.data.map((contact: any) => ({
           id: contact.id,
           name: contact.given_name ? `${contact.given_name} ${contact.surname || ''}`.trim() : contact.email,
@@ -184,6 +198,8 @@ export function createListContactsTool(grantId: string) {
         })),
         count: data.data.length,
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'list_contacts', grantId, durationMs: Date.now() - _t0, result: { count: _result.count }, timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -191,7 +207,7 @@ export function createListContactsTool(grantId: string) {
 /**
  * List calendar events from Nylas
  */
-export function createListEventsTool(grantId: string) {
+export function createListEventsTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'list_events',
     description: 'List calendar events from Nylas. Returns upcoming events.',
@@ -200,6 +216,8 @@ export function createListEventsTool(grantId: string) {
       calendarId: z.string().optional().default('primary').describe('Calendar ID to query'),
     }),
     async execute({ limit, calendarId }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'list_events', grantId, parameters: { limit, calendarId }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/events`);
       url.searchParams.set('limit', String(limit));
@@ -217,7 +235,7 @@ export function createListEventsTool(grantId: string) {
       }
 
       const data = await response.json() as { data: any[] };
-      return {
+      const _result = {
         events: data.data.map((event: any) => ({
           id: event.id,
           title: event.title,
@@ -229,6 +247,8 @@ export function createListEventsTool(grantId: string) {
         })),
         count: data.data.length,
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'list_events', grantId, durationMs: Date.now() - _t0, result: { count: _result.count }, timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -236,7 +256,7 @@ export function createListEventsTool(grantId: string) {
 /**
  * Triage recent emails (simplified version)
  */
-export function createTriageRecentEmailsTool(grantId: string) {
+export function createTriageRecentEmailsTool(grantId: string, onEvent?: (e: any) => void) {
   return tool({
     name: 'triage_recent_emails',
     description: 'Triage recent emails to identify urgent, important, and actionable messages. Returns prioritized email list with triage summary.',
@@ -244,6 +264,8 @@ export function createTriageRecentEmailsTool(grantId: string) {
       limit: z.number().optional().default(50).describe('Number of recent emails to triage'),
     }),
     async execute({ limit }) {
+      const _t0 = Date.now();
+      onEvent?.({ type: 'tool_call_started', toolName: 'triage_recent_emails', grantId, parameters: { limit }, timestamp: _t0 });
       // Generate embeddings for recent emails query
       const vec = await embedText('recent emails');
       const sparseEmbedding = await generateSparseEmbedding('recent emails', 'query');
@@ -259,7 +281,7 @@ export function createTriageRecentEmailsTool(grantId: string) {
 
       // For now, return the results with a simple triage note
       // TODO: Implement actual triage logic with gpt-5-mini
-      return {
+      const _result = {
         results: results.matches.map((r: any) => ({
           id: r.id,
           score: r.score,
@@ -274,6 +296,8 @@ export function createTriageRecentEmailsTool(grantId: string) {
         urgent_count: 0,
         important_count: 0,
       };
+      onEvent?.({ type: 'tool_call_completed', toolName: 'triage_recent_emails', grantId, durationMs: Date.now() - _t0, result: { count: _result.count }, timestamp: Date.now() });
+      return _result;
     },
   });
 }
@@ -281,22 +305,22 @@ export function createTriageRecentEmailsTool(grantId: string) {
 /**
  * Create all tools for a given grantId
  */
-export function createAgentTools(grantId: string) {
+export function createAgentTools(grantId: string, onEvent?: (e: any) => void) {
   return {
     email: [
-      createSearchEmailsTool(grantId),
-      createListUnreadTool(grantId),
-      createTriageRecentEmailsTool(grantId),
+      createSearchEmailsTool(grantId, onEvent),
+      createListUnreadTool(grantId, onEvent),
+      createTriageRecentEmailsTool(grantId, onEvent),
     ],
     insights: [
-      createAggregateEmailsTool(grantId),
-      createSearchEmailsTool(grantId), // Insights can also search
+      createAggregateEmailsTool(grantId, onEvent),
+      createSearchEmailsTool(grantId, onEvent), // Insights can also search
     ],
     contacts: [
-      createListContactsTool(grantId),
+      createListContactsTool(grantId, onEvent),
     ],
     calendar: [
-      createListEventsTool(grantId),
+      createListEventsTool(grantId, onEvent),
     ],
   };
 }
