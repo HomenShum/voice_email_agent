@@ -1,8 +1,4 @@
-import { RealtimeSession } from '@openai/agents/realtime';
-import {
-  createRouterBundle,
-  type RouterBundle,
-} from './agents';
+import { createHybridVoiceAgent, type HybridVoiceAgent } from './hybridVoiceAgent';
 import {
   addToolCallListener,
   calendarToolset,
@@ -14,10 +10,43 @@ import {
 } from './tools';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
-let activeRouterBundle: RouterBundle | null = null;
+let activeHybridAgent: HybridVoiceAgent | null = null;
 
 let onTranscript: undefined | ((history: unknown[]) => void);
 let onRouterProgress: undefined | ((message: string) => void);
+
+// Track last processed user utterance to avoid duplicate processing
+let lastProcessedUserText = "";
+
+function extractTextFromHistoryItem(item: any): string {
+  if (!item) return '';
+  const seen = new Set<any>();
+  function walk(node: any, depth = 0): string[] {
+    if (!node || typeof node === 'function' || seen.has(node) || depth > 4) return [];
+    if (typeof node === 'string') return [node];
+    if (typeof node !== 'object') return [];
+    seen.add(node);
+    const out: string[] = [];
+    if (typeof node.text === 'string') out.push(node.text);
+    if (typeof node.transcript === 'string') out.push(node.transcript);
+    if (typeof node.content === 'string') out.push(node.content);
+    if (Array.isArray(node.content)) for (const c of node.content) out.push(...walk(c, depth + 1));
+    for (const k of Object.keys(node)) {
+      if (k === 'text' || k === 'transcript' || k === 'content') continue;
+      const v: any = (node as any)[k];
+      if (typeof v === 'string') {
+        if (k.includes('text') || k.includes('transcript') || k.includes('message')) out.push(v);
+      } else if (Array.isArray(v)) {
+        for (const el of v) out.push(...walk(el, depth + 1));
+      } else if (v && typeof v === 'object') {
+        out.push(...walk(v, depth + 1));
+      }
+    }
+    return out;
+  }
+  return walk(item).join(' ').trim();
+}
+
 export function setTranscriptHandler(fn: (history: unknown[]) => void) {
   onTranscript = fn;
 }
@@ -81,10 +110,11 @@ function summarizeToolCall(record: ToolCallRecord): string {
   }
 }
 
-function wireScratchpads(bundle: RouterBundle) {
+function wireScratchpads(hybrid: HybridVoiceAgent) {
   addToolCallListener((record) => {
     if (!record.agentId) return;
-    const pad = (bundle.runtime.router.scratchpads as Record<string, any>)[record.agentId];
+    const pads = hybrid.getScratchpads() as Record<string, any>;
+    const pad = pads?.[record.agentId];
     if (!pad || typeof pad.add !== 'function') return;
     pad.add({
       toolName: record.name,
@@ -98,7 +128,8 @@ function wireScratchpads(bundle: RouterBundle) {
 }
 
 export async function createVoiceSession() {
-  const routerBundle = createRouterBundle({
+  // Create and connect the Hybrid Voice Agent (voice narration + backend processing)
+  const hybrid = await createHybridVoiceAgent({
     tools: {
       email: Array.from(emailOpsToolset),
       insights: Array.from(insightToolset),
@@ -106,107 +137,58 @@ export async function createVoiceSession() {
       calendar: Array.from(calendarToolset),
       sync: Array.from(syncToolset),
     },
-    onProgress: (message) => {
-      console.debug('[router]', message);
+    voice: 'alloy',
+    apiBaseUrl: API_BASE,
+    onProgress: (message: string) => {
+      console.debug('[hybrid][progress]', message);
       try {
         onRouterProgress?.(message);
       } catch (error) {
         console.warn('[voice] router progress handler failed', error);
       }
     },
-  });
-
-  activeRouterBundle = routerBundle;
-  wireScratchpads(routerBundle);
-
-  const session = new RealtimeSession(routerBundle.router, {
-    model: 'gpt-realtime-mini',
-    config: {
-      inputAudioTranscription: { model: 'gpt-4o-mini-transcribe' },
+    onTranscript: (history: unknown[]) => {
+      try {
+        console.debug('[hybrid][transcript]', history);
+        onTranscript?.(history);
+        // Detect latest user utterance and trigger backend processing
+        const items = Array.isArray(history) ? history : [];
+        const last: any = items.length ? items[items.length - 1] : null;
+        const role = (last && (last.role || last.author || last.speaker)) || '';
+        if (role === 'user') {
+          const text = extractTextFromHistoryItem(last);
+          if (text && text !== lastProcessedUserText) {
+            lastProcessedUserText = text;
+            // Fire and forget; backend will stream events to voice narrator
+            void hybrid.processRequest(text);
+          }
+        }
+      } catch (error) {
+        console.warn('[voice] transcript handler failed', error);
+      }
+    },
+    onBackendEvent: (event) => {
+      console.debug('[hybrid][backend-event]', event?.type);
+    },
+    onUIDashboardEvent: (event) => {
+      console.debug('[hybrid][ui-event]', event?.type);
     },
   });
 
-  session.on?.('history_updated', (history: unknown[]) => {
-    try {
-      console.debug('[voice] history_updated', history);
-      onTranscript?.(history);
-    } catch {}
-  });
-
-  // Listen for all events to capture response streaming
-  const sessionAny = session as any;
-  if (sessionAny.addEventListener) {
-    sessionAny.addEventListener('response.text.delta', (event: any) => {
-      try {
-        console.debug('[voice] response.text.delta', event?.delta);
-        // This captures the agent's response as it streams
-      } catch {}
-    });
-
-    sessionAny.addEventListener('response.done', (event: any) => {
-      try {
-        console.debug('[voice] response.done', event);
-        // Agent has finished responding
-      } catch {}
-    });
-
-    sessionAny.addEventListener('response.audio.delta', (_event: any) => {
-      try {
-        console.debug('[voice] response.audio.delta - agent audio streaming');
-      } catch {}
-    });
-
-    sessionAny.addEventListener('response.audio.done', (_event: any) => {
-      try {
-        console.debug('[voice] response.audio.done - agent finished speaking');
-      } catch {}
-    });
-  }
-
-  session.on?.('tool_approval_requested', (_context: any, _agent: any, request: any) => {
-    try {
-      console.debug('[voice] tool_approval_requested', request?.approvalItem?.name || request);
-      if (request?.approvalItem && typeof session.approve === 'function') {
-        session.approve(request.approvalItem);
-      } else if (request?.rawItem && typeof session.approve === 'function') {
-        session.approve(request.rawItem);
-      }
-    } catch (e) {
-      console.warn('[voice] approve failed', e);
-    }
-  });
-
-  const REALTIME_MODEL = 'gpt-realtime-mini';
-  const r = await fetch(`${API_BASE}/api/realtime/session`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: REALTIME_MODEL }),
-  });
-  const raw = await r.text();
-  let data: any = undefined;
-  try {
-    data = JSON.parse(raw);
-  } catch {
-    /* ignore */
-  }
-  if (!r.ok) {
-    console.error('[realtime] session error', data || raw);
-    throw new Error(`Failed to get ephemeral token: ${r.status}`);
-  }
-  const token = data?.client_secret?.value || data?.value || data?.secret;
-  if (!token) throw new Error('No client secret returned');
-  console.log('[voice] Got ephemeral token:', `${token.substring(0, 20)}...`, 'Full response:', JSON.stringify(data).substring(0, 300));
-
-  console.log('[voice] Calling session.connect with model:', REALTIME_MODEL);
-  await session.connect({ apiKey: token, model: REALTIME_MODEL });
-  console.log('[voice] Connected successfully!');
-  return session;
+  activeHybridAgent = hybrid;
+  wireScratchpads(hybrid);
+  return hybrid;
 }
 
 export function getRouterRuntime() {
-  return activeRouterBundle?.runtime ?? null;
+  // Router runtime is not exposed in the hybrid architecture
+  return null as any;
 }
 
 export function getCallGraphSnapshot() {
-  return activeRouterBundle?.runtime.router.callGraph.snapshot() ?? null;
+  try {
+    return activeHybridAgent?.getCallGraph().snapshot() ?? null;
+  } catch {
+    return null;
+  }
 }

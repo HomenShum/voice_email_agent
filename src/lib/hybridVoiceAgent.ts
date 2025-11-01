@@ -1,28 +1,28 @@
 /**
  * Hybrid Voice Agent - Complete Integration Example
- * 
+ *
  * This module demonstrates how to integrate the hybrid agent architecture:
- * 
+ *
  * 1. Backend Processing Layer (Agent + gpt-5-mini)
  *    - RouterAgent delegates to specialists
  *    - Specialists execute tools and process data
  *    - Emits lifecycle events for real-time updates
- * 
+ *
  * 2. Voice Narration Layer (RealtimeAgent + gpt-realtime-mini)
  *    - Provides immediate voice acknowledgments
  *    - Narrates backend processing steps asynchronously
  *    - Streams final voice summary to user
- * 
+ *
  * 3. UI Dashboard Layer (React Component)
  *    - Displays hierarchical agent activity tree
  *    - Shows tool calls with parameters and results
  *    - Live status indicators for all operations
- * 
+ *
  * Usage:
- * 
+ *
  * ```typescript
  * import { createHybridVoiceAgent } from './lib/hybridVoiceAgent';
- * 
+ *
  * const agent = await createHybridVoiceAgent({
  *   tools: { email, insights, contacts, calendar, sync },
  *   voice: 'alloy',
@@ -31,7 +31,7 @@
  *     setDashboardEvents(prev => [...prev, event]);
  *   },
  * });
- * 
+ *
  * // Process user request
  * const result = await agent.processRequest('Show me my recent emails');
  * ```
@@ -101,7 +101,7 @@ export class HybridVoiceAgent {
 
   /**
    * Connect to the OpenAI Realtime API
-   * 
+   *
    * This fetches an ephemeral API key from your backend and connects
    * the voice narration layer.
    */
@@ -155,14 +155,14 @@ export class HybridVoiceAgent {
 
   /**
    * Process a user request through the hybrid architecture
-   * 
+   *
    * Flow:
    * 1. Voice layer provides immediate acknowledgment
    * 2. Backend layer processes the request (with gpt-5-mini)
    * 3. Backend events are streamed to voice layer for narration
    * 4. Backend events are streamed to UI dashboard for visualization
    * 5. Voice layer provides final summary when backend completes
-   * 
+   *
    * @param userInput - The user's request (text or transcribed speech)
    * @returns The final result from the backend processing
    */
@@ -204,6 +204,37 @@ export class HybridVoiceAgent {
   /**
    * Get scratchpads (for debugging)
    */
+  /**
+   * Narration policy & task controls
+   */
+  setNarrationMode(mode: 'serialize' | 'prioritize'): void {
+    this.bridge.setNarrationMode(mode);
+  }
+
+  pauseNarration(): void {
+    this.bridge.pauseNarration();
+  }
+
+  async resumeNarration(): Promise<void> {
+    await this.bridge.resumeNarration();
+  }
+
+  prioritizeLatest(): void {
+    this.bridge.prioritizeLatest();
+  }
+
+  prioritizeTask(taskId: string): void {
+    this.bridge.prioritizeTask(taskId);
+  }
+
+  getTasks(): Array<{ id: string; input: string; status: string; createdAt: number; completedAt?: number }> {
+    return this.bridge.getTasks();
+  }
+
+  async deliverPendingSummaries(): Promise<void> {
+    await this.bridge.deliverPendingSummaries();
+  }
+
   getScratchpads() {
     return this.bridge.getScratchpads();
   }
@@ -215,10 +246,10 @@ export class HybridVoiceAgent {
 
 /**
  * Create and connect a hybrid voice agent
- * 
+ *
  * This is a convenience function that creates the agent and connects it
  * to the OpenAI Realtime API in one step.
- * 
+ *
  * @param config - Configuration for tools, voice, and event handlers
  * @returns A connected HybridVoiceAgent instance
  */

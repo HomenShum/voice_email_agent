@@ -82,8 +82,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
           </a>
           <h1>Voice Agent</h1>
-          <div class="card">
+          <div class="card" style="display:flex; gap:8px; flex-wrap: wrap; align-items:center;">
             <button id="connect" type="button">Connect Voice Agent</button>
+            <button id="toggle-mode" type="button" title="Toggle narration policy">Mode: Serialize</button>
+            <button id="pause-narration" type="button" title="Pause/resume voice narration">Pause Narration</button>
+            <button id="prioritize-latest" type="button" title="Narrate newest task now">Prioritize Latest</button>
           </div>
         </div>
       </div>
@@ -225,21 +228,21 @@ setToolCallHandler((toolCall: ToolCallRecord) => {
 
 function renderToolResults() {
   resultsList.innerHTML = '';
-  
+
   // Display in reverse chronological order (newest first)
   const recentCalls = toolCallHistory.slice(-20).reverse();
-  
+
   for (const call of recentCalls) {
     const li = document.createElement('li');
     li.className = 'tool-call-item';
-    
+
     const timestamp = new Date(call.timestamp).toLocaleTimeString();
     const statusClass = call.error ? 'error' : 'success';
     const statusIcon = call.error ? '❌' : '✅';
-    
+
     // Format parameters
     const paramsKeys = Object.keys(call.parameters || {});
-    const paramsPreview = paramsKeys.length > 0 
+    const paramsPreview = paramsKeys.length > 0
       ? paramsKeys.map(k => {
           const v = call.parameters[k];
           if (v === null || v === undefined) return null;
@@ -248,7 +251,7 @@ function renderToolResults() {
           return `${k}: ${JSON.stringify(v)}`;
         }).filter(Boolean).join(', ')
       : 'no params';
-    
+
     // Format result summary
     let resultSummary = '';
     if (call.error) {
@@ -272,10 +275,12 @@ function renderToolResults() {
         resultSummary = 'completed';
       }
     }
-    
+
+    const agentBadge = call.agentId ? `<span class="agent-badge">${(AGENT_METADATA as any)[call.agentId]?.icon || '🤖'} ${(AGENT_METADATA as any)[call.agentId]?.name || call.agentId}</span>` : '';
     li.innerHTML = `
       <div class="tool-call-header">
         <span class="tool-status ${statusClass}">${statusIcon}</span>
+        ${agentBadge}
         <strong>${call.name}</strong>
         <span class="tool-time">${timestamp}</span>
         ${call.duration ? `<span class="tool-duration">${call.duration}ms</span>` : ''}
@@ -283,10 +288,10 @@ function renderToolResults() {
       <div class="tool-params">${paramsPreview}</div>
       ${resultSummary ? `<div class="tool-result">${resultSummary}</div>` : ''}
     `;
-    
+
     resultsList.appendChild(li);
   }
-  
+
   // Show count if there are more calls than displayed
   if (toolCallHistory.length > 20) {
     const info = document.createElement('li');
@@ -763,6 +768,61 @@ document.querySelector<HTMLButtonElement>('#connect')!.addEventListener('click',
     if (panel) {
       panel.classList.add('conversation-active');
     }
+
+// Narration controls
+const toggleModeBtn = document.querySelector<HTMLButtonElement>('#toggle-mode')!;
+const pauseBtn = document.querySelector<HTMLButtonElement>('#pause-narration')!;
+const prioritizeBtn = document.querySelector<HTMLButtonElement>('#prioritize-latest')!;
+
+let currentMode: 'serialize' | 'prioritize' = 'serialize';
+let paused = false;
+
+function requireSession(): any {
+  if (!session) throw new Error('Connect the Voice Agent first.');
+  return session as any; // HybridVoiceAgent
+}
+
+toggleModeBtn.addEventListener('click', () => {
+  currentMode = currentMode === 'serialize' ? 'prioritize' : 'serialize';
+  toggleModeBtn.textContent = `Mode: ${currentMode === 'serialize' ? 'Serialize' : 'Prioritize'}`;
+  try {
+    requireSession().setNarrationMode(currentMode);
+    appendToolUpdate(`narration mode → ${currentMode}`);
+  } catch (e) {
+    console.warn(e);
+  }
+});
+
+pauseBtn.addEventListener('click', async () => {
+  try {
+    if (!paused) {
+      requireSession().pauseNarration();
+      paused = true;
+      pauseBtn.textContent = 'Resume Narration';
+      appendToolUpdate('narration paused');
+    } else {
+      await requireSession().resumeNarration();
+      paused = false;
+      pauseBtn.textContent = 'Pause Narration';
+      appendToolUpdate('narration resumed');
+      // Try to deliver any pending summaries
+      await requireSession().deliverPendingSummaries?.();
+    }
+  } catch (e) {
+    console.warn(e);
+  }
+});
+
+prioritizeBtn.addEventListener('click', async () => {
+  try {
+    requireSession().prioritizeLatest?.();
+    appendToolUpdate('prioritized latest task for narration');
+    await requireSession().deliverPendingSummaries?.();
+  } catch (e) {
+    console.warn(e);
+  }
+});
+
 
     void session;
 

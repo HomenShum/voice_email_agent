@@ -56,6 +56,7 @@ export interface BackendAgentBundle {
   specialists: Record<(typeof SPECIALIST_IDS)[number], Agent>;
   callGraph: CallGraph;
   scratchpads: Record<string, Scratchpad>;
+  addEventHandler: (handler: BackendEventHandler) => () => void;
 }
 
 // ============================================================================
@@ -139,6 +140,13 @@ export function createBackendRuntime(config: BackendRuntimeConfig): BackendAgent
     specialists,
     callGraph,
     scratchpads: Object.fromEntries(scratchpads),
+    addEventHandler: (handler: BackendEventHandler) => {
+      eventHandlers.push(handler);
+      return () => {
+        const idx = eventHandlers.indexOf(handler);
+        if (idx > -1) eventHandlers.splice(idx, 1);
+      };
+    },
   };
 }
 

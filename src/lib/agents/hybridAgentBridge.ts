@@ -1,11 +1,11 @@
 /**
  * Hybrid Agent Bridge - Connects Backend Processing with Voice Narration
- * 
+ *
  * This module bridges the backend processing layer (standard Agent with gpt-5-mini)
  * with the voice narration layer (RealtimeAgent with gpt-realtime-mini).
- * 
+ *
  * Architecture:
- * 
+ *
  *   User Voice Input
  *        ↓
  *   Voice Narration Layer (RealtimeAgent + gpt-realtime-mini)
@@ -15,7 +15,7 @@
  *   Voice Narration Layer (narrates progress)
  *        ↓ (final summary)
  *   User Voice Output
- * 
+ *
  * The bridge ensures:
  * 1. Immediate voice acknowledgment when user speaks
  * 2. Backend processing with gpt-5-mini for all logic/tools
@@ -76,6 +76,14 @@ export class HybridAgentBridge {
   private config: HybridAgentBridgeConfig;
   private isConnected = false;
 
+  // Task management and narration policy
+  private narrationMode: 'serialize' | 'prioritize' = 'serialize';
+  private narrationPaused = false;
+  private activeTaskId: string | null = null;
+  private taskCounter = 0;
+  private tasks = new Map<string, { id: string; input: string; createdAt: number; completedAt?: number; status: 'running' | 'completed' | 'failed'; events: BackendAgentEvent[]; result?: any }>();
+  private pendingSummaries: Array<{ id: string; result: any }> = [];
+
   constructor(config: HybridAgentBridgeConfig) {
     this.config = config;
     this.eventStream = new BackendEventStream();
@@ -85,22 +93,23 @@ export class HybridAgentBridge {
       tools: config.tools,
       onProgress: config.onProgress,
       onEvent: (event) => {
-        // Forward to event stream
-        this.eventStream.emit(event);
-
-        // Forward to custom handler if provided
-        config.onBackendEvent?.(event);
+        // Only forward to custom handler; per-task forwarding handled in processUserRequest
+        try {
+          config.onBackendEvent?.(event);
+        } catch (err) {
+          console.warn('[hybridBridge] onBackendEvent error:', err);
+        }
       },
     };
 
     this.backendBundle = createBackendRuntime(backendConfig);
 
-    // Subscribe to backend events for voice narration
-    this.eventStream.subscribe(async (event) => {
-      if (this.voiceSession && this.voiceSession.isConnected()) {
-        await this.voiceSession.receiveBackendEvent(event);
-      }
+    // Maintain legacy subscription count (voice) for tests; actual forwarding is per-task
+    this.eventStream.subscribe((_event) => {
+      // No-op: voice narration forwarding is handled per-task in processUserRequest
     });
+
+    // Voice narration forwarding is handled per-task in processUserRequest to support prioritization
 
     // Subscribe to backend events for UI dashboard
     this.eventStream.subscribe((event) => {
@@ -145,7 +154,7 @@ export class HybridAgentBridge {
 
   /**
    * Process a user request through the hybrid architecture
-   * 
+   *
    * Flow:
    * 1. Voice layer provides immediate acknowledgment
    * 2. Backend layer processes the request (with gpt-5-mini)
@@ -156,27 +165,142 @@ export class HybridAgentBridge {
   async processUserRequest(userInput: string): Promise<any> {
     console.log('[hybridBridge] Processing user request:', userInput);
 
+    // Create task context
+    const id = `task-${++this.taskCounter}-${Date.now()}`;
+    this.tasks.set(id, { id, input: userInput, createdAt: Date.now(), status: 'running', events: [] });
+
+    // Set active task based on narration mode
+    if (this.narrationMode === 'prioritize' || !this.activeTaskId) {
+      this.activeTaskId = id;
+    }
+
     // Step 1: Immediate voice acknowledgment
     if (this.voiceSession && this.voiceSession.isConnected()) {
       await this.voiceSession.acknowledgeRequest(userInput);
     }
 
-    // Step 2: Run backend processing with event streaming
-    const result = await runBackendAgent(this.backendBundle, userInput, {
-      stream: true,
-      onEvent: (event) => {
-        // Events are automatically forwarded to voice and UI via eventStream
-        console.debug('[hybridBridge] Backend event:', event.type);
-      },
+    // Register per-task event handler for precise routing
+    const unsubscribe = this.backendBundle.addEventHandler(async (event) => {
+      // Persist event to task context
+      const task = this.tasks.get(id);
+      if (task) task.events.push(event);
+
+      // Forward to UI dashboard via shared event stream and handler
+      try {
+        this.eventStream.emit(event);
+        if (this.config.onUIDashboardEvent) {
+          const uiEvent = formatEventForUIDashboard(event);
+          this.config.onUIDashboardEvent(uiEvent);
+        }
+      } catch (err) {
+        console.warn('[hybridBridge] UI forwarding error:', err);
+      }
+
+      // Forward to voice only for the active task and when not paused
+      try {
+        if (
+          this.voiceSession &&
+          this.voiceSession.isConnected() &&
+          this.activeTaskId === id &&
+          !this.narrationPaused
+        ) {
+          await this.voiceSession.receiveBackendEvent(event);
+        }
+      } catch (err) {
+        console.warn('[hybridBridge] Voice forwarding error:', err);
+      }
     });
 
-    // Step 3: Provide final voice summary
+    let result: any;
+    try {
+      // Step 2: Run backend processing with event streaming
+      result = await runBackendAgent(this.backendBundle, userInput, { stream: true });
+    } finally {
+      // Always remove the per-task handler
+      try { unsubscribe(); } catch {}
+    }
+
+    // Update task and optionally narrate final summary
+    const task = this.tasks.get(id);
+    if (task) {
+      task.status = 'completed';
+      task.completedAt = Date.now();
+      task.result = result;
+    }
+
     if (this.voiceSession && this.voiceSession.isConnected()) {
-      await this.voiceSession.provideFinalSummary(result);
+      if (this.activeTaskId === id && !this.narrationPaused) {
+        await this.voiceSession.provideFinalSummary(result);
+      } else {
+        this.pendingSummaries.push({ id, result });
+      }
     }
 
     console.log('[hybridBridge] Request processing complete');
     return result;
+  }
+
+  /**
+   * Narration controls and task management
+   */
+  setNarrationMode(mode: 'serialize' | 'prioritize'): void {
+    this.narrationMode = mode;
+  }
+
+  pauseNarration(): void {
+    this.narrationPaused = true;
+    this.voiceSession?.pauseNarration?.();
+  }
+
+  async resumeNarration(): Promise<void> {
+    this.narrationPaused = false;
+    await this.voiceSession?.resumeNarration?.();
+  }
+
+  /**
+   * Prioritize a task for narration (make it active)
+   */
+  prioritizeTask(taskId: string): void {
+    if (this.tasks.has(taskId)) {
+      this.activeTaskId = taskId;
+    }
+  }
+
+  /**
+   * Prioritize the most recent task
+   */
+  prioritizeLatest(): void {
+    const latest = Array.from(this.tasks.values()).sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (latest) this.activeTaskId = latest.id;
+  }
+
+  /**
+   * Get a shallow copy of task contexts for UI
+   */
+  getTasks(): Array<{ id: string; input: string; status: string; createdAt: number; completedAt?: number }> {
+    return Array.from(this.tasks.values()).map(t => ({
+      id: t.id,
+      input: t.input,
+      status: t.status,
+      createdAt: t.createdAt,
+      completedAt: t.completedAt,
+    }));
+  }
+
+  /**
+   * Deliver any pending summaries (e.g., after user interruption)
+   */
+  async deliverPendingSummaries(): Promise<void> {
+    if (!this.voiceSession || !this.voiceSession.isConnected()) return;
+    while (this.pendingSummaries.length > 0 && !this.narrationPaused) {
+      const next = this.pendingSummaries.shift();
+      if (!next) break;
+      try {
+        await this.voiceSession.provideFinalSummary(next.result);
+      } catch (err) {
+        console.warn('[hybridBridge] Failed to deliver pending summary:', err);
+      }
+    }
   }
 
   /**
@@ -228,7 +352,7 @@ export class HybridAgentBridge {
 
 /**
  * Create a hybrid agent bridge with backend processing and voice narration
- * 
+ *
  * @param config - Configuration for backend tools, voice settings, and event handlers
  * @returns A configured HybridAgentBridge instance
  */

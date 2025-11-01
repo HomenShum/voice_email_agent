@@ -1,13 +1,13 @@
 /**
  * Voice Narration Layer - RealtimeAgent for Voice I/O Only
- * 
+ *
  * This module implements the voice interface using RealtimeAgent (gpt-realtime-mini).
  * It does NOT perform any backend processing - it only:
  * 1. Receives backend events from the processing layer
  * 2. Narrates what's happening in real-time to the user
  * 3. Provides immediate voice acknowledgments
  * 4. Streams voice responses based on backend results
- * 
+ *
  * The actual data processing, tool execution, and decision-making happens
  * in the backend layer (backendRouterAgent.ts) using standard Agent with gpt-5-mini.
  */
@@ -34,7 +34,7 @@ export interface VoiceNarrationConfig {
 
 /**
  * Create a voice narration agent that narrates backend processing events
- * 
+ *
  * This agent:
  * - Uses gpt-realtime-mini for voice I/O only
  * - Does NOT execute tools or make decisions
@@ -79,6 +79,7 @@ export class VoiceNarrationSession {
   private config: VoiceNarrationConfig;
   private eventQueue: BackendAgentEvent[] = [];
   private isNarrating = false;
+  private narrationPaused = false;
 
   constructor(config: VoiceNarrationConfig = {}) {
     this.config = config;
@@ -187,6 +188,9 @@ export class VoiceNarrationSession {
     // Add to queue
     this.eventQueue.push(event);
 
+    // If paused, do not process now
+    if (this.narrationPaused) return;
+
     // Process queue if not currently narrating
     if (!this.isNarrating) {
       await this.processNextEvent();
@@ -275,9 +279,22 @@ export class VoiceNarrationSession {
 
     // Extract final output from backend result
     const finalOutput = result?.finalOutput || result?.output || 'Processing complete.';
-    
     // Narrate the final summary
     await this.narrate(finalOutput);
+  }
+
+  /**
+   * Pause/Resume narration processing
+   */
+  pauseNarration(): void {
+    this.narrationPaused = true;
+  }
+
+  async resumeNarration(): Promise<void> {
+    this.narrationPaused = false;
+    if (!this.isNarrating) {
+      await this.processNextEvent();
+    }
   }
 
   /**
