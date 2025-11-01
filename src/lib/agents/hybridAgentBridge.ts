@@ -26,12 +26,8 @@
 
 import type { Tool } from '@openai/agents-core';
 import {
-  createBackendRuntime,
-  runBackendAgent,
   BackendEventStream,
   formatEventForUIDashboard,
-  type BackendRuntimeConfig,
-  type BackendAgentBundle,
   type BackendAgentEvent,
   type UIDashboardEvent,
 } from './backendRuntime';
@@ -55,6 +51,10 @@ export interface HybridAgentBridgeConfig {
     sync?: Tool[];
   };
 
+  // API configuration
+  apiBaseUrl?: string;
+  grantId?: string;
+
   // Voice configuration
   voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 
@@ -70,7 +70,6 @@ export interface HybridAgentBridgeConfig {
 // ============================================================================
 
 export class HybridAgentBridge {
-  private backendBundle: BackendAgentBundle;
   private voiceSession: VoiceNarrationSession | null = null;
   private eventStream: BackendEventStream;
   private config: HybridAgentBridgeConfig;
@@ -87,22 +86,6 @@ export class HybridAgentBridge {
   constructor(config: HybridAgentBridgeConfig) {
     this.config = config;
     this.eventStream = new BackendEventStream();
-
-    // Create backend runtime
-    const backendConfig: BackendRuntimeConfig = {
-      tools: config.tools,
-      onProgress: config.onProgress,
-      onEvent: (event) => {
-        // Only forward to custom handler; per-task forwarding handled in processUserRequest
-        try {
-          config.onBackendEvent?.(event);
-        } catch (err) {
-          console.warn('[hybridBridge] onBackendEvent error:', err);
-        }
-      },
-    };
-
-    this.backendBundle = createBackendRuntime(backendConfig);
 
     // Maintain legacy subscription count (voice) for tests; actual forwarding is per-task
     this.eventStream.subscribe((_event) => {
@@ -179,45 +162,91 @@ export class HybridAgentBridge {
       await this.voiceSession.acknowledgeRequest(userInput);
     }
 
-    // Register per-task event handler for precise routing
-    const unsubscribe = this.backendBundle.addEventHandler(async (event) => {
-      // Persist event to task context
-      const task = this.tasks.get(id);
-      if (task) task.events.push(event);
-
-      // Forward to UI dashboard via shared event stream and handler
-      try {
-        this.eventStream.emit(event);
-        if (this.config.onUIDashboardEvent) {
-          const uiEvent = formatEventForUIDashboard(event);
-          this.config.onUIDashboardEvent(uiEvent);
-        }
-      } catch (err) {
-        console.warn('[hybridBridge] UI forwarding error:', err);
-      }
-
-      // Forward to voice only for the active task and when not paused
-      try {
-        if (
-          this.voiceSession &&
-          this.voiceSession.isConnected() &&
-          this.activeTaskId === id &&
-          !this.narrationPaused
-        ) {
-          await this.voiceSession.receiveBackendEvent(event);
-        }
-      } catch (err) {
-        console.warn('[hybridBridge] Voice forwarding error:', err);
-      }
+    // Step 2: Call Azure Functions backend (server-side execution with Key Vault secrets)
+    const apiBaseUrl = this.config.apiBaseUrl || 'http://localhost:7071';
+    const response = await fetch(`${apiBaseUrl}/api/agent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userInput,
+        grantId: this.config.grantId,
+      }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Backend agent request failed: ${response.status} ${errorText}`);
+    }
+
+    // Step 3: Parse SSE stream and route events
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
     let result: any;
+    let buffer = '';
+
     try {
-      // Step 2: Run backend processing with event streaming
-      result = await runBackendAgent(this.backendBundle, userInput, { stream: true });
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+
+          let event: any;
+          try {
+            event = JSON.parse(line.slice(6));
+          } catch (parseError) {
+            console.warn('[hybridBridge] Failed to parse SSE event:', line);
+            continue;
+          }
+
+          // Handle final result
+          if (event.type === 'final') {
+            result = event.result;
+            continue;
+          }
+
+          // Handle errors
+          if (event.type === 'error') {
+            throw new Error(event.error);
+          }
+
+          // Persist event to task context
+          const task = this.tasks.get(id);
+          if (task) task.events.push(event);
+
+          // Forward to UI dashboard via shared event stream and handler
+          try {
+            this.eventStream.emit(event);
+            if (this.config.onUIDashboardEvent) {
+              const uiEvent = formatEventForUIDashboard(event);
+              this.config.onUIDashboardEvent(uiEvent);
+            }
+          } catch (err) {
+            console.warn('[hybridBridge] UI forwarding error:', err);
+          }
+
+          // Forward to voice only for the active task and when not paused
+          try {
+            if (
+              this.voiceSession &&
+              this.voiceSession.isConnected() &&
+              this.activeTaskId === id &&
+              !this.narrationPaused
+            ) {
+              await this.voiceSession.receiveBackendEvent(event);
+            }
+          } catch (err) {
+            console.warn('[hybridBridge] Voice forwarding error:', err);
+          }
+        }
+      }
     } finally {
-      // Always remove the per-task handler
-      try { unsubscribe(); } catch {}
+      reader.releaseLock();
     }
 
     // Update task and optionally narrate final summary
@@ -304,13 +333,6 @@ export class HybridAgentBridge {
   }
 
   /**
-   * Get the backend agent bundle (for direct access if needed)
-   */
-  getBackendBundle(): BackendAgentBundle {
-    return this.backendBundle;
-  }
-
-  /**
    * Get the voice narration session (for direct access if needed)
    */
   getVoiceSession(): VoiceNarrationSession | null {
@@ -332,17 +354,17 @@ export class HybridAgentBridge {
   }
 
   /**
-   * Get the call graph for UI visualization
+   * Get the call graph for UI visualization (stub - backend runs server-side)
    */
   getCallGraph() {
-    return this.backendBundle.callGraph;
+    return null;
   }
 
   /**
-   * Get scratchpads for debugging
+   * Get scratchpads for debugging (stub - backend runs server-side)
    */
   getScratchpads() {
-    return this.backendBundle.scratchpads;
+    return {};
   }
 }
 

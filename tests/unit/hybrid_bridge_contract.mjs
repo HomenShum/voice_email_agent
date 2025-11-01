@@ -13,8 +13,8 @@ export default async function run() {
   mustInclude('await this.voiceSession.acknowledgeRequest(', 'Voice acknowledgeRequest call');
   mustInclude('await this.voiceSession.provideFinalSummary(', 'Voice provideFinalSummary call');
 
-  // Backend execution handoff
-  mustInclude('await runBackendAgent(this.backendBundle', 'Calls runBackendAgent with backend bundle');
+  // Backend execution handoff (now via Azure Functions fetch)
+  mustInclude('await fetch(`${apiBaseUrl}/api/agent`', 'Calls Azure Functions /api/agent endpoint');
 
   // Event stream wiring
   mustInclude('this.eventStream.emit(event)', 'Backend events emitted to stream');

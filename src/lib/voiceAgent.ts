@@ -187,7 +187,8 @@ export function getRouterRuntime() {
 
 export function getCallGraphSnapshot() {
   try {
-    return activeHybridAgent?.getCallGraph().snapshot() ?? null;
+    const callGraph = activeHybridAgent?.getCallGraph();
+    return (callGraph as any)?.snapshot?.() ?? null;
   } catch {
     return null;
   }
