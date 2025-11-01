@@ -12,6 +12,7 @@ process.env.OPENAI_TEXT_MODEL = process.env.OPENAI_TEXT_MODEL || 'gpt-5-mini';
 process.env.OPENAI_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || 'text-embedding-3-small';
 
 // Load compiled function modules first; they will import the stub and register handlers
+require(path.resolve('apps/functions/dist/functions/agent.js'));
 require(path.resolve('apps/functions/dist/functions/search.js'));
 require(path.resolve('apps/functions/dist/functions/aggregate.js'));
 require(path.resolve('apps/functions/dist/functions/mcp.js'));
@@ -39,6 +40,28 @@ function readBody(req) {
 
 const server = http.createServer(async (req, res) => {
   try {
+    if (req.method === 'POST' && req.url === '/api/agent') {
+      if (!handlers.agent) throw new Error('agent handler not registered');
+      const { json } = await readBody(req);
+      const result = await handlers.agent({ json: async () => json, method: 'POST' });
+      const status = result?.status || 200;
+      const headers = result?.headers || { 'content-type': 'text/event-stream' };
+      res.writeHead(status, headers);
+      // For SSE streams, the body is a ReadableStream
+      if (result?.body && typeof result.body.getReader === 'function') {
+        const reader = result.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(decoder.decode(value, { stream: true }));
+        }
+        res.end();
+      } else {
+        res.end(typeof result?.body === 'string' ? result.body : JSON.stringify(result?.jsonBody || {}));
+      }
+      return;
+    }
     if (req.method === 'POST' && req.url === '/api/search') {
       if (!handlers.search) throw new Error('search handler not registered');
       const { json } = await readBody(req);

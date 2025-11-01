@@ -3,6 +3,7 @@
 import { app } from "@azure/functions";
 
 // Import all function modules to register them
+import "./functions/agent.js";
 import "./functions/aggregate.js";
 import "./functions/backfillStart.js";
 import "./functions/backfillWorker.js";

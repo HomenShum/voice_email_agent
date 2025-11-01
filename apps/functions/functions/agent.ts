@@ -1,6 +1,7 @@
 import type { HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { app } from '@azure/functions';
 import { Agent, run } from '@openai/agents';
+import { createAgentTools } from '../shared/agentTools.js';
 
 // NOTE: This is a simplified server-side agent implementation
 // The full hybrid architecture (with CallGraph, Scratchpad, multi-agent routing) runs in the browser
@@ -37,8 +38,17 @@ function withCors(response: HttpResponseInit): HttpResponseInit {
 }
 
 // Simplified server-side agent (no complex dependencies)
-function createServerBackendAgent(onEvent?: BackendEventHandler): Agent {
+function createServerBackendAgent(grantId: string, onEvent?: BackendEventHandler): Agent {
   const emitEvent = onEvent || (() => {});
+
+  // Create tools for this grantId
+  const toolsets = createAgentTools(grantId);
+  const allTools = [
+    ...toolsets.email,
+    ...toolsets.insights,
+    ...toolsets.contacts,
+    ...toolsets.calendar,
+  ];
 
   const agent = new Agent({
     name: 'ServerBackendAgent',
@@ -63,6 +73,14 @@ function createServerBackendAgent(onEvent?: BackendEventHandler): Agent {
         '   - Cite actual tool outputs and data points',
         '   - Answer the user\'s original question directly',
         '',
+        '=== AVAILABLE TOOLS ===',
+        '- search_emails: Search emails using hybrid vector + sparse search',
+        '- triage_recent_emails: Triage recent emails to identify urgent/important messages',
+        '- list_unread_messages: List unread messages from Nylas',
+        '- aggregate_emails: Aggregate email counts by metadata fields',
+        '- list_contacts: List contacts from Nylas',
+        '- list_events: List calendar events from Nylas',
+        '',
         '=== CRITICAL RULES ===',
         '- ALWAYS narrate your planning step before using tools',
         '- DO NOT jump straight to tool execution without explaining your plan',
@@ -75,7 +93,7 @@ function createServerBackendAgent(onEvent?: BackendEventHandler): Agent {
         'You: "I found 13 recent emails. 3 are urgent: one interview request from TechCorp, one deadline reminder for the Q4 report, and one meeting reschedule from your manager."',
       ].join('\n');
     },
-    tools: [], // Tools will be added dynamically
+    tools: allTools,
   });
 
   agent.on('agent_start', () => {
@@ -132,13 +150,10 @@ export async function agentHandler(
       async start(controller) {
         try {
           // Create server-side agent with event streaming
-          const agent = createServerBackendAgent((event: BackendAgentEvent) => {
+          const agent = createServerBackendAgent(grantId, (event: BackendAgentEvent) => {
             const data = `data: ${JSON.stringify(event)}\n\n`;
             controller.enqueue(encoder.encode(data));
           });
-
-          // TODO: Add tools dynamically based on grantId
-          // For now, agent has no tools (will be added in next iteration)
 
           // Run agent with streaming
           context.log('[agent] Starting agent execution');
