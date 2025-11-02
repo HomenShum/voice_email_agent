@@ -314,7 +314,7 @@ export type { ToolCallRecord };
 const searchEmails = tool({
   name: 'search_emails',
   description: 'Hybrid search over emails',
-  parameters: z.object({ text: z.string(), top_k: z.number().optional().nullable(), filters: z.record(z.any()).optional().nullable() }),
+  parameters: z.object({ text: z.string(), top_k: z.number().optional().nullable().default(10), filters: z.record(z.any()).optional().nullable() }),
   async execute({ text, top_k, filters }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
@@ -650,7 +650,7 @@ const aggregateEmails = tool({
 const analyzeEmails = tool({
   name: 'analyze_emails',
   description: 'Summarize top results (bullets, paragraph, tags) given a query and optional filters',
-  parameters: z.object({ text: z.string(), filters: z.record(z.any()).optional().nullable(), top_k: z.number().optional().nullable() }),
+  parameters: z.object({ text: z.string(), filters: z.record(z.any()).optional().nullable(), top_k: z.number().optional().nullable().default(10) }),
   async execute({ text, filters, top_k }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
