@@ -18,6 +18,8 @@ const booleanMetrics = Object.fromEntries(
   ]),
 );
 const LLM_ENABLED = process.env.JUDGE_DISABLE_LLM !== '1' && !!process.env.OPENAI_API_KEY;
+const E2E_AGENT_VERIFY = process.env.E2E_AGENT_VERIFY !== '0';
+const E2E_PINECONE_VERIFY = process.env.E2E_PINECONE_VERIFY === '1';
 
 
 async function postJSON(url, body) {
@@ -27,7 +29,199 @@ async function postJSON(url, body) {
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  // If SSE, caller should not use this helper
   return r.json();
+}
+
+async function getJSON(url) {
+  const r = await fetch(url, { method: "GET" });
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  return r.json();
+}
+
+async function collectAgentRun({ grantId, userInput, timeoutMs = 20000 }) {
+  const r = await fetch(`${FUNCTIONS_BASE}/api/agent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userInput, grantId })
+  });
+  if (!r.ok) throw new Error(`/api/agent -> ${r.status}`);
+  if (!r.body || typeof r.body.getReader !== 'function') {
+    throw new Error('Agent response is not a ReadableStream');
+  }
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  const all = [];
+  const tool = [];
+  const agent = [];
+  let final = null;
+  const start = Date.now();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n\n')) >= 0) {
+      const frame = buf.slice(0, idx).trim();
+      buf = buf.slice(idx + 2);
+      if (!frame.startsWith('data:')) continue;
+      const dataStr = frame.slice(5).trim();
+      if (!dataStr) continue;
+      try {
+        const evt = JSON.parse(dataStr);
+        all.push(evt);
+        const t = evt?.type;
+        if (t === 'final') final = evt.result || evt;
+        if (t && (t === 'agent_started' || t === 'agent_completed')) agent.push(evt);
+        if (t && String(t).startsWith('tool_')) tool.push(evt);
+      } catch {}
+    }
+    if (final) break;
+    if (Date.now() - start > timeoutMs) break;
+  }
+  return { allEvents: all, toolEvents: tool, agentEvents: agent, final };
+}
+
+/**
+ * Verify tool invocation expectations
+ * @param {Array} toolEvents - Tool events from agent run
+ * @param {Object} expectations - { requiredAnyOfTools?: string[], requiredAllTools?: string[] }
+ * @returns {Object} - { passed: boolean, called: Set<string>, missing: string[] }
+ */
+function verifyToolInvocations(toolEvents, expectations) {
+  if (!expectations) return { passed: true, called: new Set(), missing: [] };
+
+  const started = (toolEvents || []).filter(e => e.type === 'tool_started' || e.type === 'tool_call_started');
+  const called = new Set(started.map(e => e.toolName).filter(Boolean));
+
+  const missing = [];
+
+  // Check requiredAnyOfTools
+  if (expectations.requiredAnyOfTools?.length) {
+    const ok = expectations.requiredAnyOfTools.some(t => called.has(t));
+    if (!ok) {
+      missing.push(`Expected one of: ${expectations.requiredAnyOfTools.join(', ')}; got: ${Array.from(called).join(', ') || 'none'}`);
+    }
+  }
+
+  // Check requiredAllTools
+  if (expectations.requiredAllTools?.length) {
+    for (const tool of expectations.requiredAllTools) {
+      if (!called.has(tool)) {
+        missing.push(`Expected tool '${tool}' to be called; got: ${Array.from(called).join(', ') || 'none'}`);
+      }
+    }
+  }
+
+  return {
+    passed: missing.length === 0,
+    called,
+    missing,
+    toolEvents: started,
+  };
+}
+
+/**
+ * Extract tool call details for verification
+ * @param {Array} toolEvents - Tool events from agent run
+ * @returns {Object} - Map of toolName -> { started, completed, parameters, result, durationMs }
+ */
+function extractToolDetails(toolEvents) {
+  const details = {};
+
+  for (const evt of toolEvents || []) {
+    const toolName = evt.toolName;
+    if (!toolName) continue;
+
+    if (!details[toolName]) {
+      details[toolName] = { calls: [] };
+    }
+
+    if (evt.type === 'tool_started' || evt.type === 'tool_call_started') {
+      details[toolName].calls.push({
+        started: evt.timestamp,
+        parameters: evt.parameters,
+      });
+    } else if (evt.type === 'tool_completed' || evt.type === 'tool_call_completed') {
+      const lastCall = details[toolName].calls[details[toolName].calls.length - 1];
+      if (lastCall) {
+        lastCall.completed = evt.timestamp;
+        lastCall.durationMs = evt.durationMs;
+        lastCall.result = evt.result;
+      }
+    }
+  }
+
+  return details;
+}
+
+/**
+ * Verify tool result data shapes and content
+ * @param {Object} toolDetails - Tool details from extractToolDetails
+ * @param {Object} expectations - { toolName: { resultShape: {...}, minCount?: number } }
+ * @returns {Object} - { passed: boolean, errors: string[] }
+ */
+function verifyToolResults(toolDetails, expectations) {
+  const errors = [];
+
+  if (!expectations) return { passed: true, errors: [] };
+
+  for (const [toolName, expectation] of Object.entries(expectations)) {
+    const toolDetail = toolDetails[toolName];
+    if (!toolDetail) {
+      errors.push(`Tool '${toolName}' was not called`);
+      continue;
+    }
+
+    const calls = toolDetail.calls || [];
+    if (expectation.minCount && calls.length < expectation.minCount) {
+      errors.push(`Tool '${toolName}' called ${calls.length} times; expected at least ${expectation.minCount}`);
+    }
+
+    // Verify result shape for first call
+    if (calls.length > 0 && expectation.resultShape) {
+      const result = calls[0].result;
+      if (!result) {
+        errors.push(`Tool '${toolName}' first call has no result`);
+        continue;
+      }
+
+      for (const [key, type] of Object.entries(expectation.resultShape)) {
+        if (!(key in result)) {
+          errors.push(`Tool '${toolName}' result missing key '${key}'`);
+        } else if (type && typeof result[key] !== type) {
+          errors.push(`Tool '${toolName}' result['${key}'] is ${typeof result[key]}; expected ${type}`);
+        }
+      }
+    }
+  }
+
+  return { passed: errors.length === 0, errors };
+}
+
+async function getIndexStats(opts = { includePersisted: false }) {
+  const qs = opts?.includePersisted ? '?includePersisted=1' : '';
+  return getJSON(`${FUNCTIONS_BASE}/api/index/stats${qs}`);
+}
+
+async function waitForIndexIncrease({ namespace, before, timeoutMs = 30000, pollMs = 2000 }) {
+  const start = Date.now();
+  const beforeNs = before?.session?.dense?.byNamespace?.[namespace]?.records || 0;
+  while (Date.now() - start < timeoutMs) {
+    const now = await getIndexStats();
+    const nowNs = now?.session?.dense?.byNamespace?.[namespace]?.records || 0;
+    if (nowNs > beforeNs) {
+      return { increased: true, before: beforeNs, after: nowNs };
+    }
+    await new Promise(r => setTimeout(r, pollMs));
+  }
+  const final = await getIndexStats();
+  return {
+    increased: false,
+    before: before?.session?.dense?.byNamespace?.[namespace]?.records || 0,
+    after: final?.session?.dense?.byNamespace?.[namespace]?.records || 0,
+  };
 }
 
 function ensureDir(d) {
@@ -111,12 +305,89 @@ async function run() {
       aggregation = { error: String(e) };
     }
 
-    // 3) snapshot
+    // 3) build snapshot and optionally collect agent SSE events
     const snapshot = {
       case: c,
       search_matches: matches,
       aggregation,
     };
+
+    let agentRun = null;
+    let toolVerification = null;
+    if (E2E_AGENT_VERIFY) {
+      try {
+        agentRun = await collectAgentRun({ grantId: namespace, userInput: user_query });
+
+        // Extract and verify tool invocations
+        toolVerification = verifyToolInvocations(agentRun.toolEvents, c.agent_expect);
+        const toolDetails = extractToolDetails(agentRun.toolEvents);
+
+        snapshot.agent = {
+          tool_events: agentRun.toolEvents,
+          tool_details: toolDetails,
+          tool_verification: {
+            passed: toolVerification.passed,
+            called: Array.from(toolVerification.called),
+            missing: toolVerification.missing,
+          },
+          all_events_sample: agentRun.allEvents.slice(0, 50),
+          final: agentRun.final,
+        };
+
+        // Log tool invocation summary
+        if (toolVerification.called.size > 0) {
+          console.log(`[${id}] tools called: ${Array.from(toolVerification.called).join(', ')}`);
+        } else {
+          console.warn(`[${id}] agent run had no tool invocations`);
+        }
+      } catch (err) {
+        snapshot.agent_error = String(err?.message || err);
+        console.warn(`[${id}] agent SSE collection failed:`, snapshot.agent_error);
+      }
+    }
+
+    // Enforce agent tool expectations per-case
+    if (toolVerification && !toolVerification.passed) {
+      throw new Error(`Tool verification failed for [${id}]: ${toolVerification.missing.join('; ')}`);
+    }
+
+    // Optional: Pinecone write verification via delta sync
+    if (E2E_PINECONE_VERIFY && process.env.SERVICEBUS_CONNECTION && c.pineconeVerify === 'delta') {
+      try {
+        const beforeStats = await getIndexStats();
+        const beforeCount = beforeStats?.session?.dense?.byNamespace?.[namespace]?.records || 0;
+        snapshot.index_before = beforeCount;
+        snapshot.index_stats_before = beforeStats;
+
+        try {
+          await postJSON(`${FUNCTIONS_BASE}/api/sync/delta`, { grantId: namespace });
+          snapshot.delta_enqueued = true;
+          console.log(`[${id}] Delta sync enqueued for namespace ${namespace}`);
+        } catch (err) {
+          snapshot.delta_error = String(err?.message || err);
+          console.warn(`[${id}] Delta sync failed:`, snapshot.delta_error);
+        }
+
+        const waited = await waitForIndexIncrease({ namespace, before: beforeStats, timeoutMs: 60000 });
+        snapshot.index_after = waited.after;
+        snapshot.index_increase = {
+          before: waited.before,
+          after: waited.after,
+          delta: waited.after - waited.before,
+          increased: waited.increased,
+        };
+
+        if (!waited.increased) {
+          console.warn(`[${id}] Pinecone index did not increase for ns=${namespace}: ${waited.before} -> ${waited.after}`);
+        } else {
+          console.log(`[${id}] Pinecone index increased: ${waited.before} -> ${waited.after} (+${waited.after - waited.before})`);
+        }
+      } catch (err) {
+        snapshot.pinecone_verify_error = String(err?.message || err);
+        console.warn(`[${id}] Pinecone verification error:`, snapshot.pinecone_verify_error);
+      }
+    }
+
     const snapPath = writeSnapshot(id, snapshot);
     if (typeof c.assert === "function") {
       await c.assert({
@@ -124,6 +395,7 @@ async function run() {
         search: searchRes,
         aggregation,
         case: c,
+        agent: agentRun,
       });
     }
 

@@ -16,6 +16,9 @@ require(path.resolve('apps/functions/dist/functions/agent.js'));
 require(path.resolve('apps/functions/dist/functions/search.js'));
 require(path.resolve('apps/functions/dist/functions/aggregate.js'));
 require(path.resolve('apps/functions/dist/functions/mcp.js'));
+require(path.resolve('apps/functions/dist/functions/indexStats.js'));
+require(path.resolve('apps/functions/dist/functions/backfillStart.js'));
+require(path.resolve('apps/functions/dist/functions/deltaStart.js'));
 
 
 // Handlers were captured by the stub on globalThis
@@ -96,10 +99,41 @@ const server = http.createServer(async (req, res) => {
       res.end(typeof body === 'string' ? body : JSON.stringify(body));
       return;
     }
+    if (req.method === 'GET' && req.url.startsWith('/api/index/stats')) {
+      if (!handlers.indexStats) throw new Error('indexStats handler not registered');
+      const result = await handlers.indexStats({ url: `http://localhost:${PORT}${req.url}` });
+      const status = result?.status || 200;
+      const body = result?.jsonBody ?? result?.body ?? {};
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
+      res.end(typeof body === 'string' ? body : JSON.stringify(body));
+      return;
+    }
     if (req.method === 'POST' && req.url === '/api/mcp') {
       if (!handlers.mcp) throw new Error('mcp handler not registered');
       const { json } = await readBody(req);
       const result = await handlers.mcp({ json: async () => json });
+      const status = result?.status || 200;
+      const body = result?.jsonBody ?? result?.body ?? {};
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
+      res.end(typeof body === 'string' ? body : JSON.stringify(body));
+      return;
+    }
+    if (req.method === 'POST' && req.url === '/api/sync/delta') {
+      if (!handlers.deltaStart) throw new Error('deltaStart handler not registered');
+      const { json } = await readBody(req);
+      const ctx = { log: console.log, error: console.error, warn: console.warn, info: console.log, invocationId: 'dev', functionName: 'deltaStart' };
+      const result = await handlers.deltaStart({ json: async () => json, method: 'POST' }, ctx);
+      const status = result?.status || 200;
+      const body = result?.jsonBody ?? result?.body ?? {};
+      res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));
+      res.end(typeof body === 'string' ? body : JSON.stringify(body));
+      return;
+    }
+    if (req.method === 'POST' && req.url === '/api/sync/backfill') {
+      if (!handlers.backfillStart) throw new Error('backfillStart handler not registered');
+      const { json } = await readBody(req);
+      const ctx = { log: console.log, error: console.error, warn: console.warn, info: console.log, invocationId: 'dev', functionName: 'backfillStart' };
+      const result = await handlers.backfillStart({ json: async () => json, method: 'POST' }, ctx);
       const status = result?.status || 200;
       const body = result?.jsonBody ?? result?.body ?? {};
       res.writeHead(status, Object.assign({ 'content-type': 'application/json' }, CORS_HEADERS));

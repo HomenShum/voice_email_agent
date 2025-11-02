@@ -88,6 +88,33 @@ export class VoiceNarrationSession {
   private eventQueue: BackendAgentEvent[] = [];
   private isNarrating = false;
   private narrationPaused = false;
+  private static readonly DEFAULT_INSTRUCT_PREFIX =
+    'You are the voice narrator for the email assistant. Speak naturally and keep responses concise.';
+
+  private buildNarrationInstructions(message: string, intent: 'ack' | 'progress' | 'summary'): string {
+    switch (intent) {
+      case 'ack':
+        return [
+          VoiceNarrationSession.DEFAULT_INSTRUCT_PREFIX,
+          'Provide a brief, friendly acknowledgment letting the user know their request is being handled.',
+          `Reference: ${message}`,
+          'Do not ask questions.',
+        ].join('\n');
+      case 'summary':
+        return [
+          VoiceNarrationSession.DEFAULT_INSTRUCT_PREFIX,
+          'Deliver the final answer to the user using the provided text. Speak it as a clear, informative summary.',
+          `Summary: ${message}`,
+          'Do not add caveats or apologies.',
+        ].join('\n');
+      default:
+        return [
+          VoiceNarrationSession.DEFAULT_INSTRUCT_PREFIX,
+          'Narrate the backend progress update in one tight sentence.',
+          `Update: ${message}`,
+        ].join('\n');
+    }
+  }
 
   constructor(config: VoiceNarrationConfig = {}) {
     this.config = config;
@@ -184,7 +211,7 @@ export class VoiceNarrationSession {
 
     // Send immediate acknowledgment
     const acknowledgment = this.generateAcknowledgment(userInput);
-    await this.narrate(acknowledgment);
+    await this.narrate(acknowledgment, 'ack');
   }
 
   /**
@@ -219,7 +246,7 @@ export class VoiceNarrationSession {
     // Format event for voice narration
     const narration = formatEventForVoiceNarration(event);
     if (narration) {
-      await this.narrate(narration);
+      await this.narrate(narration, 'progress');
     } else {
       // No narration needed, process next event
       await this.processNextEvent();
@@ -229,7 +256,7 @@ export class VoiceNarrationSession {
   /**
    * Narrate a message using the voice agent
    */
-  private async narrate(message: string): Promise<void> {
+  private async narrate(message: string, intent: 'ack' | 'progress' | 'summary'): Promise<void> {
     if (!this.session) {
       console.warn('[voiceNarration] Session not connected');
       return;
@@ -242,13 +269,53 @@ export class VoiceNarrationSession {
       // Send message to the voice agent for narration
       // The agent will convert it to speech and stream it to the user
       const sessionAny = this.session as any;
-      if (sessionAny.sendMessage) {
-        await sessionAny.sendMessage(message);
-      } else if (sessionAny.send) {
-        await sessionAny.send({ type: 'conversation.item.create', item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: message }] } });
+      const transport = sessionAny?.transport;
+      const instructions = this.buildNarrationInstructions(message, intent);
+
+      if (transport && typeof transport.sendEvent === 'function') {
+        transport.sendEvent({
+          type: 'response.create',
+          response: {
+            instructions,
+            metadata: {
+              narrator_intent: intent,
+              narrator_message: message,
+            },
+          },
+        });
+      } else if (typeof sessionAny?.sendEvent === 'function') {
+        sessionAny.sendEvent({
+          type: 'response.create',
+          response: {
+            instructions,
+            metadata: {
+              narrator_intent: intent,
+              narrator_message: message,
+            },
+          },
+        });
+      } else if (typeof sessionAny?.sendMessage === 'function') {
+        sessionAny.sendMessage(message, {
+          metadata: {
+            narrator_intent: intent,
+            narrator_message: message,
+          },
+        });
+      } else if (typeof sessionAny?.send === 'function') {
+        sessionAny.send({
+          type: 'response.create',
+          response: {
+            instructions,
+            metadata: {
+              narrator_intent: intent,
+              narrator_message: message,
+            },
+          },
+        });
       } else {
-        console.warn('[voiceNarration] No send method available on session');
+        console.warn('[voiceNarration] No supported transport method available for narration');
         this.isNarrating = false;
+        await this.processNextEvent();
       }
     } catch (error) {
       console.error('[voiceNarration] Narration error:', error);
@@ -288,7 +355,7 @@ export class VoiceNarrationSession {
     // Extract final output from backend result
     const finalOutput = result?.finalOutput || result?.output || 'Processing complete.';
     // Narrate the final summary
-    await this.narrate(finalOutput);
+    await this.narrate(finalOutput, 'summary');
   }
 
   /**
@@ -335,4 +402,3 @@ export async function createVoiceNarrationSession(
   await session.connect(apiKey);
   return session;
 }
-

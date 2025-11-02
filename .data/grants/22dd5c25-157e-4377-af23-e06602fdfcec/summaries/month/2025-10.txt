@@ -1,13 +1,19 @@
 1) Actionable bullet points
-- Source/volume: Upwork (donotreply@upwork.com → Homen) delivered ~15 new-job alerts in October 2025 (entries between 2025-10-06 and 2025-10-24). Review and treat as one batch.
-- Prioritize and apply: shortlist highest-fit roles and submit proposals this week — key targets: n8n workflow roles (10/07 HeyGen news bulletin; 10/10 Talent Screening & Hiring Automation; 10/13 n8n Workflow Automation; 10/21 N8N Error Resolution; 10/24 Build n8n Workflows), plus 10/15 Subscription and AI-Powered Platform (Full SaaS Build) and 10/06–10/08 full-stack AI/SaaS positions.
-- Prepare proposal assets: create tailored templates and one-pagers for n8n automation, API/onboarding work (Al & Software Implementor), Eleven Labs & HeyGen integrations, Fathom→Chat GPT workflows, and Supabase/RAG agent projects to speed submissions.
-- Update profile/portfolio: highlight recent SaaS, AI agents, e‑commerce, and Amazon Seller Space experience; attach relevant case studies to support Full-Stack and automation proposals.
-- Process improvements: set Upwork saved searches/filters for n8n, automation, AI/SaaS keywords and enable instant alerts; consolidate job tracking (spreadsheet or project board) with dates, budgets, and next steps.
-- Schedule workload: block 3–4 hours over the next 3 days to customize and send 3–5 proposals (start with the n8n + Subscription/SaaS leads).
+- Review & consider quick-applying to these priority Upwork alerts sent to Homen:
+  - 2025-10-07 14:28:35Z — "n8n workflow: improvement of an automated HeyGen news bulletin"
+  - 2025-10-17 08:07:30Z — "Fathom to Chat GPT Email Workflow AUTOMATION"
+  - 2025-10-17 03:56:15Z — "NEW- AI + Automation Engineer (n8n, Supabase, Web Scraping, RAG)"
+  - 2025-10-21 08:36:51Z — "N8N Error Resolution Specialist Needed"
+  - 2025-10-24 20:08:28Z — "Build n8n Workflows (AI & E-commerce Integrations)"
+  - 2025-10-15 14:27:26Z — "Subscription and AI-Powered Platform — Full SaaS Build"
+- Update Upwork profile/portfolio immediately to emphasize n8n, automation, AI/SaaS, Supabase, RAG agents, HeyGen, Eleven Labs, Fathom → include recent examples and code snippets/screenshots.
+- Create and save Upwork searches/alerts for keywords: n8n, automation, AI, SaaS, Supabase, RAG, HeyGen, Eleven Labs — so new matches arrive faster than competitors.
+- Prepare 2–3 modular proposal templates (n8n workflows, error resolution, full-stack AI SaaS) and a standard rate/estimate sheet to submit quickly (“be one of the first to submit”).
+- Block 2–4 hours this week to draft tailored proposals and to log each application in a simple tracker (job title, date sent, hourly/fixed, next follow-up).
+- Prioritize jobs requiring rapid turnaround or troubleshooting (e.g., error resolution, integrations) for higher short-term win rate; pitch shorter pilot engagements where appropriate.
 
 2) Executive paragraph
-In October 2025 donotreply@upwork.com sent Homen ~15 Upwork job alerts (06–24 Oct) heavily focused on n8n workflow and automation roles plus multiple AI/SaaS/full‑stack opportunities — notable postings include: 2025-10-07 n8n workflow (HeyGen news bulletin), 2025-10-10 n8n Workflow Developer (Talent Screening), 2025-10-15 Subscription and AI-Powered Platform — Full SaaS Build, 2025-10-17 Fathom to Chat GPT Email Workflow, 2025-10-17 AI + Automation Engineer (n8n, Supabase, RAG), and integration roles (Eleven Labs, Supabase, ClickUp, Amazon Seller Space). Recommend prioritizing n8n and SaaS proposals, updating profile assets, and enabling targeted saved searches to convert these leads quickly.
+In October 2025 Upwork new-job alerts (donotreply@upwork.com → Homen) delivered a concentrated set of opportunities (messages dated 2025-10-06 through 2025-10-24) focused on n8n automation, AI/SaaS builds, integrations (HeyGen, Eleven Labs), Supabase, web scraping and RAG agents. Prioritize rapid applications to the highlighted postings (see dates/titles above), refresh your Upwork profile to showcase relevant tech, set saved searches for these keywords, and prepare modular proposals and a tracking sheet to increase win rate.
 
 3) Searchable tags (up to 8)
-Upwork; n8n; AI; SaaS; automation; HeyGen; Eleven Labs; Supabase
+Upwork, n8n, automation, AI, SaaS, Supabase, HeyGen, RAG

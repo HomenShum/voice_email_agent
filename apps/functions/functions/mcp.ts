@@ -27,12 +27,12 @@ function baseUrl(): string {
 const SearchArgsShape = {
   grantId: z.string().describe("Grant/namespace id"),
   query: z.string(),
-  topK: z.number().int().min(1).max(100).optional(),
-  types: z.array(z.string()).optional(),
-  threadId: z.string().optional(),
-  bucket: z.string().optional(),
-  dateFrom: z.string().optional(),
-  dateTo: z.string().optional(),
+  topK: z.number().int().min(1).max(100).nullable().optional(),
+  types: z.array(z.string()).nullable().optional(),
+  threadId: z.string().nullable().optional(),
+  bucket: z.string().nullable().optional(),
+  dateFrom: z.string().nullable().optional(),
+  dateTo: z.string().nullable().optional(),
 };
 const AggregateArgsShape = { ...SearchArgsShape, groupBy: z.string() };
 
@@ -86,6 +86,17 @@ function zodShapeToJsonSchema(shape: Record<string, any>) {
   const required: string[] = [];
   const toSchema = (node: any): any => {
     if (node instanceof z.ZodOptional) return toSchema((node as any)._def.innerType);
+    if (node instanceof z.ZodNullable) {
+      const innerSchema = toSchema((node as any)._def.innerType);
+      const innerType = innerSchema?.type;
+      if (Array.isArray(innerType)) {
+        return { ...innerSchema, type: Array.from(new Set([...innerType, 'null'])) };
+      }
+      if (typeof innerType === 'string') {
+        return { ...innerSchema, type: [innerType, 'null'] };
+      }
+      return { ...innerSchema, type: ['null'] };
+    }
     if (node instanceof z.ZodString) return { type: "string", description: (node as any).description || (node as any)._def?.description };
     if (node instanceof z.ZodNumber) {
       const checks = (node as any)._def?.checks || [];

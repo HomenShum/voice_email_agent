@@ -30,9 +30,9 @@ export function createSearchEmailsTool(grantId: string, onEvent?: (e: any) => vo
     description: 'Search emails using hybrid vector + sparse search. Returns relevant emails matching the query.',
     parameters: z.object({
       query: z.string().describe('Natural language search query'),
-      topK: z.number().optional().default(10).describe('Number of results to return'),
-      dateFrom: z.string().optional().describe('Filter emails from this date (ISO 8601)'),
-      dateTo: z.string().optional().describe('Filter emails to this date (ISO 8601)'),
+      topK: z.number().nullable().optional().default(10).describe('Number of results to return'),
+      dateFrom: z.string().nullable().optional().describe('Filter emails from this date (ISO 8601)'),
+      dateTo: z.string().nullable().optional().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ query, topK, dateFrom, dateTo }) {
       const _t0 = Date.now();
@@ -85,8 +85,8 @@ export function createAggregateEmailsTool(grantId: string, onEvent?: (e: any) =>
     description: 'Aggregate email counts grouped by metadata fields (e.g., from_domain, date). Useful for analytics and insights.',
     parameters: z.object({
       groupBy: z.string().describe('Metadata field to group by (e.g., "from_domain", "date", "has_attachments")'),
-      dateFrom: z.string().optional().describe('Filter emails from this date (ISO 8601)'),
-      dateTo: z.string().optional().describe('Filter emails to this date (ISO 8601)'),
+      dateFrom: z.string().nullable().optional().describe('Filter emails from this date (ISO 8601)'),
+      dateTo: z.string().nullable().optional().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ groupBy, dateFrom, dateTo }) {
       const _t0 = Date.now();
@@ -121,7 +121,7 @@ export function createListUnreadTool(grantId: string, onEvent?: (e: any) => void
     name: 'list_unread_messages',
     description: 'List unread messages from Nylas. Returns recent unread emails.',
     parameters: z.object({
-      limit: z.number().optional().default(10).describe('Maximum number of unread messages to return'),
+      limit: z.number().nullable().optional().default(10).describe('Maximum number of unread messages to return'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
@@ -168,7 +168,7 @@ export function createListContactsTool(grantId: string, onEvent?: (e: any) => vo
     name: 'list_contacts',
     description: 'List contacts from Nylas. Returns recent contacts.',
     parameters: z.object({
-      limit: z.number().optional().default(10).describe('Maximum number of contacts to return'),
+      limit: z.number().nullable().optional().default(10).describe('Maximum number of contacts to return'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
@@ -212,8 +212,8 @@ export function createListEventsTool(grantId: string, onEvent?: (e: any) => void
     name: 'list_events',
     description: 'List calendar events from Nylas. Returns upcoming events.',
     parameters: z.object({
-      limit: z.number().optional().default(10).describe('Maximum number of events to return'),
-      calendarId: z.string().optional().default('primary').describe('Calendar ID to query'),
+      limit: z.number().nullable().optional().default(10).describe('Maximum number of events to return'),
+      calendarId: z.string().nullable().optional().default('primary').describe('Calendar ID to query'),
     }),
     async execute({ limit, calendarId }) {
       const _t0 = Date.now();
@@ -261,7 +261,7 @@ export function createTriageRecentEmailsTool(grantId: string, onEvent?: (e: any)
     name: 'triage_recent_emails',
     description: 'Triage recent emails to identify urgent, important, and actionable messages. Returns prioritized email list with triage summary.',
     parameters: z.object({
-      limit: z.number().optional().default(50).describe('Number of recent emails to triage'),
+      limit: z.number().nullable().optional().default(50).describe('Number of recent emails to triage'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
@@ -306,22 +306,38 @@ export function createTriageRecentEmailsTool(grantId: string, onEvent?: (e: any)
  * Create all tools for a given grantId
  */
 export function createAgentTools(grantId: string, onEvent?: (e: any) => void) {
+  const mapEventType = (type: string) => {
+    if (type === 'tool_call_started') return 'tool_started';
+    if (type === 'tool_call_completed') return 'tool_completed';
+    return type;
+  };
+
+  const withAgent = (agentId: string) =>
+    onEvent
+      ? (event: any) => {
+          onEvent({
+            ...event,
+            type: mapEventType(event.type),
+            agentId,
+          });
+        }
+      : undefined;
+
   return {
     email: [
-      createSearchEmailsTool(grantId, onEvent),
-      createListUnreadTool(grantId, onEvent),
-      createTriageRecentEmailsTool(grantId, onEvent),
+      createSearchEmailsTool(grantId, withAgent('email_ops')),
+      createListUnreadTool(grantId, withAgent('email_ops')),
+      createTriageRecentEmailsTool(grantId, withAgent('email_ops')),
     ],
     insights: [
-      createAggregateEmailsTool(grantId, onEvent),
-      createSearchEmailsTool(grantId, onEvent), // Insights can also search
+      createAggregateEmailsTool(grantId, withAgent('insights')),
+      createSearchEmailsTool(grantId, withAgent('insights')), // Insights can also search
     ],
     contacts: [
-      createListContactsTool(grantId, onEvent),
+      createListContactsTool(grantId, withAgent('contacts')),
     ],
     calendar: [
-      createListEventsTool(grantId, onEvent),
+      createListEventsTool(grantId, withAgent('calendar')),
     ],
   };
 }
-

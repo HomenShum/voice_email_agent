@@ -381,7 +381,7 @@ const listContacts = tool({
 const listEvents = tool({
   name: 'list_events',
   description: 'List recent calendar events from Nylas',
-  parameters: z.object({ calendar_id: z.string().nullable().default('primary').optional(), limit: z.number().optional().default(5) }),
+  parameters: z.object({ calendar_id: z.string().nullable().default('primary').optional(), limit: z.number().nullable().optional().default(5) }),
   async execute({ calendar_id, limit }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
@@ -409,7 +409,7 @@ const listEvents = tool({
 const listUnreadMessages = tool({
   name: 'list_unread_messages',
   description: 'List unread messages (summary) from Nylas',
-  parameters: z.object({ limit: z.number().optional().default(5), sinceEpoch: z.number().nullable().optional() }),
+  parameters: z.object({ limit: z.number().nullable().optional().default(5), sinceEpoch: z.number().nullable().optional() }),
   async execute({ limit, sinceEpoch }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());
     const callId = details?.toolCall?.id;
@@ -439,8 +439,8 @@ const triageRecentEmails = tool({
   name: 'triage_recent_emails',
   description: 'Run prioritized email triage (gpt-5-mini) to surface urgent messages, actions, and validation details.',
   parameters: z.object({
-    limit: z.number().optional().default(50),
-    includeBodies: z.boolean().optional().default(true),
+    limit: z.number().nullable().optional().default(50),
+    includeBodies: z.boolean().nullable().optional().default(true),
     grantId: z.string().trim().default(''),
   }),
   async execute({ limit, includeBodies, grantId }, details?: any) {
@@ -495,8 +495,8 @@ const listRecentEmails = tool({
   name: 'list_recent_emails',
   description: 'Fetch the most recent emails (up to 200) and run LLM MapReduce prioritization',
   parameters: z.object({
-    limit: z.number().optional().default(50),
-    includeBodies: z.boolean().optional().default(true),
+    limit: z.number().nullable().optional().default(50),
+    includeBodies: z.boolean().nullable().optional().default(true),
   }),
   async execute({ limit, includeBodies }, details?: any) {
     const _t0 = (globalThis.performance?.now?.() ?? Date.now());

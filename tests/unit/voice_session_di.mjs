@@ -33,8 +33,9 @@ export default async function run() {
 
   // Verify narration methods work with session
   assert(
-    voiceSrc.includes('private async narrate(message: string)'),
-    'narrate method should exist'
+    voiceSrc.includes("private async narrate(message: string, intent: '") ||
+      voiceSrc.includes('private async narrate(message: string, intent: "'),
+    'narrate method should accept a message and intent'
   );
 
   assert(
@@ -42,14 +43,19 @@ export default async function run() {
     'Should cast session to any for flexible method calls'
   );
 
+  assert(
+    voiceSrc.includes('transport.sendEvent'),
+    'Should prefer transport.sendEvent when available'
+  );
+
   // Verify multiple send methods are tried
   assert(
-    voiceSrc.includes('if (sessionAny.sendMessage)'),
+    voiceSrc.includes('sessionAny?.sendMessage'),
     'Should try sendMessage method'
   );
 
   assert(
-    voiceSrc.includes('} else if (sessionAny.send)'),
+    voiceSrc.includes('sessionAny?.send ==='),
     'Should try send method as fallback'
   );
 
@@ -59,4 +65,3 @@ export default async function run() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   run().catch((e) => { console.error(e); process.exit(1); });
 }
-

@@ -21,8 +21,9 @@ export default async function run() {
   );
 
   assert(
-    voiceSrc.includes('await this.narrate(acknowledgment)'),
-    'acknowledgeRequest should call narrate with acknowledgment'
+    voiceSrc.includes("await this.narrate(acknowledgment, 'ack')") ||
+      voiceSrc.includes('await this.narrate(acknowledgment, "ack")'),
+    'acknowledgeRequest should call narrate with acknowledgment intent'
   );
 
   // Verify event queue exists
@@ -60,8 +61,9 @@ export default async function run() {
   );
 
   assert(
-    voiceSrc.includes('await this.narrate(finalOutput)'),
-    'provideFinalSummary should narrate the output'
+    voiceSrc.includes("await this.narrate(finalOutput, 'summary')") ||
+      voiceSrc.includes('await this.narrate(finalOutput, "summary")'),
+    'provideFinalSummary should narrate the output with summary intent'
   );
 
   console.log('[unit] voice_narration_queue: PASS');
@@ -70,4 +72,3 @@ export default async function run() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   run().catch((e) => { console.error(e); process.exit(1); });
 }
-

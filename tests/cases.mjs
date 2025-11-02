@@ -7,6 +7,16 @@ export const CASES = [
     search: { query: "Security alert", types: ["message"], topK: 5 },
     expect:
       "Functional: Retrieve at least one email relevant to a security alert. Typically from Google or similar provider is fine, but DO NOT require exact subject or domain matches. Judge on relevance to 'security alert' rather than exact strings.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
+    assert({ agent }) {
+      if (!agent?.toolEvents?.length) {
+        throw new Error("Expected agent to invoke at least one tool");
+      }
+      const toolNames = new Set(agent.toolEvents.map(e => e.toolName).filter(Boolean));
+      if (!toolNames.has("search_emails") && !toolNames.has("triage_recent_emails")) {
+        throw new Error(`Expected search_emails or triage_recent_emails; got: ${Array.from(toolNames).join(', ')}`);
+      }
+    },
   },
   {
     id: "uc-berkeley-event",
@@ -19,6 +29,7 @@ export const CASES = [
       topK: 5,
     },
     expect: "Functional: Show results plausibly related to UC Berkeley and/or OpenAI (or similar academic/AI event). Content may drift; judge on topical relevance to the query rather than exact phrases.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   {
     id: "yelp-prompt",
@@ -27,6 +38,7 @@ export const CASES = [
     namespace: "22dd5c25-157e-4377-af23-e06602fdfcec",
     search: { query: "Yelp review", types: ["message"], topK: 5 },
     expect: "Functional: Identify an email prompting a review (e.g., from Yelp or similar). Judge on action-request relevance, not exact brand phrasing.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   {
     id: "bandsintown",
@@ -39,6 +51,7 @@ export const CASES = [
       topK: 5,
     },
     expect: "Functional: Surface a music event/artist notification (e.g., Bandsintown/LANY or similar). Judge on musical event relevance rather than exact artist/domain.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   {
     id: "upwork-job",
@@ -51,6 +64,7 @@ export const CASES = [
       topK: 5,
     },
     expect: "Functional: Return a job alert or equivalent listing summary. Judge on job-alert relevance rather than exact wording or sender.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   // --- Rollup tests (day/week/month) ---
   {
@@ -65,6 +79,7 @@ export const CASES = [
     },
     expect:
       "Functional: Provide a weekly rollup-style result for the topic/thread (week-scale grouping with thematic summary). Do not require specific phrases; judge on rollup behavior and topical coherence.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   {
     id: "rollup-month",
@@ -77,6 +92,7 @@ export const CASES = [
       topK: 5,
     },
     expect: "Functional: Provide a monthly rollup related to job-alert themes (month-scale grouping). Judge on rollup behavior and topic alignment, not exact words.",
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
   },
   // --- Unread delta (optional) ---
   {
@@ -92,7 +108,9 @@ export const CASES = [
     },
     expect:
       "Functional: Show recent unread items since the last checkpoint with minimal overlap. Judge based on plausibility and metadata cues (e.g., unread=true), not perfect deduplication.",
-    assert({ matches }) {
+    agent_expect: { requiredAnyOfTools: ["search_emails", "list_unread_messages", "triage_recent_emails"] },
+    pineconeVerify: "delta",
+    assert({ matches, agent }) {
       const list = Array.isArray(matches) ? matches : [];
       if (!list.length) throw new Error("Expected unread query to return at least one match");
       const withUnread = list.filter((m) => m && typeof m?.metadata?.unread !== "undefined");
@@ -110,6 +128,15 @@ export const CASES = [
       if (!withUnread.some((m) => m.metadata.unread === true)) {
         throw new Error("Expected at least one unread=true match in unread query results");
       }
+
+      // Verify tool was invoked
+      if (agent?.toolEvents?.length) {
+        const toolNames = new Set(agent.toolEvents.map(e => e.toolName).filter(Boolean));
+        const hasUnreadTool = toolNames.has("list_unread_messages");
+        if (!hasUnreadTool) {
+          console.warn(`[unread-delta] Expected list_unread_messages tool; got: ${Array.from(toolNames).join(', ')}`);
+        }
+      }
     },
   },
   {
@@ -124,7 +151,8 @@ export const CASES = [
     },
     expect:
       "Functional: At least one result indicates attachments (prefer has_attachments=true) and exposes attachment-related metadata. Judge on attachment relevance rather than exact subject/sender.",
-    assert({ matches }) {
+    agent_expect: { requiredAnyOfTools: ["search_emails", "triage_recent_emails"] },
+    assert({ matches, agent }) {
       const withAttachment = (matches || []).find((m) => {
         const meta = m?.metadata || {};
         return (
@@ -142,6 +170,14 @@ export const CASES = [
         typeof meta.thread_id === "undefined"
       ) {
         throw new Error("Attachment-bearing message missing identifier metadata (message/email/thread)");
+      }
+
+      // Verify tool invocation
+      if (agent?.toolEvents?.length) {
+        const toolNames = new Set(agent.toolEvents.map(e => e.toolName).filter(Boolean));
+        if (toolNames.size === 0) {
+          throw new Error("Expected at least one tool to be invoked");
+        }
       }
     },
   },

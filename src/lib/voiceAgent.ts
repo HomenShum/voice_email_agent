@@ -8,12 +8,14 @@ import {
   syncToolset,
   type ToolCallRecord,
 } from './tools';
+import type { BackendAgentEvent } from './agents/backendRouterAgent';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
 let activeHybridAgent: HybridVoiceAgent | null = null;
 
 let onTranscript: undefined | ((history: unknown[]) => void);
 let onRouterProgress: undefined | ((message: string) => void);
+let onBackendEventHandler: undefined | ((event: BackendAgentEvent) => void);
 
 // Track last processed user utterance to avoid duplicate processing
 let lastProcessedUserText = "";
@@ -53,6 +55,10 @@ export function setTranscriptHandler(fn: (history: unknown[]) => void) {
 
 export function setRouterProgressHandler(fn: (message: string) => void) {
   onRouterProgress = fn;
+}
+
+export function setBackendEventHandler(fn: (event: BackendAgentEvent) => void) {
+  onBackendEventHandler = fn;
 }
 
 function truncate(value: string, length = 80) {
@@ -169,6 +175,11 @@ export async function createVoiceSession() {
     },
     onBackendEvent: (event) => {
       console.debug('[hybrid][backend-event]', event?.type);
+      try {
+        onBackendEventHandler?.(event);
+      } catch (error) {
+        console.warn('[voice] backend event handler failed', error);
+      }
     },
     onUIDashboardEvent: (event) => {
       console.debug('[hybrid][ui-event]', event?.type);

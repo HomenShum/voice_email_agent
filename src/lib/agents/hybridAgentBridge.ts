@@ -222,6 +222,13 @@ export class HybridAgentBridge {
           // Forward to UI dashboard via shared event stream and handler
           try {
             this.eventStream.emit(event);
+            if (this.config.onBackendEvent) {
+              try {
+                this.config.onBackendEvent(event);
+              } catch (err) {
+                console.warn('[hybridBridge] backend handler error:', err);
+              }
+            }
             if (this.config.onUIDashboardEvent) {
               const uiEvent = formatEventForUIDashboard(event);
               this.config.onUIDashboardEvent(uiEvent);
@@ -427,4 +434,3 @@ const result = await bridge.processUserRequest('Show me my recent emails');
 // Disconnect when done
 await bridge.disconnectVoice();
 */
-

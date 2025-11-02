@@ -84,6 +84,8 @@ function createServerBackendAgent(grantId: string, onEvent?: BackendEventHandler
         '=== CRITICAL RULES ===',
         '- ALWAYS narrate your planning step before using tools',
         '- DO NOT jump straight to tool execution without explaining your plan',
+        '- You MUST use at least one tool for every request. Never answer without using tools to gather data.',
+        '- Prefer search_emails, triage_recent_emails, or list_unread_messages for questions about recent mail.',
         '- DO NOT provide vague summaries; cite specific data from tool results',
         '',
         '=== EXAMPLE FLOW ===',
