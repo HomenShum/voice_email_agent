@@ -157,6 +157,18 @@ export class HybridVoiceAgent {
       });
     }
 
+    // Set up error handlers to prevent unexpected disconnections
+    // Use type assertion to bypass strict typing for error events
+    (this.session as any).on?.('error', (error: any) => {
+      console.error('[clientVoiceAgent] Session error:', error);
+      // Don't disconnect on errors - let the session recover
+    });
+
+    (this.session as any).on?.('close', () => {
+      console.warn('[clientVoiceAgent] Session closed');
+      this.isConnected = false;
+    });
+
     // Connect to OpenAI Realtime API
     await this.session.connect({
       apiKey: this.apiKey!,
@@ -202,7 +214,35 @@ export class HybridVoiceAgent {
     }
 
     console.log('[clientVoiceAgent] Sending text:', text);
-    this.session.sendMessage(text);
+
+    try {
+      // Step 1: Add the user message to the conversation
+      // Use the session's send method to send a conversation.item.create event
+      await (this.session as any).send({
+        type: 'conversation.item.create',
+        item: {
+          type: 'message',
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: text,
+            },
+          ],
+        },
+      });
+
+      // Step 2: Trigger a response from the agent
+      // This is critical - without this, the agent won't respond
+      await (this.session as any).send({
+        type: 'response.create',
+      });
+
+      console.log('[clientVoiceAgent] Text message sent and response triggered');
+    } catch (error) {
+      console.error('[clientVoiceAgent] Error sending text:', error);
+      throw error;
+    }
   }
 
   /**
