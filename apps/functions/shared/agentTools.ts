@@ -30,9 +30,9 @@ export function createSearchEmailsTool(grantId: string, onEvent?: (e: any) => vo
     description: 'Search emails using hybrid vector + sparse search. Returns relevant emails matching the query.',
     parameters: z.object({
       query: z.string().describe('Natural language search query'),
-      topK: z.number().optional().nullable().default(10).describe('Number of results to return'),
-      dateFrom: z.string().optional().nullable().describe('Filter emails from this date (ISO 8601)'),
-      dateTo: z.string().optional().nullable().describe('Filter emails to this date (ISO 8601)'),
+      topK: z.number().nullable().describe('Number of results to return'),
+      dateFrom: z.string().nullable().describe('Filter emails from this date (ISO 8601)'),
+      dateTo: z.string().nullable().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ query, topK, dateFrom, dateTo }) {
       const _t0 = Date.now();
@@ -54,7 +54,7 @@ export function createSearchEmailsTool(grantId: string, onEvent?: (e: any) => vo
         namespace: grantId,
         vector: vec,
         sparseEmbedding,
-        topK,
+        topK: (typeof topK === 'number' && isFinite(topK) ? Math.max(1, Math.min(200, topK)) : 10),
         filter,
       });
 
@@ -85,8 +85,8 @@ export function createAggregateEmailsTool(grantId: string, onEvent?: (e: any) =>
     description: 'Aggregate email counts grouped by metadata fields (e.g., from_domain, date). Useful for analytics and insights.',
     parameters: z.object({
       groupBy: z.string().describe('Metadata field to group by (e.g., "from_domain", "date", "has_attachments")'),
-      dateFrom: z.string().optional().nullable().describe('Filter emails from this date (ISO 8601)'),
-      dateTo: z.string().optional().nullable().describe('Filter emails to this date (ISO 8601)'),
+      dateFrom: z.string().nullable().describe('Filter emails from this date (ISO 8601)'),
+      dateTo: z.string().nullable().describe('Filter emails to this date (ISO 8601)'),
     }),
     async execute({ groupBy, dateFrom, dateTo }) {
       const _t0 = Date.now();
@@ -121,14 +121,14 @@ export function createListUnreadTool(grantId: string, onEvent?: (e: any) => void
     name: 'list_unread_messages',
     description: 'List unread messages from Nylas. Returns recent unread emails.',
     parameters: z.object({
-      limit: z.number().optional().nullable().default(10).describe('Maximum number of unread messages to return'),
+      limit: z.number().nullable().describe('Maximum number of unread messages to return'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
       onEvent?.({ type: 'tool_call_started', toolName: 'list_unread_messages', grantId, parameters: { limit }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/messages`);
-      url.searchParams.set('limit', String(limit));
+      url.searchParams.set('limit', String(typeof limit === 'number' && isFinite(limit) ? Math.max(1, Math.min(100, limit)) : 10));
       url.searchParams.set('unread', 'true');
 
       const response = await fetch(url.toString(), {
@@ -168,14 +168,14 @@ export function createListContactsTool(grantId: string, onEvent?: (e: any) => vo
     name: 'list_contacts',
     description: 'List contacts from Nylas. Returns recent contacts.',
     parameters: z.object({
-      limit: z.number().optional().nullable().default(10).describe('Maximum number of contacts to return'),
+      limit: z.number().nullable().describe('Maximum number of contacts to return'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
       onEvent?.({ type: 'tool_call_started', toolName: 'list_contacts', grantId, parameters: { limit }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/contacts`);
-      url.searchParams.set('limit', String(limit));
+      url.searchParams.set('limit', String(typeof limit === 'number' && isFinite(limit) ? Math.max(1, Math.min(100, limit)) : 10));
 
       const response = await fetch(url.toString(), {
         headers: {
@@ -212,16 +212,16 @@ export function createListEventsTool(grantId: string, onEvent?: (e: any) => void
     name: 'list_events',
     description: 'List calendar events from Nylas. Returns upcoming events.',
     parameters: z.object({
-      limit: z.number().optional().nullable().default(10).describe('Maximum number of events to return'),
-      calendarId: z.string().optional().nullable().default('primary').describe('Calendar ID to query'),
+      limit: z.number().nullable().describe('Maximum number of events to return'),
+      calendarId: z.string().nullable().describe('Calendar ID to query'),
     }),
     async execute({ limit, calendarId }) {
       const _t0 = Date.now();
       onEvent?.({ type: 'tool_call_started', toolName: 'list_events', grantId, parameters: { limit, calendarId }, timestamp: _t0 });
       const apiKey = getNylasApiKey(grantId);
       const url = new URL(`${NYLAS_BASE}/grants/${grantId}/events`);
-      url.searchParams.set('limit', String(limit));
-      if (calendarId) url.searchParams.set('calendar_id', calendarId);
+      url.searchParams.set('limit', String(typeof limit === 'number' && isFinite(limit) ? Math.max(1, Math.min(100, limit)) : 10));
+      url.searchParams.set('calendar_id', String(calendarId ?? 'primary'));
 
       const response = await fetch(url.toString(), {
         headers: {
@@ -261,7 +261,7 @@ export function createTriageRecentEmailsTool(grantId: string, onEvent?: (e: any)
     name: 'triage_recent_emails',
     description: 'Triage recent emails to identify urgent, important, and actionable messages. Returns prioritized email list with triage summary.',
     parameters: z.object({
-      limit: z.number().optional().nullable().default(50).describe('Number of recent emails to triage'),
+      limit: z.number().nullable().describe('Number of recent emails to triage'),
     }),
     async execute({ limit }) {
       const _t0 = Date.now();
@@ -275,7 +275,7 @@ export function createTriageRecentEmailsTool(grantId: string, onEvent?: (e: any)
         namespace: grantId,
         vector: vec,
         sparseEmbedding,
-        topK: limit,
+        topK: (typeof limit === 'number' && isFinite(limit) ? Math.max(1, Math.min(200, limit)) : 50),
         filter: { grant_id: grantId },
       });
 

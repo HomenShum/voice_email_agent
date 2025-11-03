@@ -1,22 +1,40 @@
 /**
- * Hybrid Voice Agent - Complete Integration Example
+ * Client-Side Voice Agent - Direct Router + Specialists Architecture
  *
- * This module demonstrates how to integrate the hybrid agent architecture:
+ * This module implements a client-side router + specialists pattern where all
+ * agent orchestration happens locally in the browser using OpenAI's Realtime API.
  *
- * 1. Backend Processing Layer (Agent + gpt-5-mini)
- *    - RouterAgent delegates to specialists
- *    - Specialists execute tools and process data
- *    - Emits lifecycle events for real-time updates
+ * Architecture:
  *
- * 2. Voice Narration Layer (RealtimeAgent + gpt-realtime-mini)
- *    - Provides immediate voice acknowledgments
- *    - Narrates backend processing steps asynchronously
- *    - Streams final voice summary to user
+ * 1. Voice Input Layer (gpt-realtime)
+ *    - User speaks to the voice agent
+ *    - Real-time speech-to-text transcription
  *
- * 3. UI Dashboard Layer (React Component)
- *    - Displays hierarchical agent activity tree
- *    - Shows tool calls with parameters and results
- *    - Live status indicators for all operations
+ * 2. Router Agent (gpt-realtime, client-side)
+ *    - Analyzes user intent
+ *    - Delegates to appropriate specialist using handoffs
+ *
+ * 3. Specialist Agents (gpt-realtime, client-side)
+ *    - EmailOpsAgent: Email search, triage, unread messages
+ *    - InsightAgent: Email analytics and aggregations
+ *    - ContactsAgent: Contact lookup via Nylas
+ *    - CalendarAgent: Calendar events via Nylas
+ *    - AutomationAgent: Automation capabilities
+ *
+ * 4. Tool Execution (server-side endpoints)
+ *    - Each specialist calls secure Azure Functions endpoints
+ *    - /api/search, /api/aggregate, /api/nylas/unread, etc.
+ *    - All API keys and secrets stay on server
+ *
+ * 5. Voice Output Layer (gpt-realtime)
+ *    - Real-time narration of progress and results
+ *    - Text-to-speech synthesis
+ *
+ * Benefits:
+ * - Lower latency (no extra hop to backend router)
+ * - Better real-time experience (instant routing decisions)
+ * - Reduced backend costs (no gpt-5-mini for routing)
+ * - Voice-first design (direct handoffs between realtime agents)
  *
  * Usage:
  *
@@ -26,28 +44,20 @@
  * const agent = await createHybridVoiceAgent({
  *   tools: { email, insights, contacts, calendar, sync },
  *   voice: 'alloy',
- *   onUIDashboardEvent: (event) => {
- *     // Update React UI state
- *     setDashboardEvents(prev => [...prev, event]);
- *   },
+ *   onProgress: (msg) => console.log(msg),
+ *   onTranscript: (history) => updateUI(history),
  * });
  *
- * // Process user request
- * const result = await agent.processRequest('Show me my recent emails');
+ * // Voice agent is now listening and will handle requests automatically
  * ```
  */
 
 import type { Tool } from '@openai/agents-core';
-import {
-  createHybridAgentBridge,
-  type HybridAgentBridgeConfig,
-  type HybridAgentBridge,
-} from './agents/hybridAgentBridge';
-import type { UIDashboardEvent } from './agents/backendRuntime';
-import type { BackendAgentEvent } from './agents/backendRouterAgent';
+import { createRouterBundle, type RouterDependencies, type RouterBundle } from './agents/routerAgent';
+import { RealtimeSession } from '@openai/agents/realtime';
 
 // ============================================================================
-// Hybrid Voice Agent Configuration
+// Client-Side Voice Agent Configuration
 // ============================================================================
 
 export interface HybridVoiceAgentConfig {
@@ -66,48 +76,35 @@ export interface HybridVoiceAgentConfig {
   // Event handlers
   onProgress?: (message: string) => void;
   onTranscript?: (history: unknown[]) => void;
-  onUIDashboardEvent?: (event: UIDashboardEvent) => void;
-  onBackendEvent?: (event: BackendAgentEvent) => void;
 
   // API configuration
   apiBaseUrl?: string;
 }
 
 // ============================================================================
-// Hybrid Voice Agent
+// Client-Side Voice Agent
 // ============================================================================
 
 export class HybridVoiceAgent {
-  private bridge: HybridAgentBridge;
+  private routerBundle: RouterBundle | null = null;
+  private session: RealtimeSession | null = null;
   private config: HybridVoiceAgentConfig;
   private apiKey: string | null = null;
   private isConnected = false;
 
   constructor(config: HybridVoiceAgentConfig) {
     this.config = config;
-
-    // Create the hybrid bridge
-    const bridgeConfig: HybridAgentBridgeConfig = {
-      tools: config.tools,
-      voice: config.voice,
-      onProgress: config.onProgress,
-      onTranscript: config.onTranscript,
-      onUIDashboardEvent: config.onUIDashboardEvent,
-      onBackendEvent: config.onBackendEvent,
-    };
-
-    this.bridge = createHybridAgentBridge(bridgeConfig);
   }
 
   /**
    * Connect to the OpenAI Realtime API
    *
-   * This fetches an ephemeral API key from your backend and connects
-   * the voice narration layer.
+   * This creates the client-side router + specialists architecture and
+   * connects to the OpenAI Realtime API for voice interaction.
    */
   async connect(): Promise<void> {
     if (this.isConnected) {
-      console.warn('[hybridVoiceAgent] Already connected');
+      console.warn('[clientVoiceAgent] Already connected');
       return;
     }
 
@@ -130,11 +127,44 @@ export class HybridVoiceAgent {
       throw new Error('No API key returned from backend');
     }
 
-    // Connect voice narration layer
-    await this.bridge.connectVoice(this.apiKey);
+    // Create router + specialists bundle
+    const routerDeps: RouterDependencies = {
+      tools: {
+        email: this.config.tools.email,
+        insights: this.config.tools.insights,
+        contacts: this.config.tools.contacts,
+        calendar: this.config.tools.calendar,
+        sync: this.config.tools.sync,
+      },
+      onProgress: this.config.onProgress,
+    };
+
+    this.routerBundle = createRouterBundle(routerDeps);
+
+    // Create realtime session with router agent
+    this.session = new RealtimeSession(this.routerBundle.router, {
+      transport: 'webrtc',
+      // Configure voice via session config; model is provided on connect()
+      config: {
+        voice: this.config.voice || 'alloy',
+      },
+    });
+
+    // Set up transcript handler (use history_updated event)
+    if (this.config.onTranscript) {
+      this.session.on('history_updated', (history) => {
+        this.config.onTranscript?.(history as unknown[]);
+      });
+    }
+
+    // Connect to OpenAI Realtime API
+    await this.session.connect({
+      apiKey: this.apiKey!,
+      model: 'gpt-realtime-mini',
+    });
     this.isConnected = true;
 
-    console.log('[hybridVoiceAgent] Connected successfully');
+    console.log('[clientVoiceAgent] Connected successfully with client-side router + specialists');
   }
 
   /**
@@ -142,42 +172,37 @@ export class HybridVoiceAgent {
    */
   async disconnect(): Promise<void> {
     if (!this.isConnected) {
-      console.warn('[hybridVoiceAgent] Not connected');
+      console.warn('[clientVoiceAgent] Not connected');
       return;
     }
 
-    await this.bridge.disconnectVoice();
+    if (this.session) {
+      this.session.close();
+      this.session = null;
+    }
+
+    this.routerBundle = null;
     this.isConnected = false;
     this.apiKey = null;
 
-    console.log('[hybridVoiceAgent] Disconnected');
+    console.log('[clientVoiceAgent] Disconnected');
   }
 
   /**
-   * Process a user request through the hybrid architecture
+   * Send a text message to the voice agent
    *
-   * Flow:
-   * 1. Voice layer provides immediate acknowledgment
-   * 2. Backend layer processes the request (with gpt-5-mini)
-   * 3. Backend events are streamed to voice layer for narration
-   * 4. Backend events are streamed to UI dashboard for visualization
-   * 5. Voice layer provides final summary when backend completes
+   * This is useful for testing or when you want to send a text request
+   * instead of using voice input.
    *
-   * @param userInput - The user's request (text or transcribed speech)
-   * @returns The final result from the backend processing
+   * @param text - The text message to send
    */
-  async processRequest(userInput: string): Promise<any> {
-    if (!this.isConnected) {
+  async sendText(text: string): Promise<void> {
+    if (!this.isConnected || !this.session) {
       throw new Error('Agent not connected. Call connect() first.');
     }
 
-    console.log('[hybridVoiceAgent] Processing request:', userInput);
-
-    // Process through the hybrid bridge
-    const result = await this.bridge.processUserRequest(userInput);
-
-    console.log('[hybridVoiceAgent] Request complete');
-    return result;
+    console.log('[clientVoiceAgent] Sending text:', text);
+    this.session.sendMessage(text);
   }
 
   /**
@@ -188,55 +213,31 @@ export class HybridVoiceAgent {
   }
 
   /**
-   * Get the underlying bridge (for advanced usage)
+   * Get the realtime session (for advanced usage)
    */
-  getBridge(): HybridAgentBridge {
-    return this.bridge;
+  getSession(): RealtimeSession | null {
+    return this.session;
+  }
+
+  /**
+   * Get the router bundle (for debugging)
+   */
+  getRouterBundle(): RouterBundle | null {
+    return this.routerBundle;
   }
 
   /**
    * Get the call graph (for UI visualization)
    */
   getCallGraph() {
-    return this.bridge.getCallGraph();
+    return this.routerBundle?.runtime.router.callGraph || null;
   }
 
   /**
    * Get scratchpads (for debugging)
    */
-  /**
-   * Narration policy & task controls
-   */
-  setNarrationMode(mode: 'serialize' | 'prioritize'): void {
-    this.bridge.setNarrationMode(mode);
-  }
-
-  pauseNarration(): void {
-    this.bridge.pauseNarration();
-  }
-
-  async resumeNarration(): Promise<void> {
-    await this.bridge.resumeNarration();
-  }
-
-  prioritizeLatest(): void {
-    this.bridge.prioritizeLatest();
-  }
-
-  prioritizeTask(taskId: string): void {
-    this.bridge.prioritizeTask(taskId);
-  }
-
-  getTasks(): Array<{ id: string; input: string; status: string; createdAt: number; completedAt?: number }> {
-    return this.bridge.getTasks();
-  }
-
-  async deliverPendingSummaries(): Promise<void> {
-    await this.bridge.deliverPendingSummaries();
-  }
-
   getScratchpads() {
-    return this.bridge.getScratchpads();
+    return this.routerBundle?.runtime.router.scratchpads || {};
   }
 }
 
@@ -245,7 +246,7 @@ export class HybridVoiceAgent {
 // ============================================================================
 
 /**
- * Create and connect a hybrid voice agent
+ * Create and connect a client-side voice agent with router + specialists
  *
  * This is a convenience function that creates the agent and connects it
  * to the OpenAI Realtime API in one step.
@@ -258,22 +259,4 @@ export async function createHybridVoiceAgent(config: HybridVoiceAgentConfig): Pr
   await agent.connect();
   return agent;
 }
-
-// ============================================================================
-// React Hook removed for library build stability
-// ============================================================================
-// To keep this package framework-agnostic and avoid adding React as a hard
-// dependency, the useHybridVoiceAgent hook has been removed from the library.
-//
-// If you need a React hook, create one inside your app and delegate to the
-// exported factory APIs:
-//   - createHybridVoiceAgent(config)
-//   - createHybridVoiceSession()
-//
-// Example skeleton:
-// export function useHybridVoiceAgent(config: HybridVoiceAgentConfig) {
-//   const [agent, setAgent] = useState<HybridVoiceAgent | null>(null);
-//   useEffect(() => { (async () => setAgent(await createHybridVoiceAgent(config)))() }, []);
-//   return { agent };
-// }
 

@@ -8,46 +8,12 @@ import {
   syncToolset,
   type ToolCallRecord,
 } from './tools';
-import type { BackendAgentEvent } from './agents/backendRouterAgent';
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8787';
 let activeHybridAgent: HybridVoiceAgent | null = null;
 
 let onTranscript: undefined | ((history: unknown[]) => void);
 let onRouterProgress: undefined | ((message: string) => void);
-let onBackendEventHandler: undefined | ((event: BackendAgentEvent) => void);
-
-// Track last processed user utterance to avoid duplicate processing
-let lastProcessedUserText = "";
-
-function extractTextFromHistoryItem(item: any): string {
-  if (!item) return '';
-  const seen = new Set<any>();
-  function walk(node: any, depth = 0): string[] {
-    if (!node || typeof node === 'function' || seen.has(node) || depth > 4) return [];
-    if (typeof node === 'string') return [node];
-    if (typeof node !== 'object') return [];
-    seen.add(node);
-    const out: string[] = [];
-    if (typeof node.text === 'string') out.push(node.text);
-    if (typeof node.transcript === 'string') out.push(node.transcript);
-    if (typeof node.content === 'string') out.push(node.content);
-    if (Array.isArray(node.content)) for (const c of node.content) out.push(...walk(c, depth + 1));
-    for (const k of Object.keys(node)) {
-      if (k === 'text' || k === 'transcript' || k === 'content') continue;
-      const v: any = (node as any)[k];
-      if (typeof v === 'string') {
-        if (k.includes('text') || k.includes('transcript') || k.includes('message')) out.push(v);
-      } else if (Array.isArray(v)) {
-        for (const el of v) out.push(...walk(el, depth + 1));
-      } else if (v && typeof v === 'object') {
-        out.push(...walk(v, depth + 1));
-      }
-    }
-    return out;
-  }
-  return walk(item).join(' ').trim();
-}
 
 export function setTranscriptHandler(fn: (history: unknown[]) => void) {
   onTranscript = fn;
@@ -57,8 +23,9 @@ export function setRouterProgressHandler(fn: (message: string) => void) {
   onRouterProgress = fn;
 }
 
-export function setBackendEventHandler(fn: (event: BackendAgentEvent) => void) {
-  onBackendEventHandler = fn;
+// Deprecated: Backend events are no longer used with client-side router
+export function setBackendEventHandler(_fn: (event: any) => void) {
+  console.warn('[voiceAgent] setBackendEventHandler is deprecated - using client-side router');
 }
 
 function truncate(value: string, length = 80) {
@@ -134,7 +101,7 @@ function wireScratchpads(hybrid: HybridVoiceAgent) {
 }
 
 export async function createVoiceSession() {
-  // Create and connect the Hybrid Voice Agent (voice narration + backend processing)
+  // Create and connect the Client-Side Voice Agent (router + specialists)
   const hybrid = await createHybridVoiceAgent({
     tools: {
       email: Array.from(emailOpsToolset),
@@ -146,7 +113,7 @@ export async function createVoiceSession() {
     voice: 'alloy',
     apiBaseUrl: API_BASE,
     onProgress: (message: string) => {
-      console.debug('[hybrid][progress]', message);
+      console.debug('[clientRouter][progress]', message);
       try {
         onRouterProgress?.(message);
       } catch (error) {
@@ -155,34 +122,13 @@ export async function createVoiceSession() {
     },
     onTranscript: (history: unknown[]) => {
       try {
-        console.debug('[hybrid][transcript]', history);
+        console.debug('[clientRouter][transcript]', history);
         onTranscript?.(history);
-        // Detect latest user utterance and trigger backend processing
-        const items = Array.isArray(history) ? history : [];
-        const last: any = items.length ? items[items.length - 1] : null;
-        const role = (last && (last.role || last.author || last.speaker)) || '';
-        if (role === 'user') {
-          const text = extractTextFromHistoryItem(last);
-          if (text && text !== lastProcessedUserText) {
-            lastProcessedUserText = text;
-            // Fire and forget; backend will stream events to voice narrator
-            void hybrid.processRequest(text);
-          }
-        }
+        // Note: With client-side router, the RealtimeSession handles user input automatically
+        // No need to manually trigger processRequest - the router agent handles it via handoffs
       } catch (error) {
         console.warn('[voice] transcript handler failed', error);
       }
-    },
-    onBackendEvent: (event) => {
-      console.debug('[hybrid][backend-event]', event?.type);
-      try {
-        onBackendEventHandler?.(event);
-      } catch (error) {
-        console.warn('[voice] backend event handler failed', error);
-      }
-    },
-    onUIDashboardEvent: (event) => {
-      console.debug('[hybrid][ui-event]', event?.type);
     },
   });
 

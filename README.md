@@ -337,30 +337,71 @@ node test-endpoints.js
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/api/search` | POST | Semantic email search (Pinecone) |
+| `/api/aggregate` | POST | Email aggregation (Pinecone) |
+| `/api/nylas/unread` | GET | List unread messages (Nylas) |
+| `/api/nylas/contacts` | GET | List contacts (Nylas) |
+| `/api/nylas/events` | GET | List calendar events (Nylas) |
 | `/api/sync/backfill` | POST | Enqueue backfill job |
 | `/api/sync/delta` | POST | Enqueue delta sync job |
 | `/api/webhooks/nylas` | POST | Nylas webhook handler |
+| `/api/realtime/session` | POST | Mint ephemeral OpenAI key |
 | Timer (hourly) | - | Auto-enqueue delta per grant |
 
-## 🎤 Voice Agent Tools
 
-The voice agent supports the following tools:
 
-- **search_emails**: Semantic search over emails
-- **list_recent_emails**: Fetch the latest messages (default 50) and run an LLM MapReduce prioritization pass
-- **list_contacts**: List Nylas contacts
-- **list_events**: List calendar events
-- **list_unread_messages**: List unread emails
-- **backfill_start**: Trigger manual backfill
+## 🎤 Voice Agent Architecture
 
-### MapReduce Prioritization
+### Client-Side Router + Specialists
 
-`list_recent_emails` retrieves the most recent inbox messages (up to 200) and then invokes a two-stage LLM pipeline:
+The voice agent uses a **client-side router + specialists pattern** where all orchestration happens in the browser:
 
-1. **Map**: The email set is divided into small chunks (default 8). Each chunk is evaluated by an OpenAI model (`PRIORITY_MODEL`, default `gpt-5-mini`) that returns the most urgent candidates in strict JSON form. Optional hints supplied via `PRIORITY_HINT_*` env vars help the model weight specific senders, domains, or keywords without enforcing heuristics.
-2. **Reduce**: The aggregated candidates are passed to a second LLM prompt that produces the final ranked `top_emails`, backup options, and a validation summary describing coverage and any gaps (e.g., failed chunks).
+**Router Agent (gpt-realtime):**
+- Analyzes user intent from voice input
+- Delegates to the appropriate specialist using OpenAI Agents SDK handoffs
+- Provides real-time voice narration
 
-The tool response includes the original normalized messages plus the full MapReduce audit trail so downstream agents can cite the reasoning transparently.
+**Specialist Agents (gpt-realtime):**
+- **EmailOpsAgent**: Email search, triage, unread messages
+  - Tools: `search_emails`, `triage_recent_emails`, `list_unread_messages`, `list_recent_emails`
+- **InsightAgent**: Email analytics and aggregations
+  - Tools: `aggregate_emails`, `search_emails` (for summaries)
+- **ContactsAgent**: Contact lookup via Nylas
+  - Tools: `list_contacts`
+- **CalendarAgent**: Calendar events via Nylas
+  - Tools: `list_events`
+- **AutomationAgent**: Automation capabilities
+  - Tools: (future: draft emails, schedule sends)
+
+### Available Tools
+
+All tools call secure Azure Functions endpoints that handle authentication:
+
+- **search_emails**: Semantic search over emails (calls `/api/search`)
+- **aggregate_emails**: Email aggregation and analytics (calls `/api/aggregate`)
+- **triage_recent_emails**: LLM-powered email prioritization (calls `/api/nylas/unread`)
+- **list_recent_emails**: Fetch latest messages (calls `/api/nylas/unread`)
+- **list_contacts**: List Nylas contacts (calls `/api/nylas/contacts`)
+- **list_events**: List calendar events (calls `/api/nylas/events`)
+- **list_unread_messages**: List unread emails (calls `/api/nylas/unread`)
+- **sync_start**: Trigger delta sync (calls `/api/sync/delta`)
+- **backfill_start**: Trigger manual backfill (calls `/api/sync/backfill`)
+
+### Why Client-Side Router?
+
+**Architecture:**
+```
+User Voice → Client Router (gpt-realtime) → Client Specialists (gpt-realtime) → Tool Endpoints → Results
+```
+
+**Benefits:**
+- ✅ **Lower latency** - Routing decisions happen instantly in the browser
+- ✅ **Better real-time experience** - No network round-trip for routing
+- ✅ **Reduced costs** - No backend gpt-5-mini usage for routing
+- ✅ **Voice-first design** - Direct handoffs between realtime agents
+- ✅ **Secure** - All API keys stay on server-side tool endpoints
+
+**Key Insight:** Since all tools are already deployed as individual API endpoints (`/api/search`, `/api/aggregate`, etc.) that handle authentication and secrets, the client-side router can call these endpoints directly, providing a faster and more cost-effective solution.
 
 ## 📊 Vector Database Schema
 
@@ -548,14 +589,100 @@ flowchart TD
 
 References: Azure Functions Timer trigger docs (Node v4 model, six-field schedule): https://learn.microsoft.com/azure/azure-functions/functions-bindings-timer
 
-## 🚢 Azure Deployment
+## 🚢 Azure Deployment & CI/CD Pipeline
 
-### ✅ Current Deployment Status
+### ✅ Current Deployment Status (11/2/2025)
 
 **All resources are deployed and live!** The application is running on:
 - **Function App**: `func-email-agent-9956-lx` (Linux Consumption plan)
 - **Service Bus**: `sb-email-agent-9085` with queue `nylas-backfill`
 - **Static Web App**: `orange-mud-087b3a60f.3.azurestaticapps.net`
+
+### Deployment & CI/CD Workflow
+
+We are able to deploy Azure Function here in order to update the Azure Function server side changes. If we do a full `git add`, `git commit`, and `git push`, then there is also a CI/CD pipeline that helps us to deploy Azure Static App and Azure Function App, configure CORS, and then test the API endpoints individually to see if they are returning the proper service code.
+
+### Full-Stack Multi-Agent Architecture: Client-Side Router + Specialists
+
+**Architecture Overview:**
+The system uses a **client-side router + specialists pattern** where all agent orchestration happens locally in the browser using OpenAI's Realtime API (gpt-realtime). The backend provides secure tool endpoints that the agents call directly.
+
+**Client-Side Architecture (Browser):**
+- **Voice Input**: User speaks to the voice agent (gpt-realtime)
+- **Router Agent**: Analyzes user intent and delegates to the appropriate specialist using OpenAI Agents SDK handoffs
+- **Specialist Agents** (all running gpt-realtime with handoffs):
+  - **EmailOpsAgent**: Email search, triage, unread messages
+  - **InsightAgent**: Email analytics and aggregations
+  - **ContactsAgent**: Contact lookup via Nylas
+  - **CalendarAgent**: Calendar events via Nylas
+  - **AutomationAgent**: Automation capabilities
+- **Tool Execution**: Each specialist calls server-side tool endpoints directly (e.g., `/api/search`, `/api/aggregate`, `/api/nylas/unread`)
+- **Voice Output**: Real-time narration of progress and results
+
+**Server-Side Architecture (Azure Functions):**
+All tools are deployed as individual HTTP endpoints that handle authentication and secrets:
+- `/api/search` - Semantic email search (Pinecone)
+- `/api/aggregate` - Email aggregation (Pinecone)
+- `/api/nylas/unread` - Unread messages (Nylas API)
+- `/api/nylas/contacts` - Contacts (Nylas API)
+- `/api/nylas/events` - Calendar events (Nylas API)
+- `/api/sync/delta` - Delta sync trigger
+- `/api/sync/backfill` - Backfill trigger
+
+**Key Benefits:**
+1. ✅ **Lower latency** - Routing decisions happen instantly in the browser
+2. ✅ **Better real-time experience** - No network round-trip for routing
+3. ✅ **Reduced costs** - No backend gpt-5-mini usage for routing
+4. ✅ **Voice-first design** - Direct handoffs between realtime agents
+5. ✅ **Secure** - All API keys and secrets stay on server-side tool endpoints
+
+**Request Flow:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Browser (Client)                        │
+│                                                                 │
+│  User Voice Input                                               │
+│       ↓                                                         │
+│  Router Agent (gpt-realtime)                                    │
+│       ↓ (analyzes intent, uses handoffs)                        │
+│  Specialist Agent (gpt-realtime)                                │
+│    • EmailOpsAgent                                              │
+│    • InsightAgent                                               │
+│    • ContactsAgent                                              │
+│    • CalendarAgent                                              │
+│    • AutomationAgent                                            │
+│       ↓ (calls tool endpoint)                                   │
+└─────────────────────────────────────────────────────────────────┘
+                          │
+                          │ HTTPS
+                          ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   Azure Functions (Server)                      │
+│                                                                 │
+│  Tool Endpoints (with API key authentication):                  │
+│    • /api/search → Pinecone vector search                       │
+│    • /api/aggregate → Pinecone aggregation                      │
+│    • /api/nylas/unread → Nylas API (unread messages)            │
+│    • /api/nylas/contacts → Nylas API (contacts)                 │
+│    • /api/nylas/events → Nylas API (calendar events)            │
+│    • /api/sync/delta → Service Bus (delta sync)                 │
+│    • /api/sync/backfill → Service Bus (backfill)                │
+│       ↓                                                         │
+│  Results (JSON)                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                          │
+                          │ JSON Response
+                          ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                         Browser (Client)                        │
+│                                                                 │
+│  Specialist Agent (processes results)                           │
+│       ↓                                                         │
+│  Router Agent (synthesizes response)                            │
+│       ↓                                                         │
+│  Voice Output (gpt-realtime TTS)                                │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### Prerequisites (for re-deployment or updates)
 - Azure CLI installed and authenticated (`az login`)
