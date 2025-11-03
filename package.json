@@ -9,17 +9,26 @@
     "preview": "vite preview",
     "server": "node server/server.js",
     "test:unit": "node tests/unit/run-all.mjs",
-    "test:e2e": "node tests/run.mjs",
+    "test:e2e:legacy": "node tests/run.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --grep @ui",
+    "test:e2e:api": "playwright test --grep @api",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:deployed": "TEST_ENV=deployed playwright test",
+    "test:e2e:deployed:ui": "TEST_ENV=deployed playwright test --grep @ui",
+    "test:e2e:deployed:api": "TEST_ENV=deployed playwright test --grep @api",
     "test": "npm run test:unit && npm run test:e2e"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "azurite": "^3.35.0",
+    "dotenv": "^17.2.3",
     "typescript": "~5.9.3",
     "vite": "^7.1.7"
   },
   "dependencies": {
     "@openai/agents": "^0.1.11",
-    "dotenv": "^16.4.5",
     "zod": "^3.25.76"
   }
 }

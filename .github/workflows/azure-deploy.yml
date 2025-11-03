@@ -307,3 +307,51 @@ jobs:
 
           echo ""
           echo "✅ All endpoint tests passed!"
+
+  test-e2e-deployed:
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-functions, configure-cors]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "Waiting 60 seconds for deployment to fully stabilize..."
+          sleep 60
+
+      - name: Run Playwright E2E tests against deployed site
+        run: npm run test:e2e:deployed
+        env:
+          TEST_ENV: deployed
+          VITE_STATIC_WEB_APP_URL: https://orange-mud-087b3a60f.3.azurestaticapps.net
+          VITE_API_BASE: ${{ env.FUNCTION_APP_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 30
