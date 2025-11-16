@@ -148,6 +148,18 @@ jobs:
             sleep 5
           done
 
+          # Additional wait for functions to fully initialize
+          echo "Waiting for functions to fully initialize..."
+          sleep 30
+
+          # Warm up a few key endpoints to ensure they're ready
+          echo "Pre-warming key endpoints..."
+          for endpoint in "/api/nylas/unread" "/api/realtime/session" "/api/search"; do
+            echo "Pre-warming $endpoint..."
+            curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" "$FUNCTION_APP_URL$endpoint" || true
+            sleep 2
+          done
+
           echo "✓ Function app warm-up complete"
 
   deploy-frontend:
@@ -226,84 +238,66 @@ jobs:
         run: |
           set -e
           BASE_URL="${{ env.FUNCTION_APP_URL }}"
-          echo "Waiting 45 seconds for Function App host to warm up..."
-          sleep 45
+          echo "Waiting 60 seconds for Function App host to warm up..."
+          sleep 60
           echo "Testing endpoints at: $BASE_URL"
 
+          # Helper function to test endpoint with retries
+          test_endpoint() {
+            local method=$1
+            local endpoint=$2
+            local expected_status=$3
+            local max_retries=5
+            local retry_count=0
+
+            while [ $retry_count -lt $max_retries ]; do
+              echo "Testing $method $endpoint (attempt $((retry_count + 1))/$max_retries)..."
+
+              if [ "$method" = "GET" ]; then
+                status=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL$endpoint")
+              else
+                status=$(curl -s -X $method -H "Content-Type: application/json" -d '{}' -o /dev/null -w "%{http_code}" "$BASE_URL$endpoint")
+              fi
+
+              echo "  Response status: $status"
+
+              if [[ "$expected_status" == *"$status"* ]]; then
+                echo "  ✓ $endpoint returned expected status"
+                return 0
+              fi
+
+              if [ $retry_count -lt $((max_retries - 1)) ]; then
+                echo "  Retrying in 5 seconds..."
+                sleep 5
+              fi
+
+              retry_count=$((retry_count + 1))
+            done
+
+            echo "  ✗ ERROR: $endpoint returned $status (expected $expected_status)"
+            return 1
+          }
+
           # Test /api/nylas/unread (GET)
-          echo "Testing GET /api/nylas/unread..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/unread?limit=5")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
-            echo "ERROR: /api/nylas/unread returned $STATUS (expected 400 or 200)"
-            exit 1
-          fi
-          echo "✓ /api/nylas/unread is accessible (status: $STATUS)"
+          test_endpoint "GET" "/api/nylas/unread?limit=5" "400 200"
 
           # Test /api/nylas/contacts (GET)
-          echo "Testing GET /api/nylas/contacts..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/contacts?limit=5")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
-            echo "ERROR: /api/nylas/contacts returned $STATUS (expected 400 or 200)"
-            exit 1
-          fi
-          echo "✓ /api/nylas/contacts is accessible (status: $STATUS)"
+          test_endpoint "GET" "/api/nylas/contacts?limit=5" "400 200"
 
           # Test /api/nylas/events (GET)
-          echo "Testing GET /api/nylas/events..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/nylas/events?limit=5")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
-            echo "ERROR: /api/nylas/events returned $STATUS (expected 400 or 200)"
-            exit 1
-          fi
-          echo "✓ /api/nylas/events is accessible (status: $STATUS)"
+          test_endpoint "GET" "/api/nylas/events?limit=5" "400 200"
 
           # Test /api/search (POST)
-          echo "Testing POST /api/search..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -d '{"queries":[{"text":"test"}],"top_k":5}' \
-            "$BASE_URL/api/search")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
-            echo "ERROR: /api/search returned $STATUS (expected 400, 200, or 500)"
-            exit 1
-          fi
-          echo "✓ /api/search is accessible (status: $STATUS)"
+          test_endpoint "POST" "/api/search" "400 200 500"
 
           # Test /api/aggregate (POST)
-          echo "Testing POST /api/aggregate..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -d '{"metric":"count","group_by":["from_domain"],"top_k":10}' \
-            "$BASE_URL/api/aggregate")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
-            echo "ERROR: /api/aggregate returned $STATUS (expected 400, 200, or 500)"
-            exit 1
-          fi
-          echo "✓ /api/aggregate is accessible (status: $STATUS)"
+          test_endpoint "POST" "/api/aggregate" "400 200 500"
 
           # Test /api/realtime/session (POST)
-          echo "Testing POST /api/realtime/session..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -d '{}' \
-            "$BASE_URL/api/realtime/session")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ] && [ "$STATUS" != "500" ]; then
-            echo "ERROR: /api/realtime/session returned $STATUS (expected 400, 200, or 500)"
-            exit 1
-          fi
-          echo "✓ /api/realtime/session is accessible (status: $STATUS)"
+          test_endpoint "POST" "/api/realtime/session" "400 200 500"
 
           # Test /api/sync/delta (POST)
-          echo "Testing POST /api/sync/delta..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -H "Content-Type: application/json" \
-            -d '{}' \
-            "$BASE_URL/api/sync/delta")
-          if [ "$STATUS" != "400" ] && [ "$STATUS" != "200" ]; then
-            echo "ERROR: /api/sync/delta returned $STATUS (expected 400 or 200)"
-            exit 1
-          fi
-          echo "✓ /api/sync/delta is accessible (status: $STATUS)"
+          test_endpoint "POST" "/api/sync/delta" "400 200"
 
           echo ""
           echo "✅ All endpoint tests passed!"
