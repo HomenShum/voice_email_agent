@@ -1,5 +1,40 @@
 # Real-Time Voice Email Agent
 
+## Current developer handoff
+
+This repository contains a browser voice/email interface, a local Node API, and a separate Azure Functions package. This handoff describes checked-in wiring at [`3f07710`](https://github.com/HomenShum/voice_email_agent/commit/3f07710d271ebaf6182a155c643aa60b67b6ba79), reviewed on 2026-10-15. It does not establish current provider/model availability, a working deployment, or current accuracy/performance.
+
+### Choose the runtime before starting
+
+| Surface | Declared entrypoint | Connection contract |
+| --- | --- | --- |
+| Browser | Root [package.json](package.json): `npm run dev` runs Vite; [index.html](index.html) loads [src/main.ts](src/main.ts). | `VITE_API_BASE` defaults to `http://localhost:8787`; `VITE_FUNCTIONS_BASE_URL` defaults to `http://localhost:7071`. These are public browser URL settings. |
+| Local API | Root `npm run server` runs [server/server.js](server/server.js), which loads the repository-root `.env` and listens on `PORT` or `8787`. | Voice session creation and local email routes use this server; the voice client is [src/lib/voiceAgent.ts](src/lib/voiceAgent.ts). |
+| Azure Functions | [apps/functions/package.json](apps/functions/package.json) is a separate package; its `npm run build` compiles TypeScript and its entrypoint is `dist/functions/*.js`. | The browser's Functions URL and the integration runner's `FUNCTIONS_BASE` default to port `7071`. A host must be configured and started separately; this package declares no start script. Building it does not start or provision Azure. |
+
+For the declared local path, install root dependencies with `npm install`, then run `npm run server` and `npm run dev` in separate terminals at the repository root. The Functions package needs its own dependency installation and build if you choose that path. These commands were inspected, not executed; Node/toolchain compatibility and provider access still need verification in your environment.
+
+Keep provider credentials on the server. The realtime route checks `OPENAI_API_KEY`; [server/nylasConfig.js](server/nylasConfig.js) selects Nylas keys by grant, with a configured default fallback. Local search checks `PINECONE_API_KEY` and `PINECONE_INDEX_HOST`, while Functions [search](apps/functions/functions/search.ts) and [aggregate](apps/functions/functions/aggregate.ts) check `PINECONE_INDEX_NAME` instead of the local host setting. Setting a browser URL does not configure those backends. Also, the main UI's Start Sync handler currently hardcodes `http://localhost:8787/sync/start`; changing `VITE_API_BASE` does not redirect every action.
+
+### Readiness and write boundaries
+
+- The browser registers mail/search/analysis and sync tools in [src/lib/tools.ts](src/lib/tools.ts); their names describe source wiring, not a successful end-to-end session.
+- Local `POST /email/search` returns a disclosed stub response when either `PINECONE_API_KEY` or `PINECONE_INDEX_HOST` is missing. Its HTTP 200 response includes a note saying Pinecone is not configured and results are stubs. That response does not prove your mailbox has been indexed.
+- Backfill is an operational action: the local route reads messages through Nylas, embeds their text, and upserts vectors. The Functions [backfill route](apps/functions/functions/backfillStart.ts) queues work; [storage helpers](apps/functions/shared/storage.ts) write message text and checkpoints beneath `DATA_DIR` or `.data`. Use intended accounts and approved data, and expect provider calls and persistent changes. Treat the older backfill example below accordingly.
+- A grant or namespace selects data; it does not by itself establish caller ownership. Functions search/aggregate declare `authLevel: "function"`, while backfill declares `"anonymous"`. This source review does not certify tenant isolation or production security.
+
+### Test entrypoint and source map
+
+Root `npm run test:e2e` selects [tests/run.mjs](tests/run.mjs). It calls Functions `/api/search` and `/api/aggregate` through `FUNCTIONS_BASE`, reads its configured cases, and writes snapshots/summaries under `tests/results` relative to the current working directory. [tests/judge.mjs](tests/judge.mjs) can call OpenAI; its `JUDGE_DISABLE_LLM=1` branch disables that judge call, not the runner's backend requests. Configure the intended Functions host, credentials and approved cases before running it. This is not an offline unit-test command or evidence of a fresh benchmark.
+
+The four guide filenames listed in the older Documentation section (`DESIGN_SPECS.md`, `FOLDER_STRUCTURES.md`, `DEPLOYMENT_STATUS.md`, `AZURE_DEPLOYMENT.md`) are absent from this reviewed tree. Use the source links above for current wiring. Stored data and generated results were not inspected or validated for reuse.
+
+Documentation changes are recorded in [the README surface history](CHANGELOG/docs/readme.md).
+
+## Historical project notes (preserved)
+
+The original README body below is retained verbatim as historical project material. Its production-ready wording, completion/deployment status, setup examples, model names, indexing counts and performance figures were not revalidated by this documentation review. Where those claims differ from the source-qualified handoff above, verify the actual runtime before relying on them.
+
 A full-stack voice assistant for email management using OpenAI's Realtime API, Nylas email integration, and Pinecone vector search.
 
 ## 🎯 Overview
